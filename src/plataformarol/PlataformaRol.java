@@ -1,6 +1,8 @@
 package plataformarol;
 
 import java.io.IOException;
+import java.io.FileInputStream;
+import java.io.InputStream;
 
 //import ANTLR's runtime libraries
 import org.antlr.v4.runtime.*;
@@ -10,19 +12,18 @@ import linguaxe.*;
 public class PlataformaRol {
 
 	public static void main(String[] args) {
-		// create a CharStream that reads from standard input
-		ANTLRInputStream input;
 		try {
-			input = new ANTLRInputStream(System.in);
-			// create a lexer that feeds off of input CharStream
+			String inputFile = null;
+			if ( args.length>0 ) inputFile = args[0];
+			InputStream is = System.in;
+			if ( inputFile!=null ) is = new FileInputStream(inputFile);
+			ANTLRInputStream input = new ANTLRInputStream(is);
 			LinguaxeLexer lexer = new LinguaxeLexer(input);
-			// create a buffer of tokens pulled from the lexer
 			CommonTokenStream tokens = new CommonTokenStream(lexer);
-			// create a parser that feeds off the tokens buffer
 			LinguaxeParser parser = new LinguaxeParser(tokens);
-			ParseTree tree = parser.s(); // begin parsing at init rule
-			System.out.println(tree.toStringTree(parser)); // print LISP-style
-															// tree
+			ParseTree tree = parser.s(); // parse; start at s
+			EvalVisitor eval = new EvalVisitor();
+			eval.visit(tree);
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

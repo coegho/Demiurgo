@@ -1,21 +1,9 @@
 grammar Linguaxe;
 
-@header {
-package linguaxe;
-}
+//Parser rules
 
-SYMBOL : [a-z][a-z0-9]* ;
-INT_NUMBER: [0-9]+;
-FLOAT_NUMBER : [0-9]*'.'[0-9]+ ;
-BOOLEAN : 'TRUE' | 'FALSE' ;
-TEXT_STRING : '"' .*? '"' ;
-WS : [ \t\r]+ -> skip ; // skip spaces, tabs, newlines
-COMMENT : '/*' .*? '*/' -> skip ; // .*? matches anything until the first */
-COMMENT2:  '//' (~'\n')* -> skip ;
-
-
-s : class_def
-	| code
+s : class_def	#classDef
+	| code		#sCode
 	;
 
 class_def : SYMBOL ( '<' SYMBOL )? ('/n')* '{' attributes methods '}' ;
@@ -42,30 +30,37 @@ line : operation
 	| exp_user
 	;
 
-member : SYMBOL ('.' SYMBOL)* ('(' (operation (',' operation)*)? ')')?	;
-
-operation : member					#memberOp
-	| 'd' operation					#dice
-	| '-' operation					#negative
-	| operation '[' operation ']'	#index
-	| operation 'd' operation		#multDice
-	| operation '^' operation		#potence
-	| operation ('*'|'/') operation		#MulDiv
-	| operation ('+'|'-') operation		#AddSub
-	| operation ('!='|'='|'>='|'<='|'<'|'>') operation		#compare
-	| operation ('|'|'&') operation		#logic
-	| operation ':='<assoc=right> operation	#assign
-	| operation ('>>'|'>>') operation	#move
-	| new_obj							#newObj
-	| INT_NUMBER						#int
-	| FLOAT_NUMBER						#float
-	| BOOLEAN							#bool
-	| TEXT_STRING						#string
-	| sharp_identifier					#sharp
-	| room								#roomOp
-	| '(' operation ')'					#parens
-	| '{' operation (',' operation)* '}'	#list
+variable : SYMBOL					#finalVariable
+	| variable '.' SYMBOL			#intermediateVariable
 	;
+
+function : (variable '.')? SYMBOL '(' (operation (',' operation)*)? ')' ;
+
+operation : function										#functionOp
+	| variable												#variableOp
+	| '-' operation											#negative
+	| operation '[' operation ']'							#index
+	| D (INT_NUMBER | parens)								#dice
+	| operation D operation									#multDice
+	| operation '^' operation								#exponent
+	| operation op=('*'|'/') operation						#MulDiv
+	| operation op=('+'|'-') operation						#AddSub
+	| operation op=('!='|'='|'>='|'<='|'<'|'>') operation	#compare
+	| operation op=('|'|'&') operation						#logic
+	| variable ':='<assoc=right> operation					#assign
+	| operation op=('>>'|'>>') operation					#move
+	| new_obj												#newObj
+	| INT_NUMBER											#int
+	| FLOAT_NUMBER											#float
+	| BOOLEAN												#bool
+	| TEXT_STRING											#string
+	| sharp_identifier										#sharp
+	| room													#roomOp
+	| parens												#parensOp
+	| '{' operation (',' operation)* '}'					#list
+	;
+
+parens : '(' operation ')' ;
 
 new_obj : 'new' SYMBOL '(' operation (',' operation)* ')' ;
 
@@ -83,13 +78,34 @@ exp_user : username '->' operation ;
 
 username : '$' SYMBOL ;
 
-data_type : 'INT'
-	| 'FLOAT'
-	| 'STRING'
-	| 'BOOL'
+data_type : 'int'
+	| 'float'
+	| 'string'
 	;
+
+//Lexer rules
+
+D : 'd' ;
+SYMBOL : ('d'[a-z]|[a-c|e-z])[a-z0-9]* ;
+INT_NUMBER: [0-9]+;
+FLOAT_NUMBER : [0-9]+'.'[0-9]+ ;
+BOOLEAN : 'true' | 'false' ;
+TEXT_STRING : '"' .*? '"' ;
+WS : [ \t\r]+ -> skip ; // skip spaces, tabs, newlines
+COMMENT : '/*' .*? '*/' -> skip ; // .*? matches anything until the first */
+COMMENT2:  '//' (~'\n')* -> skip ;
 
 MUL : '*' ; // assigns token name to '*' used above in grammar
 DIV : '/' ;
 ADD : '+' ;
 SUB : '-' ;
+EQ: '=' ;
+NEQ: '!=' ;
+GREQ: '>=' ;
+LESEQ: '<=' ;
+GREAT: '>' ;
+LESS: '<' ;
+AND: '&' ;
+OR: '|' ;
+MOVE_RIGHT: '>>' ;
+MOVE_LEFT: '<<' ;
