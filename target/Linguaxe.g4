@@ -30,25 +30,26 @@ line : operation
 	| exp_user
 	;
 
-variable : SYMBOL					#finalVariable
+variable : SYMBOL					#rootVariable
 	| variable '.' SYMBOL			#intermediateVariable
 	;
 
 function : (variable '.')? SYMBOL '(' (operation (',' operation)*)? ')' ;
 
 operation : function										#functionOp
-	| variable												#variableOp
 	| '-' operation											#negative
-	| operation '[' operation ']'							#index
-	| D (INT_NUMBER | parens)								#dice
+	| D operation											#dice
 	| operation D operation									#multDice
 	| operation '^' operation								#exponent
 	| operation op=('*'|'/') operation						#MulDiv
 	| operation op=('+'|'-') operation						#AddSub
 	| operation op=('!='|'='|'>='|'<='|'<'|'>') operation	#compare
 	| operation op=('|'|'&') operation						#logic
-	| variable ':='<assoc=right> operation					#assign
+	| variable ':=' operation								#assign
+	| variable '[' operation ']' ':=' operation				#indexAssign
 	| operation op=('>>'|'>>') operation					#move
+	| variable												#variableOp
+	| operation '[' operation ']'							#index
 	| new_obj												#newObj
 	| INT_NUMBER											#int
 	| FLOAT_NUMBER											#float
@@ -62,7 +63,7 @@ operation : function										#functionOp
 
 parens : '(' operation ')' ;
 
-new_obj : 'new' SYMBOL '(' operation (',' operation)* ')' ;
+new_obj : 'new' SYMBOL '(' (operation (',' operation)*)? ')' ;
 
 sharp_identifier : '#' INT_NUMBER ;
 room : '@' room_path ;

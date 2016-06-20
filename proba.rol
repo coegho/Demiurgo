@@ -1,0 +1,2 @@
+a := new humano()
+a.saude := a.vida - a.ataque
