@@ -1,0 +1,3 @@
+a = new humano()
+a.vida
+a.defensa

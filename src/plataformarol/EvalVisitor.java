@@ -4,7 +4,9 @@ import linguaxe.LinguaxeBaseVisitor;
 import linguaxe.LinguaxeParser;
 import linguaxe.LinguaxeParser.AddSubContext;
 import linguaxe.LinguaxeParser.AssignContext;
+import linguaxe.LinguaxeParser.AttribContext;
 import linguaxe.LinguaxeParser.BoolContext;
+import linguaxe.LinguaxeParser.Class_defContext;
 import linguaxe.LinguaxeParser.CompareContext;
 import linguaxe.LinguaxeParser.DiceContext;
 import linguaxe.LinguaxeParser.ExponentContext;
@@ -15,6 +17,7 @@ import linguaxe.LinguaxeParser.IntermediateVariableContext;
 import linguaxe.LinguaxeParser.LineContext;
 import linguaxe.LinguaxeParser.ListContext;
 import linguaxe.LinguaxeParser.LogicContext;
+import linguaxe.LinguaxeParser.MethodContext;
 import linguaxe.LinguaxeParser.MoveContext;
 import linguaxe.LinguaxeParser.MulDivContext;
 import linguaxe.LinguaxeParser.MultDiceContext;
@@ -25,7 +28,6 @@ import linguaxe.LinguaxeParser.ParensContext;
 import linguaxe.LinguaxeParser.RootVariableContext;
 import linguaxe.LinguaxeParser.StringContext;
 import linguaxe.LinguaxeParser.VariableOpContext;
-import plataformarol.StoredSymbol;
 import universe.UserDefinedClass;
 import universe.WorldObject;
 
@@ -59,6 +61,7 @@ public class EvalVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	@Override
 	public IReturnValue visitLine(LineContext ctx) {
 		IReturnValue x = super.visitLine(ctx);
+		//TODO: println
 		System.out.println(x);
 		return x;
 	}
@@ -345,7 +348,7 @@ public class EvalVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 		String fieldName =  ctx.SYMBOL().toString();
 		if(value instanceof ObjectValue) {
 			WorldObject obj = ((ObjectValue)value).getObj();
-			return new ReferenceValue(new StoredSymbol(obj.getField(fieldName)));
+			return new ReferenceValue(obj.getField(fieldName));
 		}
 		else {
 			return null; //the variable is not an object
@@ -363,6 +366,7 @@ public class EvalVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 
 	/**
 	 * Creates a new object with the specified class, and returns it.
+	 * new_obj : 'new' SYMBOL '(' (operation (',' operation)*)? ')' ;
 	 */
 	@Override
 	public IReturnValue visitNew_obj(New_objContext ctx) {
@@ -371,4 +375,51 @@ public class EvalVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 		return new ObjectValue(new WorldObject(objClass, st.currentRoom));
 	}
 
+	/**
+	 * Defines a new class.
+	 * class_def : SYMBOL ( '(' SYMBOL ')' )? ('/n')* '{' ('/n')* attributes methods '}' ;
+	 */
+	@Override
+	public IReturnValue visitClass_def(Class_defContext ctx) {
+		String className = ctx.SYMBOL(0).getText();
+		//TODO: methods and inheritance
+		UserDefinedClass newClass = new UserDefinedClass(className);
+		getSymbolTable().setDefiningClass(newClass);
+		getSymbolTable().getCurrentWorld().addClass(className, newClass);
+		visit(ctx.attributes());
+		visit(ctx.methods());
+		getSymbolTable().setDefiningClass(null);
+		return null;
+	}
+
+	/**
+	 * Adds a new field to the class that is currently being defined.
+	 * attrib : data_type SYMBOL (ASSIGN operation)? ;
+	 */
+	@Override
+	public IReturnValue visitAttrib(AttribContext ctx) {
+		//TODO: data type
+		String fieldName = ctx.SYMBOL().getText();
+		IReturnValue defaultValue;
+		if(ctx.operation() != null) {
+			defaultValue = visit(ctx.operation());
+		}
+		else {
+			defaultValue = new IntegerValue(0); //TODO: default values for default values...
+		}
+		getSymbolTable().getDefiningClass().addField(fieldName, defaultValue);
+		return defaultValue;
+	}
+
+	/**
+	 * Defines a new method in the current class.
+	 * method : ( '(' params ')' ASSIGN )? SYMBOL '(' params ')' nl? '{' code? '}' ;
+	 */
+	@Override
+	public IReturnValue visitMethod(MethodContext ctx) {
+		String methodName = ctx.SYMBOL().getText();
+		return null;
+	}
+	
+	
 }

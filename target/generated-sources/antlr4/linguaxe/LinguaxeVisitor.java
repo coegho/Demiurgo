@@ -320,4 +320,10 @@ public interface LinguaxeVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitData_type(LinguaxeParser.Data_typeContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link LinguaxeParser#nl}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitNl(LinguaxeParser.NlContext ctx);
 }

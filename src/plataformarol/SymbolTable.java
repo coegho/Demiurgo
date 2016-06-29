@@ -17,6 +17,7 @@ public class SymbolTable {
 	protected Map<String, StoredSymbol> variables;
 	protected World currentWorld;
 	protected WorldRoom currentRoom;
+	protected UserDefinedClass definingClass;
 	
 	public StoredSymbol getVariable(String name) {
 		if(!variables.containsKey(name)) {
@@ -50,27 +51,17 @@ public class SymbolTable {
 		this.currentWorld = currentWorld;
 	}
 	
+	public UserDefinedClass getDefiningClass() {
+		return definingClass;
+	}
+
+	public void setDefiningClass(UserDefinedClass definingClass) {
+		this.definingClass = definingClass;
+	}
+
 	public SymbolTable() {
 		this.variables = new HashMap<>();
-		//TODO: example data
-		currentWorld = new World();
-		Map<String, IReturnValue> x = new HashMap<String, IReturnValue>();
-		x.put("vida", new IntegerValue(10));
-		x.put("ataque", new IntegerValue(2));
-		currentWorld.addClass("humano", new UserDefinedClass("humano", x));
 	}
 }
 
-class StoredSymbol {
-	protected IReturnValue value;
-	
-	public StoredSymbol(IReturnValue value) {
-		this.value = value;
-	}
-	public IReturnValue getValue() {
-		return value;
-	}
-	public void setValue(IReturnValue value) {
-		this.value = value;
-	}
-}
+

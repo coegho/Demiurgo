@@ -6,19 +6,19 @@ s : class_def	#classDef
 	| code		#sCode
 	;
 
-class_def : SYMBOL ( '<' SYMBOL )? ('/n')* '{' attributes methods '}' ;
+class_def : SYMBOL ( '(' SYMBOL ')' )? nl? '{' nl? attributes methods '}' ;
 
-attributes : (attrib ('\n')+)* ;
+attributes : (attrib nl)* ;
 
-attrib : data_type SYMBOL (':=' operation)? ;
+attrib : data_type SYMBOL (ASSIGN operation)? ;
 
-methods : (method '\n'*)+ ;
+methods : (method nl?)* ;
 
-method : ( '(' params ')' ':=' )? SYMBOL '(' params ')' ('\n')* '{' code? '}' ;
+method : ( '(' params ')' ASSIGN )? SYMBOL '(' params ')' nl? '{' nl? code? '}' ;
 
 params : data_type SYMBOL ( ',' data_type SYMBOL )* ;
 
-code : ('\n')* line aline* ('\n')* ;
+code : nl? line aline* nl? ;
 
 aline : '\n' line
 	| '\n'
@@ -41,13 +41,13 @@ operation : function										#functionOp
 	| D operation											#dice
 	| operation D operation									#multDice
 	| operation '^' operation								#exponent
-	| operation op=('*'|'/') operation						#MulDiv
-	| operation op=('+'|'-') operation						#AddSub
-	| operation op=('!='|'='|'>='|'<='|'<'|'>') operation	#compare
-	| operation op=('|'|'&') operation						#logic
-	| variable ':=' operation								#assign
-	| variable '[' operation ']' ':=' operation				#indexAssign
-	| operation op=('>>'|'>>') operation					#move
+	| operation op=(MUL|DIV) operation						#MulDiv
+	| operation op=(ADD|SUB) operation						#AddSub
+	| operation op=(NEQ|EQ|GREQ|LESEQ|LESS|GREAT) operation	#compare
+	| operation op=(OR|AND) operation						#logic
+	| variable ASSIGN operation								#assign
+	| variable '[' operation ']' ASSIGN operation				#indexAssign
+	| operation op=(MOVE_LEFT|MOVE_RIGHT) operation					#move
 	| variable												#variableOp
 	| operation '[' operation ']'							#index
 	| new_obj												#newObj
@@ -71,9 +71,9 @@ room : '@' room_path ;
 room_path : SYMBOL
 	| room_path '/' SYMBOL ;
 
-exp_if : 'if' '(' line ')' '/n'* '{' code '}' ( '/n'* 'else' '/n'* '{' code '}' )? ;
+exp_if : 'if' '(' line ')' nl? '{' code '}' ( nl? 'else' nl? '{' nl? code '}' )? ;
 
-exp_for : 'for' '(' SYMBOL ':' operation ')' '/n'* '{' code '}' ;
+exp_for : 'for' '(' SYMBOL ':' operation ')' nl? '{' nl? code '}' ;
 
 exp_user : username '->' operation ;
 
@@ -82,7 +82,10 @@ username : '$' SYMBOL ;
 data_type : 'int'
 	| 'float'
 	| 'string'
+	| SYMBOL
 	;
+
+nl : '\n'+;
 
 //Lexer rules
 
@@ -93,14 +96,14 @@ FLOAT_NUMBER : [0-9]+'.'[0-9]+ ;
 BOOLEAN : 'true' | 'false' ;
 TEXT_STRING : '"' .*? '"' ;
 WS : [ \t\r]+ -> skip ; // skip spaces, tabs, newlines
-COMMENT : '/*' .*? '*/' -> skip ; // .*? matches anything until the first */
-COMMENT2:  '//' (~'\n')* -> skip ;
+COMMENT : '/*' .*? '*/' -> skip ; // multiline comments
+COMMENT2:  '//' (~'\n')* -> skip ;	//one line comments
 
 MUL : '*' ; // assigns token name to '*' used above in grammar
 DIV : '/' ;
 ADD : '+' ;
 SUB : '-' ;
-EQ: '=' ;
+EQ: '==' ;
 NEQ: '!=' ;
 GREQ: '>=' ;
 LESEQ: '<=' ;
@@ -108,5 +111,6 @@ GREAT: '>' ;
 LESS: '<' ;
 AND: '&' ;
 OR: '|' ;
+ASSIGN: '=';
 MOVE_RIGHT: '>>' ;
 MOVE_LEFT: '<<' ;

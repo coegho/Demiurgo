@@ -3,12 +3,12 @@ package universe;
 import java.util.HashMap;
 import java.util.Map;
 
-import plataformarol.IReturnValue;
+import plataformarol.StoredSymbol;
 
 public class WorldObject {
 	protected UserDefinedClass ownClass;
 	protected WorldContainer location;
-	protected Map<String, IReturnValue> fields;
+	protected Map<String, StoredSymbol> fields;
 
 	public UserDefinedClass getUserClass() {
 		return ownClass;
@@ -26,7 +26,7 @@ public class WorldObject {
 		this.location = location;
 	}
 	
-	public IReturnValue getField(String fieldName) {
+	public StoredSymbol getField(String fieldName) {
 		return fields.get(fieldName);
 	}
 
@@ -35,7 +35,7 @@ public class WorldObject {
 		this.location = location;
 		this.fields = new HashMap<>();
 		for(String varName : ownClass.getDefaultVariables().keySet()) {
-			fields.put(varName, ownClass.getDefaultVariables().get(varName).cloneValue());
+			fields.put(varName, new StoredSymbol(ownClass.getDefaultVariables().get(varName).cloneValue()));
 		}
 	}
 }

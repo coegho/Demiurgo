@@ -1,7 +1,5 @@
 package plataformarol;
 
-import plataformarol.StoredSymbol;
-
 public class ReferenceValue implements IReturnValue {
 	protected StoredSymbol reference;
 
