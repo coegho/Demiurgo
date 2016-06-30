@@ -68,12 +68,6 @@ public interface LinguaxeVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitCode(LinguaxeParser.CodeContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link LinguaxeParser#aline}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitAline(LinguaxeParser.AlineContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link LinguaxeParser#line}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

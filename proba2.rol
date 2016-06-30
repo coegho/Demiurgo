@@ -1,3 +1,2 @@
-a = new humano()
-a.vida
-a.defensa
+a = new Humano()
+a.atacar()

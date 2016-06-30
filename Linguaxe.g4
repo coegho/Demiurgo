@@ -6,28 +6,24 @@ s : class_def	#classDef
 	| code		#sCode
 	;
 
-class_def : SYMBOL ( '(' SYMBOL ')' )? nl? '{' nl? attributes methods '}' ;
+class_def : SYMBOL ( INHERIT SYMBOL )? nl? '{' nl? attributes? methods? '}' ;
 
-attributes : (attrib nl)* ;
+attributes : (attrib nl)+ ;
 
 attrib : data_type SYMBOL (ASSIGN operation)? ;
 
-methods : (method nl?)* ;
+methods : (method nl?)+ ;
 
-method : ( '(' params ')' ASSIGN )? SYMBOL '(' params ')' nl? '{' nl? code? '}' ;
+method : ( data_type SYMBOL ASSIGN )? metname=SYMBOL '(' params? ')' nl? '{' code? '}' ;
 
 params : data_type SYMBOL ( ',' data_type SYMBOL )* ;
 
-code : nl? line aline* nl? ;
+code : nl? line (nl line)* nl? ;
 
-aline : '\n' line
-	| '\n'
-	;
-
-line : operation
-	| exp_if
+line : exp_if
 	| exp_for
 	| exp_user
+	| operation
 	;
 
 variable : SYMBOL					#rootVariable
@@ -58,7 +54,7 @@ operation : function										#functionOp
 	| sharp_identifier										#sharp
 	| room													#roomOp
 	| parens												#parensOp
-	| '{' operation (',' operation)* '}'					#list
+	| '{' (operation (',' operation)*)? '}'					#list
 	;
 
 parens : '(' operation ')' ;
@@ -71,9 +67,9 @@ room : '@' room_path ;
 room_path : SYMBOL
 	| room_path '/' SYMBOL ;
 
-exp_if : 'if' '(' line ')' nl? '{' code '}' ( nl? 'else' nl? '{' nl? code '}' )? ;
+exp_if : IF '(' operation ')' nl? '{' code '}' ( nl? ELSE nl? '{' code '}' )? ;
 
-exp_for : 'for' '(' SYMBOL ':' operation ')' nl? '{' nl? code '}' ;
+exp_for : FOR '(' SYMBOL ':' operation ')' nl? '{' code '}' ;
 
 exp_user : username '->' operation ;
 
@@ -89,11 +85,15 @@ nl : '\n'+;
 
 //Lexer rules
 
-D : 'd' ;
-SYMBOL : ('d'[a-z]|[a-c|e-z])[a-z0-9]* ;
+D : [dD] ;
+IF: [Ii][Ff] ;
+ELSE: [Ee][Ll][Ss][Ee] ;
+FOR: [Ff][Oo][Rr] ;
+
+SYMBOL : ([dD][a-zA-Z]|[a-cA-C|e-zE-Z])[a-zA-Z0-9]* ;
 INT_NUMBER: [0-9]+;
 FLOAT_NUMBER : [0-9]+'.'[0-9]+ ;
-BOOLEAN : 'true' | 'false' ;
+BOOLEAN : [Tt][Rr][Uu][Ee] | [Ff][Aa][Ll][Ss][Ee] ;
 TEXT_STRING : '"' .*? '"' ;
 WS : [ \t\r]+ -> skip ; // skip spaces, tabs, newlines
 COMMENT : '/*' .*? '*/' -> skip ; // multiline comments
@@ -114,3 +114,4 @@ OR: '|' ;
 ASSIGN: '=';
 MOVE_RIGHT: '>>' ;
 MOVE_LEFT: '<<' ;
+INHERIT: ':' ;

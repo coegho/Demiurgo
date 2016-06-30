@@ -9,8 +9,11 @@ import linguaxe.LinguaxeParser.BoolContext;
 import linguaxe.LinguaxeParser.Class_defContext;
 import linguaxe.LinguaxeParser.CompareContext;
 import linguaxe.LinguaxeParser.DiceContext;
+import linguaxe.LinguaxeParser.Exp_forContext;
+import linguaxe.LinguaxeParser.Exp_ifContext;
 import linguaxe.LinguaxeParser.ExponentContext;
 import linguaxe.LinguaxeParser.FloatContext;
+import linguaxe.LinguaxeParser.FunctionContext;
 import linguaxe.LinguaxeParser.IndexContext;
 import linguaxe.LinguaxeParser.IntContext;
 import linguaxe.LinguaxeParser.IntermediateVariableContext;
@@ -335,7 +338,7 @@ public class EvalVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	 */
 	@Override
 	public IReturnValue visitRootVariable(RootVariableContext ctx) {
-		return new ReferenceValue(getSymbolTable().getVariable(ctx.SYMBOL().getText()));
+		return new ReferenceValue(getSymbolTable().getVariable(ctx.SYMBOL().getText().toLowerCase()));
 	}
 
 	/**
@@ -345,7 +348,7 @@ public class EvalVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	public IReturnValue visitIntermediateVariable(IntermediateVariableContext ctx) {
 		ReferenceValue prev = (ReferenceValue)visit(ctx.variable());
 		IReturnValue value = prev.getReference().getValue();
-		String fieldName =  ctx.SYMBOL().toString();
+		String fieldName =  ctx.SYMBOL().getText().toLowerCase();
 		if(value instanceof ObjectValue) {
 			WorldObject obj = ((ObjectValue)value).getObj();
 			return new ReferenceValue(obj.getField(fieldName));
@@ -363,6 +366,30 @@ public class EvalVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 		ReferenceValue var = (ReferenceValue)visit(ctx.variable());
 		return var.getReference().getValue();
 	}
+	
+	
+	/**
+	 * Executes a function or method and returns the return value.
+	 * function : (variable '.')? SYMBOL '(' (operation (',' operation)*)? ')' ;
+	 */
+	@Override
+	public IReturnValue visitFunction(FunctionContext ctx) {
+		String methodName = ctx.SYMBOL().getText().toLowerCase();
+		if(ctx.variable() != null) {
+			ReferenceValue ref = (ReferenceValue)visit(ctx.variable());
+			if(ref.getReference().getValue() instanceof ObjectValue) {
+				ObjectValue obj = (ObjectValue)ref.getReference().getValue();
+				//TODO: scope
+				ClassMethod m = obj.getObj().getUserClass().getMethod(methodName);
+				visit(m.getNode());
+				//TODO: return value
+			}
+		}
+		else {
+			//TODO: non-class functions
+		}
+		return null;
+	}
 
 	/**
 	 * Creates a new object with the specified class, and returns it.
@@ -370,18 +397,64 @@ public class EvalVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	 */
 	@Override
 	public IReturnValue visitNew_obj(New_objContext ctx) {
-		UserDefinedClass objClass = st.getCurrentWorld().getClassFromName(ctx.SYMBOL().toString());
+		UserDefinedClass objClass = st.getCurrentWorld().getClassFromName(ctx.SYMBOL().getText().toLowerCase());
 		//TODO: constructor parameters
 		return new ObjectValue(new WorldObject(objClass, st.currentRoom));
+	}	
+	
+
+	/**
+	 * IF expression. It executes the code between brackets if the condition is met.
+	 * exp_if : IF '(' operation ')' nl? '{' code '}' ( nl? ELSE nl? '{' code '}' )? ;
+	 */
+	@Override
+	public IReturnValue visitExp_if(Exp_ifContext ctx) {
+		IReturnValue condition = visit(ctx.operation());
+		if(condition.isTrue()) {
+			visit(ctx.code(0));
+		}
+		else if(ctx.ELSE() != null) {
+			visit(ctx.code(1));
+		}
+		return null;
 	}
 
+	/**
+	 * FOR expression. It executes the code between brackets one time for element on the list.
+	 * exp_for : FOR '(' SYMBOL ':' operation ')' nl? '{' code '}' ;
+	 */
+	@Override
+	public IReturnValue visitExp_for(Exp_forContext ctx) {
+		String auxVar = ctx.SYMBOL().getText().toLowerCase();
+		IReturnValue origin = visit(ctx.operation());
+		if(origin instanceof ListValue) {
+			ListValue list = (ListValue) origin;
+			for(IReturnValue v : list.getValue()) {
+				//TODO: scope
+				getSymbolTable().setVariable(auxVar, v);
+				visit(ctx.code());
+			}
+		}
+		else if(origin instanceof StringValue) {
+			StringValue str = (StringValue) origin;
+			for(char c : str.getValue().toCharArray()) {
+				//TODO: scope
+				String cc = Character.toString(c);
+				getSymbolTable().setVariable(auxVar, new StringValue(cc));
+				visit(ctx.code());
+			}
+		}
+		//TODO: cannot modify origin variable
+		return null;
+	}
+	
 	/**
 	 * Defines a new class.
 	 * class_def : SYMBOL ( '(' SYMBOL ')' )? ('/n')* '{' ('/n')* attributes methods '}' ;
 	 */
 	@Override
 	public IReturnValue visitClass_def(Class_defContext ctx) {
-		String className = ctx.SYMBOL(0).getText();
+		String className = ctx.SYMBOL(0).getText().toLowerCase();
 		//TODO: methods and inheritance
 		UserDefinedClass newClass = new UserDefinedClass(className);
 		getSymbolTable().setDefiningClass(newClass);
@@ -399,7 +472,7 @@ public class EvalVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	@Override
 	public IReturnValue visitAttrib(AttribContext ctx) {
 		//TODO: data type
-		String fieldName = ctx.SYMBOL().getText();
+		String fieldName = ctx.SYMBOL().getText().toLowerCase();
 		IReturnValue defaultValue;
 		if(ctx.operation() != null) {
 			defaultValue = visit(ctx.operation());
@@ -413,11 +486,17 @@ public class EvalVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 
 	/**
 	 * Defines a new method in the current class.
-	 * method : ( '(' params ')' ASSIGN )? SYMBOL '(' params ')' nl? '{' code? '}' ;
+	 * method : ( data_type SYMBOL ASSIGN )? metname=SYMBOL '(' params? ')' nl? '{' code? '}' ;
 	 */
 	@Override
 	public IReturnValue visitMethod(MethodContext ctx) {
-		String methodName = ctx.SYMBOL().getText();
+		String methodName = ctx.metname.getText().toLowerCase();
+		if(ctx.ASSIGN() != null) {
+			//TODO: return value
+		}
+		//TODO: params
+		UserDefinedClass curClass = getSymbolTable().getDefiningClass();
+		curClass.addMethod(methodName, new ClassMethod(ctx.code()));
 		return null;
 	}
 	

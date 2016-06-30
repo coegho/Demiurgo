@@ -3,11 +3,13 @@ package universe;
 import java.util.HashMap;
 import java.util.Map;
 
+import plataformarol.ClassMethod;
 import plataformarol.IReturnValue;
 
 public class UserDefinedClass {
 	protected String className;
 	protected Map<String, IReturnValue> fields;
+	protected Map<String, ClassMethod> methods;
 	
 	public String getClassName() {
 		return className;
@@ -24,6 +26,7 @@ public class UserDefinedClass {
 	public UserDefinedClass(String className) {
 		this.className = className;
 		this.fields = new HashMap<>();
+		this.methods = new HashMap<>();
 	}
 	
 	public UserDefinedClass(String className, Map <String, IReturnValue> defaultVariables) {
@@ -37,5 +40,13 @@ public class UserDefinedClass {
 	
 	public IReturnValue getField(String fieldName) {
 		return fields.get(fieldName);
+	}
+	
+	public void addMethod(String methodName, ClassMethod method) {
+		methods.put(methodName, method);
+	}
+	
+	public ClassMethod getMethod(String methodName) {
+		return methods.get(methodName);
 	}
 }
