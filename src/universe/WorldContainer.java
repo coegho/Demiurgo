@@ -2,7 +2,7 @@ package universe;
 
 import java.util.Map;
 
-import plataformarol.IReturnValue;
+import values.IReturnValue;
 
 public class WorldContainer {
 	protected Map<String, IReturnValue> values;

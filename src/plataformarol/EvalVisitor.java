@@ -1,8 +1,12 @@
 package plataformarol;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import linguaxe.LinguaxeBaseVisitor;
 import linguaxe.LinguaxeParser;
 import linguaxe.LinguaxeParser.AddSubContext;
+import linguaxe.LinguaxeParser.ArgsContext;
 import linguaxe.LinguaxeParser.AssignContext;
 import linguaxe.LinguaxeParser.AttribContext;
 import linguaxe.LinguaxeParser.BoolContext;
@@ -31,8 +35,18 @@ import linguaxe.LinguaxeParser.ParensContext;
 import linguaxe.LinguaxeParser.RootVariableContext;
 import linguaxe.LinguaxeParser.StringContext;
 import linguaxe.LinguaxeParser.VariableOpContext;
+import universe.ClassMethod;
 import universe.UserDefinedClass;
+import universe.World;
 import universe.WorldObject;
+import universe.WorldRoom;
+import values.FloatValue;
+import values.IReturnValue;
+import values.IntegerValue;
+import values.ListValue;
+import values.ObjectValue;
+import values.ReferenceValue;
+import values.StringValue;
 
 /**
  * <p>
@@ -57,8 +71,8 @@ public class EvalVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 		this.st = st;
 	}
 	
-	public EvalVisitor() {
-		st = new SymbolTable();
+	public EvalVisitor(World world, WorldRoom room) {
+		st = new SymbolTable(world, room);
 	}
 
 	@Override
@@ -379,9 +393,23 @@ public class EvalVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 			ReferenceValue ref = (ReferenceValue)visit(ctx.variable());
 			if(ref.getReference().getValue() instanceof ObjectValue) {
 				ObjectValue obj = (ObjectValue)ref.getReference().getValue();
-				//TODO: scope
+
+				//arguments
+				//TODO: check arguments
+				List<IReturnValue> args = new ArrayList<>();
+				for(OperationContext x : ctx.operation()) {
+					args.add(visit(x));
+				}
+				
+				//SETTING SCOPE
 				ClassMethod m = obj.getObj().getUserClass().getMethod(methodName);
+				ObjectScope os = new ObjectScope(obj.getObj());
+				FunctionScope fs = new FunctionScope(m, args, os);
+				getSymbolTable().pushScope(fs);
+				
 				visit(m.getNode());
+				
+				getSymbolTable().popScope();
 				//TODO: return value
 			}
 		}
@@ -456,7 +484,8 @@ public class EvalVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	public IReturnValue visitClass_def(Class_defContext ctx) {
 		String className = ctx.SYMBOL(0).getText().toLowerCase();
 		//TODO: methods and inheritance
-		UserDefinedClass newClass = new UserDefinedClass(className);
+		UserDefinedClass newClass = new UserDefinedClass(className,
+				getSymbolTable().getCurrentWorld().getRootClass());
 		getSymbolTable().setDefiningClass(newClass);
 		getSymbolTable().getCurrentWorld().addClass(className, newClass);
 		visit(ctx.attributes());
@@ -486,7 +515,7 @@ public class EvalVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 
 	/**
 	 * Defines a new method in the current class.
-	 * method : ( data_type SYMBOL ASSIGN )? metname=SYMBOL '(' params? ')' nl? '{' code? '}' ;
+	 * method : ( data_type SYMBOL ASSIGN )? metname=SYMBOL '(' args? ')' nl? '{' code? '}' ;
 	 */
 	@Override
 	public IReturnValue visitMethod(MethodContext ctx) {
@@ -496,7 +525,27 @@ public class EvalVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 		}
 		//TODO: params
 		UserDefinedClass curClass = getSymbolTable().getDefiningClass();
-		curClass.addMethod(methodName, new ClassMethod(ctx.code()));
+		ClassMethod cm = new ClassMethod(ctx.code());
+		getSymbolTable().setDefiningMethod(cm);
+		
+		if(ctx.args() != null)
+			visit(ctx.args());
+		
+		curClass.addMethod(methodName, cm);
+		getSymbolTable().setDefiningMethod(null);
+		return null;
+	}
+
+	/**
+	 * Defines the arguments of the method or function.
+	 * args : data_type SYMBOL ( ',' data_type SYMBOL )* ;
+	 */
+	@Override
+	public IReturnValue visitArgs(ArgsContext ctx) {
+		//TODO: typed args
+		for(int i=0; i<ctx.SYMBOL().size(); i++) {
+			getSymbolTable().getDefiningMethod().addArgument(ctx.SYMBOL(i).getText().toLowerCase());
+		}
 		return null;
 	}
 	

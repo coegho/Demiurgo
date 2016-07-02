@@ -56,11 +56,11 @@ public interface LinguaxeVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitMethod(LinguaxeParser.MethodContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link LinguaxeParser#params}.
+	 * Visit a parse tree produced by {@link LinguaxeParser#args}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitParams(LinguaxeParser.ParamsContext ctx);
+	T visitArgs(LinguaxeParser.ArgsContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link LinguaxeParser#code}.
 	 * @param ctx the parse tree

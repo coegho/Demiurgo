@@ -1,4 +1,4 @@
-package plataformarol;
+package values;
 
 /**
  * This interface provides the methods required to perform operations with any

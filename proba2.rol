@@ -1,2 +1,5 @@
 a = new Humano()
-a.atacar()
+b = new humano()
+b.vida
+a.atacar(b)
+b.vida

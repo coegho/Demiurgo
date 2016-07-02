@@ -14,9 +14,9 @@ attrib : data_type SYMBOL (ASSIGN operation)? ;
 
 methods : (method nl?)+ ;
 
-method : ( data_type SYMBOL ASSIGN )? metname=SYMBOL '(' params? ')' nl? '{' code? '}' ;
+method : ( data_type SYMBOL ASSIGN )? metname=SYMBOL '(' args? ')' nl? '{' code? '}' ;
 
-params : data_type SYMBOL ( ',' data_type SYMBOL )* ;
+args : data_type SYMBOL ( ',' data_type SYMBOL )* ;
 
 code : nl? line (nl line)* nl? ;
 

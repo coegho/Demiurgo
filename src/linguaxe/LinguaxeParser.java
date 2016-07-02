@@ -25,13 +25,13 @@ public class LinguaxeParser extends Parser {
 		OR=42, ASSIGN=43, MOVE_RIGHT=44, MOVE_LEFT=45, INHERIT=46;
 	public static final int
 		RULE_s = 0, RULE_class_def = 1, RULE_attributes = 2, RULE_attrib = 3, 
-		RULE_methods = 4, RULE_method = 5, RULE_params = 6, RULE_code = 7, RULE_line = 8, 
+		RULE_methods = 4, RULE_method = 5, RULE_args = 6, RULE_code = 7, RULE_line = 8, 
 		RULE_variable = 9, RULE_function = 10, RULE_operation = 11, RULE_parens = 12, 
 		RULE_new_obj = 13, RULE_sharp_identifier = 14, RULE_room = 15, RULE_room_path = 16, 
 		RULE_exp_if = 17, RULE_exp_for = 18, RULE_exp_user = 19, RULE_username = 20, 
 		RULE_data_type = 21, RULE_nl = 22;
 	public static final String[] ruleNames = {
-		"s", "class_def", "attributes", "attrib", "methods", "method", "params", 
+		"s", "class_def", "attributes", "attrib", "methods", "method", "args", 
 		"code", "line", "variable", "function", "operation", "parens", "new_obj", 
 		"sharp_identifier", "room", "room_path", "exp_if", "exp_for", "exp_user", 
 		"username", "data_type", "nl"
@@ -469,8 +469,8 @@ public class LinguaxeParser extends Parser {
 			return getRuleContext(Data_typeContext.class,0);
 		}
 		public TerminalNode ASSIGN() { return getToken(LinguaxeParser.ASSIGN, 0); }
-		public ParamsContext params() {
-			return getRuleContext(ParamsContext.class,0);
+		public ArgsContext args() {
+			return getRuleContext(ArgsContext.class,0);
 		}
 		public NlContext nl() {
 			return getRuleContext(NlContext.class,0);
@@ -518,7 +518,7 @@ public class LinguaxeParser extends Parser {
 			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << T__14) | (1L << T__15) | (1L << T__16) | (1L << SYMBOL))) != 0)) {
 				{
 				setState(99);
-				params();
+				args();
 				}
 			}
 
@@ -559,7 +559,7 @@ public class LinguaxeParser extends Parser {
 		return _localctx;
 	}
 
-	public static class ParamsContext extends ParserRuleContext {
+	public static class ArgsContext extends ParserRuleContext {
 		public List<Data_typeContext> data_type() {
 			return getRuleContexts(Data_typeContext.class);
 		}
@@ -570,20 +570,20 @@ public class LinguaxeParser extends Parser {
 		public TerminalNode SYMBOL(int i) {
 			return getToken(LinguaxeParser.SYMBOL, i);
 		}
-		public ParamsContext(ParserRuleContext parent, int invokingState) {
+		public ArgsContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
-		@Override public int getRuleIndex() { return RULE_params; }
+		@Override public int getRuleIndex() { return RULE_args; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitParams(this);
+			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitArgs(this);
 			else return visitor.visitChildren(this);
 		}
 	}
 
-	public final ParamsContext params() throws RecognitionException {
-		ParamsContext _localctx = new ParamsContext(_ctx, getState());
-		enterRule(_localctx, 12, RULE_params);
+	public final ArgsContext args() throws RecognitionException {
+		ArgsContext _localctx = new ArgsContext(_ctx, getState());
+		enterRule(_localctx, 12, RULE_args);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);

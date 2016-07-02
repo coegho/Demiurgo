@@ -1,20 +1,22 @@
-package plataformarol;
+package values;
 
-public class ReferenceValue implements IReturnValue {
-	protected StoredSymbol reference;
+import universe.WorldObject;
 
-	public ReferenceValue(StoredSymbol reference) {
-		this.reference = reference;
+public class ObjectValue implements IReturnValue {
+	protected WorldObject obj;
+
+	public WorldObject getObj() {
+		return obj;
 	}
 
-	public StoredSymbol getReference() {
-		return reference;
+	public void setObj(WorldObject obj) {
+		this.obj = obj;
 	}
 
-	public void setReference(StoredSymbol reference) {
-		this.reference = reference;
+	public ObjectValue(WorldObject obj) {
+		this.obj = obj;
 	}
-
+	
 	@Override
 	public IReturnValue add(IReturnValue another) {
 		// TODO Auto-generated method stub

@@ -1,13 +1,18 @@
-package plataformarol;
+package universe;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.antlr.v4.runtime.tree.ParseTree;
 
 public class ClassMethod {
 	protected ParseTree node;
+	protected List<String> args;
 	protected String ReturnVariable;
 	
 	public ClassMethod(ParseTree node) {
 		this.node = node;
+		this.args = new ArrayList<>();
 	}
 
 	public ParseTree getNode() {
@@ -26,5 +31,14 @@ public class ClassMethod {
 		ReturnVariable = returnVariable;
 	}
 	
+	
+	public String getArgumentName(int index) {
+		return args.get(index);
+	}
+	
+	public void addArgument(String argName) {
+		//TODO typed variables
+		args.add(argName);
+	}
 	
 }

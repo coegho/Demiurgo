@@ -1,11 +1,9 @@
 humano {
-int vida = d10
+int vida = 10
 int atAque = 2
 int defensa
 
   atacar(humano outro) {
-    15
-    2
-    3
+    outro.vida = outro.vida - ataque
   }
 }

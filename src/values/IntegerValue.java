@@ -1,31 +1,32 @@
-package plataformarol;
+package values;
 
-public class FloatValue implements IReturnValue {
+import java.util.Random;
 
-	protected float value;
+public class IntegerValue implements IReturnValue {
+	protected int value;
 
-	public FloatValue(float value) {
-		this.value = value;
-	}
-
-	public float getValue() {
+	public int getValue() {
 		return value;
 	}
 
-	public void setValue(float value) {
+	public void setValue(int value) {
+		this.value = value;
+	}
+
+	public IntegerValue(int value) {
 		this.value = value;
 	}
 
 	@Override
 	public IReturnValue add(IReturnValue other) {
 		if (other instanceof IntegerValue) {
-			return new FloatValue(getValue() + ((IntegerValue) other).getValue());
+			return new IntegerValue(getValue() + ((IntegerValue) other).getValue());
 		}
 		if (other instanceof FloatValue) {
 			return new FloatValue((float) getValue() + ((FloatValue) other).getValue());
 		}
 		if (other instanceof StringValue) {
-			return new StringValue(Float.toString(getValue()) + ((StringValue) other).getValue());
+			return new StringValue(Integer.toString(getValue()) + ((StringValue) other).getValue());
 		}
 		if (other instanceof ListValue) {
 			return other.add(this);
@@ -36,7 +37,7 @@ public class FloatValue implements IReturnValue {
 	@Override
 	public IReturnValue sub(IReturnValue other) {
 		if (other instanceof IntegerValue || other instanceof FloatValue || other instanceof ListValue) {
-			return negative().add(other);
+			return add(other.negative());
 		}
 		if (other instanceof StringValue) {
 			// throw new Exception //TODO
@@ -47,7 +48,7 @@ public class FloatValue implements IReturnValue {
 	@Override
 	public IReturnValue mul(IReturnValue other) {
 		if (other instanceof IntegerValue) {
-			return new FloatValue(getValue() * ((IntegerValue) other).getValue());
+			return new IntegerValue(getValue() * ((IntegerValue) other).getValue());
 		}
 		if (other instanceof FloatValue) {
 			return new FloatValue((float) getValue() * ((FloatValue) other).getValue());
@@ -64,7 +65,7 @@ public class FloatValue implements IReturnValue {
 	@Override
 	public IReturnValue div(IReturnValue other) {
 		if (other instanceof IntegerValue) {
-			return new FloatValue(getValue() / ((IntegerValue) other).getValue());
+			return new IntegerValue(getValue() / ((IntegerValue) other).getValue());
 		}
 		if (other instanceof FloatValue) {
 			return new FloatValue((float) getValue() / ((FloatValue) other).getValue());
@@ -84,7 +85,7 @@ public class FloatValue implements IReturnValue {
 
 	@Override
 	public IReturnValue negative() {
-		return new FloatValue(-getValue());
+		return new IntegerValue(-getValue());
 	}
 
 	@Override
@@ -93,7 +94,7 @@ public class FloatValue implements IReturnValue {
 			return new IntegerValue((getValue() == ((IntegerValue) other).getValue()) ? 1 : 0);
 		}
 		if (other instanceof FloatValue) {
-			return new IntegerValue((getValue() == ((FloatValue) other).getValue()) ? 1 : 0);
+			return new IntegerValue(((float) getValue() == ((FloatValue) other).getValue()) ? 1 : 0);
 		}
 		if (other instanceof StringValue) {
 			// TODO: throw exception
@@ -127,7 +128,7 @@ public class FloatValue implements IReturnValue {
 			return new IntegerValue((getValue() >= ((IntegerValue) other).getValue()) ? 1 : 0);
 		}
 		if (other instanceof FloatValue) {
-			return new IntegerValue((getValue() >= ((FloatValue) other).getValue()) ? 1 : 0);
+			return new IntegerValue(((float) getValue() >= ((FloatValue) other).getValue()) ? 1 : 0);
 		}
 		if (other instanceof StringValue) {
 			// TODO: throw exception
@@ -144,7 +145,7 @@ public class FloatValue implements IReturnValue {
 			return new IntegerValue((getValue() <= ((IntegerValue) other).getValue()) ? 1 : 0);
 		}
 		if (other instanceof FloatValue) {
-			return new IntegerValue((getValue() <= ((FloatValue) other).getValue()) ? 1 : 0);
+			return new IntegerValue(((float) getValue() <= ((FloatValue) other).getValue()) ? 1 : 0);
 		}
 		if (other instanceof StringValue) {
 			// TODO: throw exception
@@ -161,7 +162,7 @@ public class FloatValue implements IReturnValue {
 			return new IntegerValue((getValue() > ((IntegerValue) other).getValue()) ? 1 : 0);
 		}
 		if (other instanceof FloatValue) {
-			return new IntegerValue((getValue() > ((FloatValue) other).getValue()) ? 1 : 0);
+			return new IntegerValue(((float) getValue() > ((FloatValue) other).getValue()) ? 1 : 0);
 		}
 		if (other instanceof StringValue) {
 			// TODO: throw exception
@@ -178,7 +179,7 @@ public class FloatValue implements IReturnValue {
 			return new IntegerValue((getValue() < ((IntegerValue) other).getValue()) ? 1 : 0);
 		}
 		if (other instanceof FloatValue) {
-			return new IntegerValue((getValue() < ((FloatValue) other).getValue()) ? 1 : 0);
+			return new IntegerValue(((float) getValue() < ((FloatValue) other).getValue()) ? 1 : 0);
 		}
 		if (other instanceof StringValue) {
 			// TODO: throw exception
@@ -210,23 +211,41 @@ public class FloatValue implements IReturnValue {
 		}
 		return null;
 	}
-
+	
 	@Override
 	public IReturnValue dice() {
-		// TODO: exception
-		return null;
+		return new IntegerValue((new Random().nextInt(getValue()))+1); //TODO: Optimize random
 	}
 
 	@Override
-	public IReturnValue multDice(IReturnValue another) {
-		// TODO: exception
+	public IReturnValue multDice(IReturnValue other) {
+		ListValue lv = new ListValue();
+		Random r = new Random();	//TODO: Optimize random
+		
+		if (other instanceof FloatValue || other instanceof StringValue) {
+			//TODO: exception
+		}
+
+		if (other instanceof IntegerValue) {
+			for(int i=0; i<getValue(); i++) {
+				lv.getValue().add(new IntegerValue((r.nextInt(((IntegerValue)other).getValue()))+1));
+			}
+			return lv;
+		}
+		if (other instanceof ListValue) {
+			for(IReturnValue x : ((ListValue)other).getValue()) {
+				lv.getValue().add(multDice(x));
+			}
+			return lv;
+		}
+		
 		return null;
 	}
 	
 	@Override
 	public IReturnValue exponent(IReturnValue other) {
 		if (other instanceof IntegerValue) {
-			return new FloatValue((float)Math.pow(getValue(), ((IntegerValue) other).getValue()));
+			return new IntegerValue((int)Math.pow(getValue(), ((IntegerValue) other).getValue()));
 		}
 		if (other instanceof FloatValue) {
 			return new FloatValue((float)Math.pow(getValue(), ((FloatValue) other).getValue()));
@@ -243,7 +262,7 @@ public class FloatValue implements IReturnValue {
 		}
 		return null;
 	}
-
+	
 	@Override
 	public IReturnValue getFromIndex(IReturnValue another) {
 		// TODO Exception
@@ -262,11 +281,11 @@ public class FloatValue implements IReturnValue {
 
 	@Override
 	public IReturnValue cloneValue() {
-		return new FloatValue(this.getValue());
+		return new IntegerValue(this.getValue());
 	}
-	
+
 	@Override
 	public String toString() {
-		return "{FLOAT=" + getValue() + "}";
+		return "{INT=" + getValue() + "}";
 	}
 }

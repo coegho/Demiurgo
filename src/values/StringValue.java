@@ -1,4 +1,4 @@
-package plataformarol;
+package values;
 
 public class StringValue implements IReturnValue {
 protected String value;

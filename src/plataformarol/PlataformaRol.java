@@ -11,12 +11,15 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import linguaxe.LinguaxeLexer;
 import linguaxe.LinguaxeParser;
 import universe.World;
+import universe.WorldRoom;
 
 public class PlataformaRol {
 
 	public static void main(String[] args) {
 		try {
+			//TODO: example data
 			World currentWorld = new World();
+			WorldRoom currentRoom = new WorldRoom("estancia_de_probas");
 
 			if (args.length > 0) {
 				for (String arg : args) {
@@ -26,8 +29,7 @@ public class PlataformaRol {
 					CommonTokenStream tokens = new CommonTokenStream(lexer);
 					LinguaxeParser parser = new LinguaxeParser(tokens);
 					ParseTree tree = parser.s(); // parse; start at s
-					EvalVisitor eval = new EvalVisitor();
-					eval.getSymbolTable().setCurrentWorld(currentWorld);
+					EvalVisitor eval = new EvalVisitor(currentWorld, currentRoom);
 					eval.visit(tree);
 				}
 			} else {
@@ -37,8 +39,7 @@ public class PlataformaRol {
 				CommonTokenStream tokens = new CommonTokenStream(lexer);
 				LinguaxeParser parser = new LinguaxeParser(tokens);
 				ParseTree tree = parser.s(); // parse; start at s
-				EvalVisitor eval = new EvalVisitor();
-				eval.getSymbolTable().setCurrentWorld(currentWorld);
+				EvalVisitor eval = new EvalVisitor(currentWorld, currentRoom);
 				eval.visit(tree);
 			}
 
