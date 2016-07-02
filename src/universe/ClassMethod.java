@@ -7,8 +7,8 @@ import org.antlr.v4.runtime.tree.ParseTree;
 
 public class ClassMethod {
 	protected ParseTree node;
-	protected List<String> args;
-	protected String ReturnVariable;
+	protected List<String> args; //TODO: types
+	protected String ReturnVariable; //TODO: types
 	
 	public ClassMethod(ParseTree node) {
 		this.node = node;

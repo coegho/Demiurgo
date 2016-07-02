@@ -1,6 +1,7 @@
 package universe;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -12,9 +13,20 @@ import java.util.Map;
  */
 public class World {
 	protected Map<String, UserDefinedClass> classes;
-	protected Map<Integer, WorldObject> objects;
-	protected Map<String, WorldRoom> rooms;
+	protected Map<Long, WorldObject> objects;
+	protected RoomGroup rooms;
 	protected UserDefinedClass rootClass;
+	protected long currentId;
+	
+	
+	public World() {
+		currentId = 0;
+		classes = new HashMap<>();
+		objects = new HashMap<>();
+		rooms = new RoomGroup("", null);
+		rootClass = new RootObjectClass();
+		classes.put("object", rootClass);
+	}
 	
 	public UserDefinedClass getClassFromName(String className) {
 		return classes.get(className);
@@ -24,13 +36,6 @@ public class World {
 		classes.put(className, newClass);
 	}
 	
-	public World() {
-		classes = new HashMap<>();
-		objects = new HashMap<>();
-		rooms = new HashMap<>();
-		rootClass = new RootObjectClass();
-		classes.put("object", rootClass);
-	}
 	
 	public UserDefinedClass getRootClass() {
 		return rootClass;
@@ -38,5 +43,91 @@ public class World {
 	
 	public void setRootClass(UserDefinedClass rootClass) {
 		this.rootClass = rootClass;
+	}
+	
+	public void addObject(WorldObject obj) {
+		obj.setId(currentId);
+		currentId++;
+		objects.put(obj.getId(), obj);
+	}
+	
+	public void removeObject(WorldObject obj) {
+		objects.remove(obj.id);
+	}
+	
+	public WorldObject getObject(long id) {
+		return objects.get(id);
+	}
+	
+	/**
+	 * Creates a new room from a relative path.
+	 * @param roomRelativeName The relative path to the room.
+	 * @param currentRoom The absolute path of the current room (ending by '/').
+	 * @return
+	 */
+	public WorldRoom newRoom(String roomRelativeName, String currentRoom) {
+		RoomGroup rg = rooms;
+		String loc = currentRoom  + roomRelativeName;
+		for(String s : loc.split("/")) {
+			if(rg.getChildren().containsKey(s)) {
+				rg = rg.getChildren().get(s);
+			}
+			else {
+				RoomGroup ng = new RoomGroup(s, rg);
+				rg.getChildren().put(s, ng);
+				rg = ng;
+			}
+		}
+		WorldRoom room = new WorldRoom(loc, this);
+		rg.setOwnRoom(room);
+		
+		return room;
+	}
+	
+	/**
+	 * Creates a new room from a absolute path.
+	 * @param roomLongName The complete path to the room.
+	 * @return
+	 */
+	public WorldRoom newRoom(String roomLongName) {
+		return newRoom(roomLongName, "");
+	}
+	
+	/**
+	 * Returns a room from a relative path.
+	 * @param roomRelativeName The relative path to the room.
+	 * @param currentRoom The absolute path of the current room (ending by '/').
+	 * @return
+	 */
+	public WorldRoom getRoom(String roomRelativeName, String currentRoom) {
+		RoomGroup rg = rooms;
+		String loc = currentRoom  + roomRelativeName;
+		for(String s : loc.split("/")) {
+			if(rg.getChildren().containsKey(s)) {
+				rg = rg.getChildren().get(s);
+			}
+			else {
+				return null;
+			}
+		}
+		
+		return rg.getOwnRoom();
+	}
+	
+	/**
+	 * Returns a room from a absolute path.
+	 * @param roomLongName The complete path to the room.
+	 * @return
+	 */
+	public WorldRoom getRoom(String roomLongName) {
+		return getRoom(roomLongName, "");
+	}
+	
+	/**
+	 * Debug method. It returns all rooms in the world.
+	 * @return
+	 */
+	public List<WorldRoom> getAllRooms() {
+		return rooms.getAllRooms();
 	}
 }

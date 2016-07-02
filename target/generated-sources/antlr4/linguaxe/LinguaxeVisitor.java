@@ -32,17 +32,17 @@ public interface LinguaxeVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitClass_def(LinguaxeParser.Class_defContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link LinguaxeParser#attributes}.
+	 * Visit a parse tree produced by {@link LinguaxeParser#fields}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitAttributes(LinguaxeParser.AttributesContext ctx);
+	T visitFields(LinguaxeParser.FieldsContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link LinguaxeParser#attrib}.
+	 * Visit a parse tree produced by {@link LinguaxeParser#var_decl}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitAttrib(LinguaxeParser.AttribContext ctx);
+	T visitVar_decl(LinguaxeParser.Var_declContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link LinguaxeParser#methods}.
 	 * @param ctx the parse tree
@@ -241,6 +241,13 @@ public interface LinguaxeVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitLogic(LinguaxeParser.LogicContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code varDecl}
+	 * labeled alternative in {@link LinguaxeParser#operation}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitVarDecl(LinguaxeParser.VarDeclContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code assign}
 	 * labeled alternative in {@link LinguaxeParser#operation}.
 	 * @param ctx the parse tree
@@ -279,11 +286,26 @@ public interface LinguaxeVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitRoom(LinguaxeParser.RoomContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link LinguaxeParser#room_path}.
+	 * Visit a parse tree produced by the {@code rootRoom}
+	 * labeled alternative in {@link LinguaxeParser#room_path}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitRoom_path(LinguaxeParser.Room_pathContext ctx);
+	T visitRootRoom(LinguaxeParser.RootRoomContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code leafRoom}
+	 * labeled alternative in {@link LinguaxeParser#room_path}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitLeafRoom(LinguaxeParser.LeafRoomContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code relativeRoom}
+	 * labeled alternative in {@link LinguaxeParser#room_path}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitRelativeRoom(LinguaxeParser.RelativeRoomContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link LinguaxeParser#exp_if}.
 	 * @param ctx the parse tree

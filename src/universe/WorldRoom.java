@@ -10,7 +10,8 @@ public class WorldRoom extends WorldContainer {
 	protected String longName;
 	protected Map<String, StoredSymbol> variables;
 	
-	public WorldRoom(String longName) {
+	public WorldRoom(String longName, World world) {
+		super(world);
 		variables = new HashMap<>();
 		this.longName = longName;
 	}
@@ -28,11 +29,8 @@ public class WorldRoom extends WorldContainer {
 	}
 	
 	
-	//TODO: making new variables dynamically... it lacks type definition
+	//TODO: variables lack type definition
 	public StoredSymbol getVariable(String name) {
-		if(!variables.containsKey(name)) {
-			variables.put(name, new StoredSymbol(null));
-		}
 		return variables.get(name);
 	}
 	

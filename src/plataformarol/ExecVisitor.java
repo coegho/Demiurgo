@@ -8,7 +8,6 @@ import linguaxe.LinguaxeParser;
 import linguaxe.LinguaxeParser.AddSubContext;
 import linguaxe.LinguaxeParser.ArgsContext;
 import linguaxe.LinguaxeParser.AssignContext;
-import linguaxe.LinguaxeParser.AttribContext;
 import linguaxe.LinguaxeParser.BoolContext;
 import linguaxe.LinguaxeParser.Class_defContext;
 import linguaxe.LinguaxeParser.CompareContext;
@@ -32,8 +31,12 @@ import linguaxe.LinguaxeParser.NegativeContext;
 import linguaxe.LinguaxeParser.New_objContext;
 import linguaxe.LinguaxeParser.OperationContext;
 import linguaxe.LinguaxeParser.ParensContext;
+import linguaxe.LinguaxeParser.RoomContext;
+import linguaxe.LinguaxeParser.RoomOpContext;
 import linguaxe.LinguaxeParser.RootVariableContext;
+import linguaxe.LinguaxeParser.Sharp_identifierContext;
 import linguaxe.LinguaxeParser.StringContext;
+import linguaxe.LinguaxeParser.Var_declContext;
 import linguaxe.LinguaxeParser.VariableOpContext;
 import universe.ClassMethod;
 import universe.UserDefinedClass;
@@ -44,6 +47,7 @@ import values.FloatValue;
 import values.IReturnValue;
 import values.IntegerValue;
 import values.ListValue;
+import values.LocationValue;
 import values.ObjectValue;
 import values.ReferenceValue;
 import values.StringValue;
@@ -59,7 +63,7 @@ import values.StringValue;
  * @version %I%, %G%
  * @since 1.0
  */
-public class EvalVisitor extends LinguaxeBaseVisitor<IReturnValue> {
+public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 
 	protected SymbolTable st;
 
@@ -71,7 +75,7 @@ public class EvalVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 		this.st = st;
 	}
 	
-	public EvalVisitor(World world, WorldRoom room) {
+	public ExecVisitor(World world, WorldRoom room) {
 		st = new SymbolTable(world, room);
 	}
 
@@ -79,7 +83,7 @@ public class EvalVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	public IReturnValue visitLine(LineContext ctx) {
 		IReturnValue x = super.visitLine(ctx);
 		//TODO: println
-		System.out.println(x);
+		if(x != null) System.out.println(x);
 		return x;
 	}
 
@@ -337,12 +341,17 @@ public class EvalVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	/**
 	 * <p>
 	 * Moves a game object between rooms.
+	 *operation MOVE operation
 	 * </p>
 	 */
 	@Override
 	public IReturnValue visitMove(MoveContext ctx) {
-		// TODO Auto-generated method stub
-		return super.visitMove(ctx);
+		IReturnValue mobile = visit(ctx.operation(0));
+		IReturnValue room = visit(ctx.operation(1));
+		if(mobile instanceof ObjectValue && room instanceof LocationValue) {
+			((ObjectValue)mobile).getObj().moveTo(((LocationValue)room).getLocation());
+		}
+		return null;
 	}
 
 	/**
@@ -438,12 +447,21 @@ public class EvalVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	@Override
 	public IReturnValue visitExp_if(Exp_ifContext ctx) {
 		IReturnValue condition = visit(ctx.operation());
+		
+		//SCOPE
+		Scope prevScope = getSymbolTable().getScope();
+		LoopScope newScope = new LoopScope(prevScope);
+		getSymbolTable().pushScope(newScope);
+		
 		if(condition.isTrue()) {
+			
 			visit(ctx.code(0));
 		}
 		else if(ctx.ELSE() != null) {
 			visit(ctx.code(1));
 		}
+		
+		getSymbolTable().popScope();
 		return null;
 	}
 
@@ -455,40 +473,49 @@ public class EvalVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	public IReturnValue visitExp_for(Exp_forContext ctx) {
 		String auxVar = ctx.SYMBOL().getText().toLowerCase();
 		IReturnValue origin = visit(ctx.operation());
-		if(origin instanceof ListValue) {
-			ListValue list = (ListValue) origin;
-			for(IReturnValue v : list.getValue()) {
-				//TODO: scope
-				getSymbolTable().setVariable(auxVar, v);
-				visit(ctx.code());
-			}
+		
+		//SCOPE
+		Scope prevScope = getSymbolTable().getScope();
+		ForScope newScope;
+		if(origin instanceof ListValue)
+			newScope = new ForScope(auxVar, (ListValue)origin, prevScope);
+		else if(origin instanceof StringValue)
+			newScope = new ForScope(auxVar, (StringValue)origin, prevScope);
+		else
+			return null; //cannot walk other values
+		
+		getSymbolTable().pushScope(newScope);
+		
+		for(IReturnValue v : newScope.getOriginValues()) {
+			getSymbolTable().setVariable(auxVar, v);
+			visit(ctx.code());
 		}
-		else if(origin instanceof StringValue) {
-			StringValue str = (StringValue) origin;
-			for(char c : str.getValue().toCharArray()) {
-				//TODO: scope
-				String cc = Character.toString(c);
-				getSymbolTable().setVariable(auxVar, new StringValue(cc));
-				visit(ctx.code());
-			}
-		}
+		
+		getSymbolTable().popScope();
 		//TODO: cannot modify origin variable
 		return null;
 	}
 	
 	/**
 	 * Defines a new class.
-	 * class_def : SYMBOL ( '(' SYMBOL ')' )? ('/n')* '{' ('/n')* attributes methods '}' ;
+	 * class_def : SYMBOL ( '(' SYMBOL ')' )? ('/n')* '{' ('/n')* fields? methods? '}' ;
 	 */
 	@Override
 	public IReturnValue visitClass_def(Class_defContext ctx) {
 		String className = ctx.SYMBOL(0).getText().toLowerCase();
-		//TODO: methods and inheritance
-		UserDefinedClass newClass = new UserDefinedClass(className,
-				getSymbolTable().getCurrentWorld().getRootClass());
+		UserDefinedClass newClass;
+		if(ctx.SYMBOL(1)!=null) { //inherit from another class
+			String parentName = ctx.SYMBOL(1).getText().toLowerCase();
+			newClass = new UserDefinedClass(className,
+					getSymbolTable().getCurrentWorld().getClassFromName(parentName));
+		}
+		else { //inherit from "Object" class
+			newClass = new UserDefinedClass(className,
+					getSymbolTable().getCurrentWorld().getRootClass());
+		}
 		getSymbolTable().setDefiningClass(newClass);
 		getSymbolTable().getCurrentWorld().addClass(className, newClass);
-		visit(ctx.attributes());
+		visit(ctx.fields());
 		visit(ctx.methods());
 		getSymbolTable().setDefiningClass(null);
 		return null;
@@ -496,21 +523,30 @@ public class EvalVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 
 	/**
 	 * Adds a new field to the class that is currently being defined.
-	 * attrib : data_type SYMBOL (ASSIGN operation)? ;
+	 * var_decl : data_type SYMBOL (ASSIGN operation)? ;
 	 */
 	@Override
-	public IReturnValue visitAttrib(AttribContext ctx) {
+	public IReturnValue visitVar_decl(Var_declContext ctx) {
 		//TODO: data type
-		String fieldName = ctx.SYMBOL().getText().toLowerCase();
-		IReturnValue defaultValue;
+		String varName = ctx.SYMBOL().getText().toLowerCase();
+		IReturnValue value;
 		if(ctx.operation() != null) {
-			defaultValue = visit(ctx.operation());
+			value = visit(ctx.operation());
 		}
 		else {
-			defaultValue = new IntegerValue(0); //TODO: default values for default values...
+			value = new IntegerValue(0); //TODO: default values...
 		}
-		getSymbolTable().getDefiningClass().addField(fieldName, defaultValue);
-		return defaultValue;
+		
+		//TODO: Class Scope
+		if(getSymbolTable().getDefiningClass() != null) {
+			//defining class fields
+			getSymbolTable().getDefiningClass().addField(varName, value);
+		}
+		else {
+			//declaring a normal variable
+			getSymbolTable().setVariable(varName, value);
+		}
+		return null;
 	}
 
 	/**
@@ -520,12 +556,17 @@ public class EvalVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	@Override
 	public IReturnValue visitMethod(MethodContext ctx) {
 		String methodName = ctx.metname.getText().toLowerCase();
-		if(ctx.ASSIGN() != null) {
-			//TODO: return value
-		}
-		//TODO: params
+		
 		UserDefinedClass curClass = getSymbolTable().getDefiningClass();
 		ClassMethod cm = new ClassMethod(ctx.code());
+		
+		//Return value
+		if(ctx.ASSIGN() != null) {
+			String returnName = ctx.SYMBOL(0).getText().toLowerCase();
+			cm.setReturnVariable(returnName);
+			
+		}
+		
 		getSymbolTable().setDefiningMethod(cm);
 		
 		if(ctx.args() != null)
@@ -548,6 +589,37 @@ public class EvalVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 		}
 		return null;
 	}
-	
-	
+
+	/**
+	 * Identifies an object by its ID.
+	 * sharp_identifier : '#' INT_NUMBER ;
+	 */
+	@Override
+	public IReturnValue visitSharp_identifier(Sharp_identifierContext ctx) {
+		long id = Long.valueOf(ctx.INT_NUMBER().getText());
+		return new ObjectValue(getSymbolTable().getCurrentWorld().getObject(id));
+	}
+
+
+	/**
+	 * Returns a room by its path.
+	 * room : '@' room_path ;
+	 */
+	@Override
+	public IReturnValue visitRoom(RoomContext ctx) {
+		String path = ctx.room_path().getText();
+		WorldRoom room;
+		if(path.startsWith("/")) { //absolute path
+			room = getSymbolTable().getCurrentWorld().getRoom(path);
+		}
+		else { //relative path
+			String curRoom = getSymbolTable().getCurrentRoom().getLongName();
+			String curPath = curRoom.substring(0, curRoom.lastIndexOf('/')+1);
+			room = getSymbolTable().getCurrentWorld().getRoom(path, curPath);
+		}
+		if(room != null) {
+			return new LocationValue(room);
+		}
+		return null;
+	}	
 }

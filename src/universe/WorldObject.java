@@ -7,6 +7,7 @@ import plataformarol.StoredSymbol;
 import values.IReturnValue;
 
 public class WorldObject {
+	protected long id;
 	protected UserDefinedClass ownClass;
 	protected WorldContainer location;
 	protected Map<String, StoredSymbol> fields;
@@ -18,6 +19,16 @@ public class WorldObject {
 		for(String varName : ownClass.getFields().keySet()) {
 			fields.put(varName, new StoredSymbol(ownClass.getFields().get(varName).cloneValue()));
 		}
+		location.addObject(this);
+		location.getWorld().addObject(this);
+	}
+	
+	public long getId() {
+		return id;
+	}
+	
+	public void setId(long id) {
+		this.id = id;
 	}
 	
 	public UserDefinedClass getUserClass() {
@@ -32,8 +43,10 @@ public class WorldObject {
 		return location;
 	}
 
-	public void setLocation(WorldContainer location) {
+	public void moveTo(WorldContainer location) {
+		this.location.removeObject(this);
 		this.location = location;
+		location.addObject(this);
 	}
 	
 	public StoredSymbol getField(String fieldName) {

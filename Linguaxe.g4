@@ -6,11 +6,11 @@ s : class_def	#classDef
 	| code		#sCode
 	;
 
-class_def : SYMBOL ( INHERIT SYMBOL )? nl? '{' nl? attributes? methods? '}' ;
+class_def : SYMBOL ( INHERIT SYMBOL )? nl? '{' nl? fields? methods? '}' ;
 
-attributes : (attrib nl)+ ;
+fields : (var_decl nl)+ ;
 
-attrib : data_type SYMBOL (ASSIGN operation)? ;
+var_decl : data_type SYMBOL (ASSIGN operation)? ;
 
 methods : (method nl?)+ ;
 
@@ -42,8 +42,8 @@ operation : function										#functionOp
 	| operation op=(NEQ|EQ|GREQ|LESEQ|LESS|GREAT) operation	#compare
 	| operation op=(OR|AND) operation						#logic
 	| variable ASSIGN operation								#assign
-	| variable '[' operation ']' ASSIGN operation				#indexAssign
-	| operation op=(MOVE_LEFT|MOVE_RIGHT) operation					#move
+	| variable '[' operation ']' ASSIGN operation			#indexAssign
+	| operation MOVE operation								#move
 	| variable												#variableOp
 	| operation '[' operation ']'							#index
 	| new_obj												#newObj
@@ -55,6 +55,7 @@ operation : function										#functionOp
 	| room													#roomOp
 	| parens												#parensOp
 	| '{' (operation (',' operation)*)? '}'					#list
+	| var_decl												#varDecl
 	;
 
 parens : '(' operation ')' ;
@@ -62,10 +63,13 @@ parens : '(' operation ')' ;
 new_obj : 'new' SYMBOL '(' (operation (',' operation)*)? ')' ;
 
 sharp_identifier : '#' INT_NUMBER ;
-room : '@' room_path ;
 
-room_path : SYMBOL
-	| room_path '/' SYMBOL ;
+room : ROOM room_path ;
+
+room_path : SYMBOL											#relativeRoom
+	|														#rootRoom
+	| room_path '/' SYMBOL									#leafRoom
+	;
 
 exp_if : IF '(' operation ')' nl? '{' code '}' ( nl? ELSE nl? '{' code '}' )? ;
 
@@ -90,7 +94,7 @@ IF: [Ii][Ff] ;
 ELSE: [Ee][Ll][Ss][Ee] ;
 FOR: [Ff][Oo][Rr] ;
 
-SYMBOL : ([dD][a-zA-Z]|[a-cA-C|e-zE-Z])[a-zA-Z0-9]* ;
+SYMBOL : ([dD][a-zA-Z_]|[a-cA-Ce-zE-Z_])[a-zA-Z0-9_]* ;
 INT_NUMBER: [0-9]+;
 FLOAT_NUMBER : [0-9]+'.'[0-9]+ ;
 BOOLEAN : [Tt][Rr][Uu][Ee] | [Ff][Aa][Ll][Ss][Ee] ;
@@ -112,6 +116,6 @@ LESS: '<' ;
 AND: '&' ;
 OR: '|' ;
 ASSIGN: '=';
-MOVE_RIGHT: '>>' ;
-MOVE_LEFT: '<<' ;
+MOVE: '>>' ;
 INHERIT: ':' ;
+ROOM: '@' ;

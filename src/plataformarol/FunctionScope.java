@@ -6,7 +6,15 @@ import java.util.Map;
 
 import universe.ClassMethod;
 import values.IReturnValue;
+import values.IntegerValue;
 
+/**
+ * 
+ * @author Martín Coego Pérez
+ * @version %I%, %G%
+ * @since 1.0
+ *
+ */
 public class FunctionScope extends Scope {
 	protected ClassMethod method;
 	protected ObjectScope parent;
@@ -20,6 +28,8 @@ public class FunctionScope extends Scope {
 		for(int i = 0; i<args.size(); i++) {
 			this.variables.put(method.getArgumentName(i), new StoredSymbol(args.get(i)));
 		}
+		//return value, TODO: default values
+		this.variables.put(method.getReturnVariable(), new StoredSymbol(new IntegerValue(0)));
 	}
 	
 	@Override

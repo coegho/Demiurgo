@@ -1,5 +1,4 @@
-a = new Humano()
-b = new humano()
-b.vida
-a.atacar(b)
-b.vida
+humano a = new Humano()
+humano b = new humano()
+int est = @estancia2
+a >> est

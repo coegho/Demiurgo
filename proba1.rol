@@ -1,9 +1,10 @@
 humano {
-int vida = 10
+int vida = d10
 int atAque = 2
 int defensa
 
-  atacar(humano outro) {
+  int dano = atacar(humano outro) {
     outro.vida = outro.vida - ataque
+    dano = ataque
   }
 }

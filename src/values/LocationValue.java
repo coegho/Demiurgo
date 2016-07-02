@@ -1,22 +1,18 @@
 package values;
 
-import universe.WorldObject;
+import universe.WorldContainer;
 
-public class ObjectValue implements IReturnValue {
-	protected WorldObject obj;
-
-	public WorldObject getObj() {
-		return obj;
-	}
-
-	public void setObj(WorldObject obj) {
-		this.obj = obj;
-	}
-
-	public ObjectValue(WorldObject obj) {
-		this.obj = obj;
+public class LocationValue implements IReturnValue {
+	WorldContainer location;
+	
+	public LocationValue(WorldContainer location) {
+		this.location = location;
 	}
 	
+	public WorldContainer getLocation() {
+		return location;
+	}
+
 	@Override
 	public IReturnValue add(IReturnValue another) {
 		// TODO Auto-generated method stub
@@ -127,16 +123,14 @@ public class ObjectValue implements IReturnValue {
 
 	@Override
 	public IReturnValue cloneValue() {
-		return new ObjectValue(obj);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public boolean isTrue() {
-		return obj != null;
+		// TODO Auto-generated method stub
+		return false;
 	}
 
-	@Override
-	public String toString() {
-		return "{OBJ=" + obj.getId() + "}";
-	}
 }
