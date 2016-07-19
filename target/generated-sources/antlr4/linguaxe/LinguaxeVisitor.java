@@ -241,13 +241,6 @@ public interface LinguaxeVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitLogic(LinguaxeParser.LogicContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code varDecl}
-	 * labeled alternative in {@link LinguaxeParser#operation}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitVarDecl(LinguaxeParser.VarDeclContext ctx);
-	/**
 	 * Visit a parse tree produced by the {@code assign}
 	 * labeled alternative in {@link LinguaxeParser#operation}.
 	 * @param ctx the parse tree
@@ -324,12 +317,6 @@ public interface LinguaxeVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitExp_user(LinguaxeParser.Exp_userContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link LinguaxeParser#username}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitUsername(LinguaxeParser.UsernameContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link LinguaxeParser#data_type}.
 	 * @param ctx the parse tree

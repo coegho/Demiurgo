@@ -1,9 +1,10 @@
-package plataformarol;
+package scope;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import plataformarol.StoredSymbol;
 import universe.ClassMethod;
 import values.IReturnValue;
 import values.IntegerValue;

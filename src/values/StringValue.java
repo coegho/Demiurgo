@@ -1,42 +1,49 @@
 package values;
 
 public class StringValue implements IReturnValue {
-protected String value;
+	protected String value;
+
+	@Override
+	public ReturnValueTypes getType() {
+		return ReturnValueTypes.STRING;
+	}
 
 	public StringValue(String value) {
-	this.value = value;
-}
+		this.value = value;
+	}
+	
+	public static StringValue defaultValue() {
+		return new StringValue("");
+	}
 
 	public String getValue() {
-	return value;
-}
+		return value;
+	}
 
-public void setValue(String value) {
-	this.value = value;
-}
+	public void setValue(String value) {
+		this.value = value;
+	}
 
 	@Override
 	public IReturnValue add(IReturnValue other) {
-		if(other instanceof IntegerValue) {
-			return new StringValue(getValue() + Integer.toString(((IntegerValue)other).getValue()));
+		if (other instanceof IntegerValue) {
+			return new StringValue(getValue() + Integer.toString(((IntegerValue) other).getValue()));
 		}
-		if(other instanceof FloatValue) {
-			return new StringValue(getValue() + Float.toString(((FloatValue)other).getValue()));
+		if (other instanceof FloatValue) {
+			return new StringValue(getValue() + Float.toString(((FloatValue) other).getValue()));
 		}
-		if(other instanceof StringValue) {
-			return new StringValue(getValue() + ((StringValue)other).getValue());
+		if (other instanceof StringValue) {
+			return new StringValue(getValue() + ((StringValue) other).getValue());
 		}
-		if(other instanceof ListValue) {
+		if (other instanceof ListValue) {
 			ListValue av = (ListValue) other.cloneValue();
-			for(int i=0; i < av.getValue().size(); i++) {
+			for (int i = 0; i < av.getValue().size(); i++) {
 				av.getValue().set(i, this.add(av.getValue().get(i)));
 			}
 			return av;
 		}
 		return null;
 	}
-
-	
 
 	@Override
 	public IReturnValue sub(IReturnValue other) {
@@ -135,48 +142,53 @@ public void setValue(String value) {
 		}
 		return null;
 	}
-	
+
 	@Override
 	public IReturnValue dice() {
-		//TODO: exception
+		// TODO: exception
 		return null;
 	}
 
 	@Override
 	public IReturnValue multDice(IReturnValue another) {
-		//TODO: exception
+		// TODO: exception
 		return null;
 	}
-	
+
 	@Override
-	public IReturnValue exponent(IReturnValue other) {		
-		//TODO: throw exception
+	public IReturnValue exponent(IReturnValue other) {
+		// TODO: throw exception
 		return null;
 	}
-	
+
 	@Override
 	public IReturnValue getFromIndex(IReturnValue another) {
-		//TODO exception
+		// TODO exception
 		return null;
 	}
-	
+
 	@Override
 	public IReturnValue not() {
-		return new IntegerValue(isTrue()?0:1);
+		return new IntegerValue(isTrue() ? 0 : 1);
 	}
 
 	@Override
 	public boolean isTrue() {
 		return getValue() != "";
 	}
-	
+
 	@Override
 	public IReturnValue cloneValue() {
 		return new StringValue(this.getValue());
 	}
-	
+
 	@Override
 	public String toString() {
 		return "{STRING=" + getValue() + "}";
+	}
+	
+	@Override
+	public int getDepth() {
+		return 0;
 	}
 }

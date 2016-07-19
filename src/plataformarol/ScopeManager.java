@@ -5,37 +5,39 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import scope.WorldScope;
+import scope.RoomScope;
+import scope.Scope;
 import universe.ClassMethod;
 import universe.UserDefinedClass;
 import universe.World;
+import universe.WorldObject;
 import universe.WorldRoom;
 import values.IReturnValue;
 
 /**
- * This class manages all the symbols found on the input. It store all the variables
- * and their values, and a reference of the current room.
+ * This class manages all the symbols found on the input. It manage code scopes that
+ * store all the variables and their values where appropiate. It stores too a reference
+ * to the current room and world.
  * @author Martín Coego Pérez
  * @version %I%, %G%
  * @since 1.0
  *
  */
-public class SymbolTable {
+public class ScopeManager {
 	protected Map<String, StoredSymbol> variables;
-	protected GlobalScope globals;
+	protected WorldScope globals;
 	protected List<Scope> scopes;
 	protected Scope currentScope;
-	protected World currentWorld;
-	protected WorldRoom currentRoom;
+	protected RoomScope roomScope;
 	protected UserDefinedClass definingClass;
 	protected ClassMethod definingMethod;
 	
-	public SymbolTable(World world, WorldRoom room) {
+	public ScopeManager(World world, WorldRoom room) {
 		this.variables = new HashMap<>();
-		currentWorld = world;
-		currentRoom = room;
 		scopes = new ArrayList<>();
-		globals = new GlobalScope(currentWorld);
-		currentScope = new RoomScope(this.currentRoom, globals);
+		globals = new WorldScope(world);
+		currentScope = roomScope = new RoomScope(room, globals);
 		scopes.add(globals);
 		scopes.add(currentScope);
 	}
@@ -48,13 +50,46 @@ public class SymbolTable {
 		currentScope.setVariable(name, value);
 	}
 	
+	
+	//Room
 	public WorldRoom getCurrentRoom() {
-		return currentRoom;
+		return roomScope.getRoom();
 	}
 	
+	//World
 	public World getCurrentWorld() {
-		return currentWorld;
+		return globals.getWorld();
 	}
+	
+	public UserDefinedClass getClassFromName(String className) {
+		return globals.getClassFromName(className);
+	}
+	
+	public UserDefinedClass getRootClass() {
+		return globals.getRootClass();
+	}
+	
+	public void addClass(String className, UserDefinedClass newClass) {
+		globals.addClass(className, newClass);
+	}
+	
+	public WorldObject getObject(long id) {
+		return globals.getObject(id); 
+	}
+	
+	public WorldRoom getRoom(String roomLongName) {
+		return globals.getRoom(roomLongName);
+	}
+	
+	public WorldRoom getRoom(String roomRelativeName, String currentRoom) {
+		return globals.getRoom(roomRelativeName, currentRoom);
+	}
+	
+	public void setUserObject(String user, WorldObject obj) {
+		globals.setUserObject(user, obj);
+	}
+	
+	//defining class
 	
 	public UserDefinedClass getDefiningClass() {
 		return definingClass;
@@ -71,6 +106,8 @@ public class SymbolTable {
 	public void setDefiningMethod(ClassMethod definingMethod) {
 		this.definingMethod = definingMethod;
 	}
+	
+	//Scopes
 	
 	public void pushScope(Scope scope) {
 		scopes.add(scope);

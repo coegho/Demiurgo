@@ -5,15 +5,24 @@ import java.util.Random;
 public class IntegerValue implements IReturnValue {
 	protected int value;
 
+	public IntegerValue(int value) {
+		this.value = value;
+	}
+
+	@Override
+	public ReturnValueTypes getType() {
+		return ReturnValueTypes.INT;
+	}
+	
+	public static IntegerValue defaultValue() {
+		return new IntegerValue(0);
+	}
+	
 	public int getValue() {
 		return value;
 	}
 
 	public void setValue(int value) {
-		this.value = value;
-	}
-
-	public IntegerValue(int value) {
 		this.value = value;
 	}
 
@@ -211,58 +220,60 @@ public class IntegerValue implements IReturnValue {
 		}
 		return null;
 	}
-	
+
 	@Override
 	public IReturnValue dice() {
-		return new IntegerValue((new Random().nextInt(getValue()))+1); //TODO: Optimize random
+		return new IntegerValue((new Random().nextInt(getValue())) + 1); // TODO:
+																			// Optimize
+																			// random
 	}
 
 	@Override
 	public IReturnValue multDice(IReturnValue other) {
 		ListValue lv = new ListValue();
-		Random r = new Random();	//TODO: Optimize random
-		
+		Random r = new Random(); // TODO: Optimize random
+
 		if (other instanceof FloatValue || other instanceof StringValue) {
-			//TODO: exception
+			// TODO: exception
 		}
 
 		if (other instanceof IntegerValue) {
-			for(int i=0; i<getValue(); i++) {
-				lv.getValue().add(new IntegerValue((r.nextInt(((IntegerValue)other).getValue()))+1));
+			for (int i = 0; i < getValue(); i++) {
+				lv.getValue().add(new IntegerValue((r.nextInt(((IntegerValue) other).getValue())) + 1));
 			}
 			return lv;
 		}
 		if (other instanceof ListValue) {
-			for(IReturnValue x : ((ListValue)other).getValue()) {
+			for (IReturnValue x : ((ListValue) other).getValue()) {
 				lv.getValue().add(multDice(x));
 			}
 			return lv;
 		}
-		
+
 		return null;
 	}
-	
+
 	@Override
 	public IReturnValue exponent(IReturnValue other) {
 		if (other instanceof IntegerValue) {
-			return new IntegerValue((int)Math.pow(getValue(), ((IntegerValue) other).getValue()));
+			return new IntegerValue((int) Math.pow(getValue(), ((IntegerValue) other).getValue()));
 		}
 		if (other instanceof FloatValue) {
-			return new FloatValue((float)Math.pow(getValue(), ((FloatValue) other).getValue()));
+			return new FloatValue((float) Math.pow(getValue(), ((FloatValue) other).getValue()));
 		}
-		if(other instanceof StringValue) {
-			//TODO: throw exception
+		if (other instanceof StringValue) {
+			// TODO: throw exception
 		}
 		if (other instanceof ListValue) {
 			ListValue lv = new ListValue();
-			for (IReturnValue x : ((ListValue)other).getValue()) {
+			for (IReturnValue x : ((ListValue) other).getValue()) {
 				lv.getValue().add(exponent(x));
 			}
 			return lv;
 		}
 		return null;
 	}
-	
+
 	@Override
 	public IReturnValue getFromIndex(IReturnValue another) {
 		// TODO Exception
@@ -287,5 +298,10 @@ public class IntegerValue implements IReturnValue {
 	@Override
 	public String toString() {
 		return "{INT=" + getValue() + "}";
+	}
+	
+	@Override
+	public int getDepth() {
+		return 0;
 	}
 }

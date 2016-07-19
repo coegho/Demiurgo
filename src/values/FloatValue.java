@@ -7,6 +7,15 @@ public class FloatValue implements IReturnValue {
 	public FloatValue(float value) {
 		this.value = value;
 	}
+	
+	public static FloatValue defaultValue() {
+		return new FloatValue(0);
+	}
+	
+	@Override
+	public ReturnValueTypes getType() {
+		return ReturnValueTypes.FLOAT;
+	}
 
 	public float getValue() {
 		return value;
@@ -268,5 +277,10 @@ public class FloatValue implements IReturnValue {
 	@Override
 	public String toString() {
 		return "{FLOAT=" + getValue() + "}";
+	}
+	
+	@Override
+	public int getDepth() {
+		return 0;
 	}
 }

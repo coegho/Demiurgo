@@ -1,5 +1,6 @@
-package plataformarol;
+package scope;
 
+import plataformarol.StoredSymbol;
 import universe.WorldObject;
 import values.IReturnValue;
 

@@ -14,6 +14,7 @@ import java.util.Map;
 public class World {
 	protected Map<String, UserDefinedClass> classes;
 	protected Map<Long, WorldObject> objects;
+	protected Map<String, WorldObject> userObjects; //TODO: only a string to identify user?
 	protected RoomGroup rooms;
 	protected UserDefinedClass rootClass;
 	protected long currentId;
@@ -23,6 +24,7 @@ public class World {
 		currentId = 0;
 		classes = new HashMap<>();
 		objects = new HashMap<>();
+		userObjects = new HashMap<>();
 		rooms = new RoomGroup("", null);
 		rootClass = new RootObjectClass();
 		classes.put("object", rootClass);
@@ -129,5 +131,18 @@ public class World {
 	 */
 	public List<WorldRoom> getAllRooms() {
 		return rooms.getAllRooms();
+	}
+	
+	/**
+	 * Get the object associated to the given user.
+	 * @param user Name of the user
+	 * @return The user's object
+	 */
+	public WorldObject getObjectFromUser(String user) {
+		return userObjects.get(user);
+	}
+	
+	public void setUserObject(String user, WorldObject obj) {
+		userObjects.put(user, obj);
 	}
 }

@@ -14,9 +14,11 @@ import linguaxe.LinguaxeParser.CompareContext;
 import linguaxe.LinguaxeParser.DiceContext;
 import linguaxe.LinguaxeParser.Exp_forContext;
 import linguaxe.LinguaxeParser.Exp_ifContext;
+import linguaxe.LinguaxeParser.Exp_userContext;
 import linguaxe.LinguaxeParser.ExponentContext;
 import linguaxe.LinguaxeParser.FloatContext;
 import linguaxe.LinguaxeParser.FunctionContext;
+import linguaxe.LinguaxeParser.IndexAssignContext;
 import linguaxe.LinguaxeParser.IndexContext;
 import linguaxe.LinguaxeParser.IntContext;
 import linguaxe.LinguaxeParser.IntermediateVariableContext;
@@ -32,12 +34,16 @@ import linguaxe.LinguaxeParser.New_objContext;
 import linguaxe.LinguaxeParser.OperationContext;
 import linguaxe.LinguaxeParser.ParensContext;
 import linguaxe.LinguaxeParser.RoomContext;
-import linguaxe.LinguaxeParser.RoomOpContext;
 import linguaxe.LinguaxeParser.RootVariableContext;
 import linguaxe.LinguaxeParser.Sharp_identifierContext;
 import linguaxe.LinguaxeParser.StringContext;
 import linguaxe.LinguaxeParser.Var_declContext;
 import linguaxe.LinguaxeParser.VariableOpContext;
+import scope.ForScope;
+import scope.FunctionScope;
+import scope.LoopScope;
+import scope.ObjectScope;
+import scope.Scope;
 import universe.ClassMethod;
 import universe.UserDefinedClass;
 import universe.World;
@@ -65,25 +71,26 @@ import values.StringValue;
  */
 public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 
-	protected SymbolTable st;
+	protected ScopeManager sm;
 
-	public SymbolTable getSymbolTable() {
-		return st;
-	}
-
-	public void setSymbolTable(SymbolTable st) {
-		this.st = st;
-	}
-	
 	public ExecVisitor(World world, WorldRoom room) {
-		st = new SymbolTable(world, room);
+		sm = new ScopeManager(world, room);
+	}
+
+	public ScopeManager getSM() {
+		return sm;
+	}
+
+	public void setSM(ScopeManager sm) {
+		this.sm = sm;
 	}
 
 	@Override
 	public IReturnValue visitLine(LineContext ctx) {
 		IReturnValue x = super.visitLine(ctx);
-		//TODO: println
-		if(x != null) System.out.println(x);
+		// TODO: println
+		if (x != null)
+			System.out.println(x);
 		return x;
 	}
 
@@ -327,12 +334,12 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 
 	/**
 	 * <p>
-	 * Assigns the right value to the left variable.
+	 * Assigns the value on the right to the variable on the left.
 	 * </p>
 	 */
 	@Override
 	public IReturnValue visitAssign(AssignContext ctx) {
-		ReferenceValue left = (ReferenceValue)visit(ctx.variable());
+		ReferenceValue left = (ReferenceValue) visit(ctx.variable());
 		IReturnValue right = visit(ctx.operation());
 		left.getReference().setValue(right);
 		return right;
@@ -340,16 +347,15 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 
 	/**
 	 * <p>
-	 * Moves a game object between rooms.
-	 *operation MOVE operation
+	 * Moves a game object between rooms. operation MOVE operation
 	 * </p>
 	 */
 	@Override
 	public IReturnValue visitMove(MoveContext ctx) {
 		IReturnValue mobile = visit(ctx.operation(0));
 		IReturnValue room = visit(ctx.operation(1));
-		if(mobile instanceof ObjectValue && room instanceof LocationValue) {
-			((ObjectValue)mobile).getObj().moveTo(((LocationValue)room).getLocation());
+		if (mobile instanceof ObjectValue && room instanceof LocationValue) {
+			((ObjectValue) mobile).getObj().moveTo(((LocationValue) room).getLocation());
 		}
 		return null;
 	}
@@ -361,7 +367,7 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	 */
 	@Override
 	public IReturnValue visitRootVariable(RootVariableContext ctx) {
-		return new ReferenceValue(getSymbolTable().getVariable(ctx.SYMBOL().getText().toLowerCase()));
+		return new ReferenceValue(getSM().getVariable(ctx.SYMBOL().getText().toLowerCase()));
 	}
 
 	/**
@@ -369,257 +375,298 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	 */
 	@Override
 	public IReturnValue visitIntermediateVariable(IntermediateVariableContext ctx) {
-		ReferenceValue prev = (ReferenceValue)visit(ctx.variable());
+		ReferenceValue prev = (ReferenceValue) visit(ctx.variable());
 		IReturnValue value = prev.getReference().getValue();
-		String fieldName =  ctx.SYMBOL().getText().toLowerCase();
-		if(value instanceof ObjectValue) {
-			WorldObject obj = ((ObjectValue)value).getObj();
+		String fieldName = ctx.SYMBOL().getText().toLowerCase();
+		if (value instanceof ObjectValue) {
+			WorldObject obj = ((ObjectValue) value).getObj();
 			return new ReferenceValue(obj.getField(fieldName));
-		}
-		else {
-			return null; //the variable is not an object
+		} else {
+			return null; // the variable is not an object
 		}
 	}
 
 	/**
 	 * Returns the value of a variable.
+	 * 
+	 * @return The value contained into the variable.
 	 */
 	@Override
 	public IReturnValue visitVariableOp(VariableOpContext ctx) {
-		ReferenceValue var = (ReferenceValue)visit(ctx.variable());
+		ReferenceValue var = (ReferenceValue) visit(ctx.variable());
 		return var.getReference().getValue();
 	}
-	
-	
+
 	/**
 	 * Executes a function or method and returns the return value.
+	 * <p>
 	 * function : (variable '.')? SYMBOL '(' (operation (',' operation)*)? ')' ;
 	 */
 	@Override
 	public IReturnValue visitFunction(FunctionContext ctx) {
 		String methodName = ctx.SYMBOL().getText().toLowerCase();
-		if(ctx.variable() != null) {
-			ReferenceValue ref = (ReferenceValue)visit(ctx.variable());
-			if(ref.getReference().getValue() instanceof ObjectValue) {
-				ObjectValue obj = (ObjectValue)ref.getReference().getValue();
+		if (ctx.variable() != null) {
+			ReferenceValue ref = (ReferenceValue) visit(ctx.variable());
+			if (ref.getReference().getValue() instanceof ObjectValue) {
+				ObjectValue obj = (ObjectValue) ref.getReference().getValue();
 
-				//arguments
-				//TODO: check arguments
+				// arguments
+				// TODO: check arguments
 				List<IReturnValue> args = new ArrayList<>();
-				for(OperationContext x : ctx.operation()) {
+				for (OperationContext x : ctx.operation()) {
 					args.add(visit(x));
 				}
-				
-				//SETTING SCOPE
+
+				// SETTING SCOPE
 				ClassMethod m = obj.getObj().getUserClass().getMethod(methodName);
 				ObjectScope os = new ObjectScope(obj.getObj());
 				FunctionScope fs = new FunctionScope(m, args, os);
-				getSymbolTable().pushScope(fs);
-				
+				getSM().pushScope(fs);
+
 				visit(m.getNode());
-				
-				getSymbolTable().popScope();
-				//TODO: return value
+
+				getSM().popScope();
+				// TODO: return value
 			}
-		}
-		else {
-			//TODO: non-class functions
+		} else {
+			// TODO: non-class functions
 		}
 		return null;
 	}
 
 	/**
 	 * Creates a new object with the specified class, and returns it.
+	 * <p>
 	 * new_obj : 'new' SYMBOL '(' (operation (',' operation)*)? ')' ;
 	 */
 	@Override
 	public IReturnValue visitNew_obj(New_objContext ctx) {
-		UserDefinedClass objClass = st.getCurrentWorld().getClassFromName(ctx.SYMBOL().getText().toLowerCase());
-		//TODO: constructor parameters
-		return new ObjectValue(new WorldObject(objClass, st.currentRoom));
-	}	
-	
+		UserDefinedClass objClass = getSM().getClassFromName(ctx.SYMBOL().getText().toLowerCase());
+		// TODO: constructor parameters
+		return new ObjectValue(new WorldObject(objClass, getSM().getCurrentRoom()));
+	}
 
 	/**
-	 * IF expression. It executes the code between brackets if the condition is met.
-	 * exp_if : IF '(' operation ')' nl? '{' code '}' ( nl? ELSE nl? '{' code '}' )? ;
+	 * IF expression. It executes the code between brackets if the condition is
+	 * met.
+	 * <p>
+	 * exp_if : IF '(' operation ')' nl? '{' code '}' ( nl? ELSE nl? '{' code
+	 * '}' )? ;
 	 */
 	@Override
 	public IReturnValue visitExp_if(Exp_ifContext ctx) {
 		IReturnValue condition = visit(ctx.operation());
-		
-		//SCOPE
-		Scope prevScope = getSymbolTable().getScope();
+
+		// SCOPE
+		Scope prevScope = getSM().getScope();
 		LoopScope newScope = new LoopScope(prevScope);
-		getSymbolTable().pushScope(newScope);
-		
-		if(condition.isTrue()) {
-			
+		getSM().pushScope(newScope);
+
+		if (condition.isTrue()) {
+
 			visit(ctx.code(0));
-		}
-		else if(ctx.ELSE() != null) {
+		} else if (ctx.ELSE() != null) {
 			visit(ctx.code(1));
 		}
-		
-		getSymbolTable().popScope();
+
+		getSM().popScope();
 		return null;
 	}
 
 	/**
-	 * FOR expression. It executes the code between brackets one time for element on the list.
+	 * FOR expression. It executes the code between brackets one time for
+	 * element on the list.
+	 * <p>
 	 * exp_for : FOR '(' SYMBOL ':' operation ')' nl? '{' code '}' ;
 	 */
 	@Override
 	public IReturnValue visitExp_for(Exp_forContext ctx) {
 		String auxVar = ctx.SYMBOL().getText().toLowerCase();
 		IReturnValue origin = visit(ctx.operation());
-		
-		//SCOPE
-		Scope prevScope = getSymbolTable().getScope();
+
+		// SCOPE
+		Scope prevScope = getSM().getScope();
 		ForScope newScope;
-		if(origin instanceof ListValue)
-			newScope = new ForScope(auxVar, (ListValue)origin, prevScope);
-		else if(origin instanceof StringValue)
-			newScope = new ForScope(auxVar, (StringValue)origin, prevScope);
+		if (origin instanceof ListValue)
+			newScope = new ForScope(auxVar, (ListValue) origin, prevScope);
+		else if (origin instanceof StringValue)
+			newScope = new ForScope(auxVar, (StringValue) origin, prevScope);
 		else
-			return null; //cannot walk other values
-		
-		getSymbolTable().pushScope(newScope);
-		
-		for(IReturnValue v : newScope.getOriginValues()) {
-			getSymbolTable().setVariable(auxVar, v);
+			return null; // cannot walk other values
+
+		getSM().pushScope(newScope);
+
+		for (IReturnValue v : newScope.getOriginValues()) {
+			getSM().setVariable(auxVar, v);
 			visit(ctx.code());
 		}
-		
-		getSymbolTable().popScope();
-		//TODO: cannot modify origin variable
+
+		getSM().popScope();
+		// TODO: cannot modify origin variable
 		return null;
 	}
-	
+
 	/**
 	 * Defines a new class.
-	 * class_def : SYMBOL ( '(' SYMBOL ')' )? ('/n')* '{' ('/n')* fields? methods? '}' ;
+	 * <p>
+	 * class_def : SYMBOL ( '(' SYMBOL ')' )? ('/n')* '{' ('/n')* fields?
+	 * methods? '}' ;
 	 */
 	@Override
 	public IReturnValue visitClass_def(Class_defContext ctx) {
 		String className = ctx.SYMBOL(0).getText().toLowerCase();
 		UserDefinedClass newClass;
-		if(ctx.SYMBOL(1)!=null) { //inherit from another class
+		if (ctx.SYMBOL(1) != null) { // inherit from another class
 			String parentName = ctx.SYMBOL(1).getText().toLowerCase();
-			newClass = new UserDefinedClass(className,
-					getSymbolTable().getCurrentWorld().getClassFromName(parentName));
+			newClass = new UserDefinedClass(className, getSM().getClassFromName(parentName));
+		} else { // inherit from "Object" class
+			newClass = new UserDefinedClass(className, getSM().getRootClass());
 		}
-		else { //inherit from "Object" class
-			newClass = new UserDefinedClass(className,
-					getSymbolTable().getCurrentWorld().getRootClass());
-		}
-		getSymbolTable().setDefiningClass(newClass);
-		getSymbolTable().getCurrentWorld().addClass(className, newClass);
+		getSM().setDefiningClass(newClass);
+		getSM().addClass(className, newClass);
 		visit(ctx.fields());
 		visit(ctx.methods());
-		getSymbolTable().setDefiningClass(null);
+		getSM().setDefiningClass(null);
 		return null;
+		//TODO: do this in class scope
 	}
 
 	/**
 	 * Adds a new field to the class that is currently being defined.
+	 * <p>
 	 * var_decl : data_type SYMBOL (ASSIGN operation)? ;
 	 */
 	@Override
 	public IReturnValue visitVar_decl(Var_declContext ctx) {
-		//TODO: data type
+		// TODO: data type
 		String varName = ctx.SYMBOL().getText().toLowerCase();
 		IReturnValue value;
-		if(ctx.operation() != null) {
+		if (ctx.operation() != null) {
 			value = visit(ctx.operation());
+		} else {
+			value = new IntegerValue(0); // TODO: default values...
 		}
-		else {
-			value = new IntegerValue(0); //TODO: default values...
-		}
-		
-		//TODO: Class Scope
-		if(getSymbolTable().getDefiningClass() != null) {
-			//defining class fields
-			getSymbolTable().getDefiningClass().addField(varName, value);
-		}
-		else {
-			//declaring a normal variable
-			getSymbolTable().setVariable(varName, value);
+
+		// TODO: Class Scope
+		if (getSM().getDefiningClass() != null) {
+			// defining class fields
+			getSM().getDefiningClass().addField(varName, value);
+		} else {
+			// declaring a normal variable
+			getSM().setVariable(varName, value);
 		}
 		return null;
 	}
 
 	/**
 	 * Defines a new method in the current class.
-	 * method : ( data_type SYMBOL ASSIGN )? metname=SYMBOL '(' args? ')' nl? '{' code? '}' ;
+	 * <p>
+	 * method : ( data_type SYMBOL ASSIGN )? metname=SYMBOL '(' args? ')' nl?
+	 * '{' code? '}' ;
 	 */
 	@Override
 	public IReturnValue visitMethod(MethodContext ctx) {
 		String methodName = ctx.metname.getText().toLowerCase();
-		
-		UserDefinedClass curClass = getSymbolTable().getDefiningClass();
+
+		UserDefinedClass curClass = getSM().getDefiningClass();
 		ClassMethod cm = new ClassMethod(ctx.code());
-		
-		//Return value
-		if(ctx.ASSIGN() != null) {
+
+		// Return value
+		if (ctx.ASSIGN() != null) {
 			String returnName = ctx.SYMBOL(0).getText().toLowerCase();
 			cm.setReturnVariable(returnName);
-			
+
 		}
-		
-		getSymbolTable().setDefiningMethod(cm);
-		
-		if(ctx.args() != null)
+
+		getSM().setDefiningMethod(cm);
+
+		if (ctx.args() != null)
 			visit(ctx.args());
-		
+
 		curClass.addMethod(methodName, cm);
-		getSymbolTable().setDefiningMethod(null);
+		getSM().setDefiningMethod(null);
 		return null;
 	}
 
 	/**
 	 * Defines the arguments of the method or function.
+	 * <p>
 	 * args : data_type SYMBOL ( ',' data_type SYMBOL )* ;
 	 */
 	@Override
 	public IReturnValue visitArgs(ArgsContext ctx) {
-		//TODO: typed args
-		for(int i=0; i<ctx.SYMBOL().size(); i++) {
-			getSymbolTable().getDefiningMethod().addArgument(ctx.SYMBOL(i).getText().toLowerCase());
+		// TODO: typed args
+		for (int i = 0; i < ctx.SYMBOL().size(); i++) {
+			getSM().getDefiningMethod().addArgument(ctx.SYMBOL(i).getText().toLowerCase());
 		}
 		return null;
 	}
 
 	/**
 	 * Identifies an object by its ID.
+	 * <p>
 	 * sharp_identifier : '#' INT_NUMBER ;
 	 */
 	@Override
 	public IReturnValue visitSharp_identifier(Sharp_identifierContext ctx) {
 		long id = Long.valueOf(ctx.INT_NUMBER().getText());
-		return new ObjectValue(getSymbolTable().getCurrentWorld().getObject(id));
+		return new ObjectValue(getSM().getObject(id));
 	}
-
 
 	/**
 	 * Returns a room by its path.
+	 * <p>
 	 * room : '@' room_path ;
 	 */
 	@Override
 	public IReturnValue visitRoom(RoomContext ctx) {
 		String path = ctx.room_path().getText();
 		WorldRoom room;
-		if(path.startsWith("/")) { //absolute path
-			room = getSymbolTable().getCurrentWorld().getRoom(path);
+		if (path.startsWith("/")) { // absolute path
+			room = getSM().getRoom(path);
+		} else { // relative path
+			String curRoom = getSM().getCurrentRoom().getLongName();
+			String curPath = curRoom.substring(0, curRoom.lastIndexOf('/') + 1);
+			room = getSM().getRoom(path, curPath);
 		}
-		else { //relative path
-			String curRoom = getSymbolTable().getCurrentRoom().getLongName();
-			String curPath = curRoom.substring(0, curRoom.lastIndexOf('/')+1);
-			room = getSymbolTable().getCurrentWorld().getRoom(path, curPath);
-		}
-		if(room != null) {
+		if (room != null) {
 			return new LocationValue(room);
 		}
 		return null;
-	}	
+	}
+
+	/**
+	 * Assigns an object to an user.
+	 * <p>
+	 * exp_user : USERNAME '->' operation ;
+	 */
+	@Override
+	public IReturnValue visitExp_user(Exp_userContext ctx) {
+		// We get the user name without the '$' symbol
+		String username = ctx.USERNAME().getText().toLowerCase().substring(1);
+		IReturnValue objref = visit(ctx.operation());
+		if (objref instanceof ObjectValue) {
+			WorldObject obj = ((ObjectValue) objref).getObj();
+			// TODO: check user
+			getSM().setUserObject(username, obj);
+		}
+		return null;
+	}
+
+	/**
+	 * <p>
+	 * Assigns the value on the right into the given position of the variable on
+	 * the left.
+	 * </p>
+	 * variable '[' operation ']' ASSIGN operation
+	 */
+	@Override
+	public IReturnValue visitIndexAssign(IndexAssignContext ctx) {
+		ReferenceValue ref = (ReferenceValue) visit(ctx.variable());
+		IntegerValue index = (IntegerValue) visit(ctx.operation(0));
+		IReturnValue value = visit(ctx.operation(1));
+		((ListValue) ref.getReference().getValue()).getValue().set(index.getValue(), value);
+		return value;
+	}
+
 }

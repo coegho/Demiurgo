@@ -5,6 +5,11 @@ import universe.WorldObject;
 public class ObjectValue implements IReturnValue {
 	protected WorldObject obj;
 
+	@Override
+	public ReturnValueTypes getType() {
+		return ReturnValueTypes.OBJECT;
+	}
+	
 	public WorldObject getObj() {
 		return obj;
 	}
@@ -138,5 +143,10 @@ public class ObjectValue implements IReturnValue {
 	@Override
 	public String toString() {
 		return "{OBJ=" + obj.getId() + "}";
+	}
+	
+	@Override
+	public int getDepth() {
+		return 0;
 	}
 }

@@ -5,6 +5,11 @@ import universe.WorldContainer;
 public class LocationValue implements IReturnValue {
 	WorldContainer location;
 	
+	@Override
+	public ReturnValueTypes getType() {
+		return ReturnValueTypes.LOCATION;
+	}
+	
 	public LocationValue(WorldContainer location) {
 		this.location = location;
 	}
@@ -133,4 +138,8 @@ public class LocationValue implements IReturnValue {
 		return false;
 	}
 
+	@Override
+	public int getDepth() {
+		return 0;
+	}
 }

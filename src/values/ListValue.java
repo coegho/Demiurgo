@@ -4,15 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ListValue implements IReturnValue {
-	List<IReturnValue> value;
-
-	public List<IReturnValue> getValue() {
-		return value;
-	}
-
-	public void setValue(List<IReturnValue> value) {
-		this.value = value;
-	}
+	protected List<IReturnValue> value;
+	protected ReturnValueTypes innerType;
+	protected int listDepth;
 
 	public ListValue(List<IReturnValue> value) {
 		this.value = value;
@@ -20,6 +14,43 @@ public class ListValue implements IReturnValue {
 
 	public ListValue() {
 		this.value = new ArrayList<>();
+	}
+	
+	public static ListValue defaultValue(ReturnValueTypes innerType, int depth) {
+		ListValue lv = new ListValue();
+		lv.setDepth(depth);
+		lv.setInnerType(innerType);
+		return lv;
+	}
+
+	@Override
+	public ReturnValueTypes getType() {
+		return ReturnValueTypes.LIST;
+	}
+
+	public ReturnValueTypes getInnerType() {
+		return innerType;
+	}
+
+	public void setInnerType(ReturnValueTypes innerType) {
+		this.innerType = innerType;
+	}
+
+	@Override
+	public int getDepth() {
+		return listDepth;
+	}
+
+	public void setDepth(int depth) {
+		this.listDepth = depth;
+	}
+
+	public List<IReturnValue> getValue() {
+		return value;
+	}
+
+	public void setValue(List<IReturnValue> value) {
+		this.value = value;
 	}
 
 	@Override
@@ -410,11 +441,11 @@ public class ListValue implements IReturnValue {
 
 		return null;
 	}
-	
+
 	@Override
 	public IReturnValue exponent(IReturnValue other) {
-		if(other instanceof StringValue) {
-			//TODO: throw exception
+		if (other instanceof StringValue) {
+			// TODO: throw exception
 		}
 		if (other instanceof IntegerValue || other instanceof FloatValue) {
 			ListValue lv = new ListValue();
@@ -443,14 +474,13 @@ public class ListValue implements IReturnValue {
 		}
 		return null;
 	}
-	
+
 	@Override
 	public IReturnValue getFromIndex(IReturnValue another) {
-		if(another instanceof IntegerValue) {
-			return getValue().get(((IntegerValue)another).getValue());
-		}
-		else {
-			//TODO: exception
+		if (another instanceof IntegerValue) {
+			return getValue().get(((IntegerValue) another).getValue());
+		} else {
+			// TODO: exception
 		}
 		return null;
 	}
@@ -473,11 +503,11 @@ public class ListValue implements IReturnValue {
 		}
 		return new ListValue(list);
 	}
-	
+
 	@Override
 	public String toString() {
 		String content = "";
-		for(IReturnValue x : getValue()) {
+		for (IReturnValue x : getValue()) {
 			content += " " + x.toString() + " ";
 		}
 		return "{LIST=[" + content + "]}";

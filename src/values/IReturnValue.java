@@ -184,5 +184,18 @@ public interface IReturnValue {
 	 * @return
 	 */
 	public boolean isTrue();
+	
+	/**
+	 * Returns the type from a enum. Useful to check compatibility of types. 
+	 * 
+	 * @return
+	 */
+	public ReturnValueTypes getType();
+	
+	/**
+	 * Returns the depth of the list if the value is a list; returns 0 otherwise.
+	 * @return
+	 */
+	public int getDepth();
 
 }

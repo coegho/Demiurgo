@@ -24,6 +24,7 @@ line : exp_if
 	| exp_for
 	| exp_user
 	| operation
+	| var_decl
 	;
 
 variable : SYMBOL					#rootVariable
@@ -55,7 +56,6 @@ operation : function										#functionOp
 	| room													#roomOp
 	| parens												#parensOp
 	| '{' (operation (',' operation)*)? '}'					#list
-	| var_decl												#varDecl
 	;
 
 parens : '(' operation ')' ;
@@ -75,14 +75,13 @@ exp_if : IF '(' operation ')' nl? '{' code '}' ( nl? ELSE nl? '{' code '}' )? ;
 
 exp_for : FOR '(' SYMBOL ':' operation ')' nl? '{' code '}' ;
 
-exp_user : username '->' operation ;
-
-username : '$' SYMBOL ;
+exp_user : USERNAME USEROBJ operation ;
 
 data_type : 'int'
 	| 'float'
 	| 'string'
 	| SYMBOL
+	| data_type '[]'
 	;
 
 nl : '\n'+;
@@ -95,6 +94,7 @@ ELSE: [Ee][Ll][Ss][Ee] ;
 FOR: [Ff][Oo][Rr] ;
 
 SYMBOL : ([dD][a-zA-Z_]|[a-cA-Ce-zE-Z_])[a-zA-Z0-9_]* ;
+USERNAME : '$'[a-zA-Z0-9_]+ ;
 INT_NUMBER: [0-9]+;
 FLOAT_NUMBER : [0-9]+'.'[0-9]+ ;
 BOOLEAN : [Tt][Rr][Uu][Ee] | [Ff][Aa][Ll][Ss][Ee] ;
@@ -119,3 +119,4 @@ ASSIGN: '=';
 MOVE: '>>' ;
 INHERIT: ':' ;
 ROOM: '@' ;
+USEROBJ: '->' ;

@@ -3,6 +3,8 @@ package plataformarol;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -26,6 +28,8 @@ public class PlataformaRol {
 	public static void main(String[] args) {
 		try {
 			//TODO: example data
+			List<String> users = new ArrayList<>();
+			users.add("user1");
 			World currentWorld = new World();
 			WorldRoom currentRoom = currentWorld.newRoom("/proba/estancia_de_probas");
 			currentWorld.newRoom("/proba/estancia2");
@@ -54,6 +58,18 @@ public class PlataformaRol {
 
 			//Checking world state
 			System.out.println("##########CHECKING WORLD STATE########");
+			System.out.println("--SEARCHING USERS--");
+			for(String u : users) {
+				WorldObject o = currentWorld.getObjectFromUser(u);
+				if(o != null) {
+					WorldRoom r = (WorldRoom)o.getLocation();
+					System.out.println("| $" + u + " -> #" + o.getId() + " (" + r.getLongName() + ")");
+				}
+				else {
+					System.out.println("| $" + u + " -> null");
+				}
+			}
+			System.out.println("--CHECKING ROOMS--");
 			for(WorldRoom r : currentWorld.getAllRooms()) {
 				System.out.println("ROOM " + r.getLongName());
 				System.out.print("| OBJECTS = {");

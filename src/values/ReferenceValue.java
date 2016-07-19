@@ -5,6 +5,11 @@ import plataformarol.StoredSymbol;
 public class ReferenceValue implements IReturnValue {
 	protected StoredSymbol reference;
 
+	@Override
+	public ReturnValueTypes getType() {
+		return ReturnValueTypes.REFERENCE;
+	}
+	
 	public ReferenceValue(StoredSymbol reference) {
 		this.reference = reference;
 	}
@@ -137,4 +142,8 @@ public class ReferenceValue implements IReturnValue {
 		return false;
 	}
 
+	@Override
+	public int getDepth() {
+		return 0;
+	}
 }

@@ -1,8 +1,9 @@
-package plataformarol;
+package scope;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import plataformarol.StoredSymbol;
 import values.IReturnValue;
 
 /**
