@@ -1,8 +1,7 @@
 package scope;
 
-import plataformarol.StoredSymbol;
+import universe.StoredSymbol;
 import universe.WorldRoom;
-import values.IReturnValue;
 
 public class RoomScope extends Scope {
 	protected WorldScope parent;
@@ -19,7 +18,7 @@ public class RoomScope extends Scope {
 	}
 
 	@Override
-	public void setVariable(String name, IReturnValue value) {
+	public void setVariable(String name, StoredSymbol value) {
 		room.setVariable(name, value);
 	}
 

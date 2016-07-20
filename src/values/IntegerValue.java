@@ -2,6 +2,8 @@ package values;
 
 import java.util.Random;
 
+import exceptions.ValueCastException;
+
 public class IntegerValue implements IReturnValue {
 	protected int value;
 
@@ -13,11 +15,11 @@ public class IntegerValue implements IReturnValue {
 	public ReturnValueTypes getType() {
 		return ReturnValueTypes.INT;
 	}
-	
+
 	public static IntegerValue defaultValue() {
 		return new IntegerValue(0);
 	}
-	
+
 	public int getValue() {
 		return value;
 	}
@@ -275,6 +277,31 @@ public class IntegerValue implements IReturnValue {
 	}
 
 	@Override
+	public int castToInteger() throws ValueCastException {
+		return value;
+	}
+
+	@Override
+	public float castToFloat() throws ValueCastException {
+		return (float) value;
+	}
+
+	@Override
+	public String castToString() throws ValueCastException {
+		return Integer.toString(value);
+	}
+
+	@Override
+	public boolean assign(IReturnValue newRValue) {
+		try {
+			value = newRValue.castToInteger();
+			return true;
+		} catch (ValueCastException ex) {
+			return false;
+		}
+	}
+
+	@Override
 	public IReturnValue getFromIndex(IReturnValue another) {
 		// TODO Exception
 		return null;
@@ -299,7 +326,7 @@ public class IntegerValue implements IReturnValue {
 	public String toString() {
 		return "{INT=" + getValue() + "}";
 	}
-	
+
 	@Override
 	public int getDepth() {
 		return 0;

@@ -1,7 +1,6 @@
 package scope;
 
-import plataformarol.StoredSymbol;
-import values.IReturnValue;
+import universe.StoredSymbol;
 
 /**
  * 
@@ -18,5 +17,5 @@ public abstract class Scope {
 	 * @param name Variable's name.
 	 * @param value Variable's value.
 	 */
-	public abstract void setVariable(String name, IReturnValue value);
+	public abstract void setVariable(String name, StoredSymbol value);
 }

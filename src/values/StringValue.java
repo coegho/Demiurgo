@@ -1,5 +1,7 @@
 package values;
 
+import exceptions.ValueCastException;
+
 public class StringValue implements IReturnValue {
 	protected String value;
 
@@ -160,6 +162,39 @@ public class StringValue implements IReturnValue {
 		// TODO: throw exception
 		return null;
 	}
+	
+	@Override
+	public int castToInteger() throws ValueCastException {
+		try {
+			return Integer.parseInt(value);
+		} catch(NumberFormatException ex) {
+			throw new ValueCastException();
+		}
+	}
+
+	@Override
+	public float castToFloat() throws ValueCastException {
+		try {
+			return Float.parseFloat(value);
+		} catch(NumberFormatException ex) {
+			throw new ValueCastException();
+		}
+	}
+
+	@Override
+	public String castToString() throws ValueCastException {
+		return value;
+	}
+
+	@Override
+	public boolean assign(IReturnValue newRValue) {
+		try {
+			value = newRValue.castToString();
+			return true;
+		} catch(ValueCastException ex) {
+			return false;
+		}
+	}
 
 	@Override
 	public IReturnValue getFromIndex(IReturnValue another) {
@@ -184,7 +219,7 @@ public class StringValue implements IReturnValue {
 
 	@Override
 	public String toString() {
-		return "{STRING=" + getValue() + "}";
+		return "{STRING=\"" + getValue() + "\"}";
 	}
 	
 	@Override

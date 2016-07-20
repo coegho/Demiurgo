@@ -1,8 +1,7 @@
 package scope;
 
-import plataformarol.StoredSymbol;
+import universe.StoredSymbol;
 import universe.WorldObject;
-import values.IReturnValue;
 
 public class ObjectScope extends Scope {
 	protected WorldObject obj;
@@ -17,7 +16,7 @@ public class ObjectScope extends Scope {
 	}
 
 	@Override
-	public void setVariable(String name, IReturnValue value) {
+	public void setVariable(String name, StoredSymbol value) {
 		obj.setField(name, value);
 		
 	}

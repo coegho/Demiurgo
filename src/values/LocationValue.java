@@ -1,19 +1,25 @@
 package values;
 
+import exceptions.ValueCastException;
+import universe.World;
 import universe.WorldContainer;
 
 public class LocationValue implements IReturnValue {
 	WorldContainer location;
-	
-	@Override
-	public ReturnValueTypes getType() {
-		return ReturnValueTypes.LOCATION;
-	}
-	
+
 	public LocationValue(WorldContainer location) {
 		this.location = location;
 	}
 	
+	public static LocationValue defaultValue(World world) {
+		return new LocationValue(world.getRoom("."));
+	}
+
+	@Override
+	public ReturnValueTypes getType() {
+		return ReturnValueTypes.LOCATION;
+	}
+
 	public WorldContainer getLocation() {
 		return location;
 	}
@@ -118,6 +124,30 @@ public class LocationValue implements IReturnValue {
 	public IReturnValue exponent(IReturnValue another) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	@Override
+	public int castToInteger() throws ValueCastException {
+		throw new ValueCastException();
+	}
+
+	@Override
+	public float castToFloat() throws ValueCastException {
+		throw new ValueCastException();
+	}
+
+	@Override
+	public String castToString() throws ValueCastException {
+		throw new ValueCastException();
+	}
+
+	@Override
+	public boolean assign(IReturnValue newRValue) {
+		if(newRValue instanceof LocationValue) {
+			location = ((LocationValue)newRValue).getLocation();
+			return true;
+		}
+		return false;
 	}
 
 	@Override

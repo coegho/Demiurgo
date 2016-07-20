@@ -3,9 +3,6 @@ package universe;
 import java.util.HashMap;
 import java.util.Map;
 
-import plataformarol.StoredSymbol;
-import values.IReturnValue;
-
 public class WorldObject {
 	protected long id;
 	protected UserDefinedClass ownClass;
@@ -17,7 +14,8 @@ public class WorldObject {
 		this.location = location;
 		this.fields = new HashMap<>();
 		for(String varName : ownClass.getFields().keySet()) {
-			fields.put(varName, new StoredSymbol(ownClass.getFields().get(varName).cloneValue()));
+			StoredSymbol field = ownClass.getField(varName);
+			fields.put(varName, new StoredSymbol(field.getValue().cloneValue()));
 		}
 		location.addObject(this);
 		location.getWorld().addObject(this);
@@ -53,8 +51,8 @@ public class WorldObject {
 		return fields.get(fieldName);
 	}
 
-	public void setField(String fieldName, IReturnValue value) {
-		//TODO: undeclared variables, and typed variables
-		fields.put(fieldName, new StoredSymbol(value));
+	public void setField(String fieldName, StoredSymbol value) {
+		//TODO: undeclared variables
+		fields.put(fieldName, value);
 	}
 }

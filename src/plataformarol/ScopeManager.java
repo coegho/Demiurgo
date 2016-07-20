@@ -5,15 +5,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import scope.WorldScope;
 import scope.RoomScope;
 import scope.Scope;
-import universe.ClassMethod;
+import scope.WorldScope;
+import universe.StoredSymbol;
 import universe.UserDefinedClass;
 import universe.World;
 import universe.WorldObject;
 import universe.WorldRoom;
-import values.IReturnValue;
 
 /**
  * This class manages all the symbols found on the input. It manage code scopes that
@@ -30,8 +29,6 @@ public class ScopeManager {
 	protected List<Scope> scopes;
 	protected Scope currentScope;
 	protected RoomScope roomScope;
-	protected UserDefinedClass definingClass;
-	protected ClassMethod definingMethod;
 	
 	public ScopeManager(World world, WorldRoom room) {
 		this.variables = new HashMap<>();
@@ -46,7 +43,7 @@ public class ScopeManager {
 		return currentScope.getVariable(name);
 	}
 	
-	public void setVariable(String name, IReturnValue value) {
+	public void setVariable(String name, StoredSymbol value) {
 		currentScope.setVariable(name, value);
 	}
 	
@@ -87,24 +84,6 @@ public class ScopeManager {
 	
 	public void setUserObject(String user, WorldObject obj) {
 		globals.setUserObject(user, obj);
-	}
-	
-	//defining class
-	
-	public UserDefinedClass getDefiningClass() {
-		return definingClass;
-	}
-
-	public void setDefiningClass(UserDefinedClass definingClass) {
-		this.definingClass = definingClass;
-	}
-	
-	public ClassMethod getDefiningMethod() {
-		return definingMethod;
-	}
-	
-	public void setDefiningMethod(ClassMethod definingMethod) {
-		this.definingMethod = definingMethod;
 	}
 	
 	//Scopes

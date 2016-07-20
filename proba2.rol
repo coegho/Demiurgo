@@ -1,10 +1,11 @@
-humano a = new Humano()
-humano b = new humano()
-int est = @estancia2
-a >> est
+//humano a = new Humano()
+//humano b = new humano()
+//int est = @estancia2
+//a >> est
 
-int[] a
-a = {{1,4},2,3}
-a[0]
-a[0] = 20
-a
+//!"finalizada a proba"
+
+int[] a = {5,3}
+a[0] = 7
+
+!"finalizada a proba"

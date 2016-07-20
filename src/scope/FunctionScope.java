@@ -4,13 +4,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import plataformarol.StoredSymbol;
 import universe.ClassMethod;
+import universe.StoredSymbol;
 import values.IReturnValue;
 import values.IntegerValue;
 
 /**
  * 
+ * This scope is used when a function is called.
  * @author Martín Coego Pérez
  * @version %I%, %G%
  * @since 1.0
@@ -27,9 +28,11 @@ public class FunctionScope extends Scope {
 		this.parent = parent;
 		this.variables = new HashMap<>();
 		for(int i = 0; i<args.size(); i++) {
-			this.variables.put(method.getArgumentName(i), new StoredSymbol(args.get(i)));
+			String argName = method.getArgumentName(i);
+			this.variables.put(argName,
+					new StoredSymbol(args.get(i)));
 		}
-		//return value, TODO: default values
+		//return value, TODO: default values, type
 		this.variables.put(method.getReturnVariable(), new StoredSymbol(new IntegerValue(0)));
 	}
 	
@@ -42,8 +45,8 @@ public class FunctionScope extends Scope {
 	}
 
 	@Override
-	public void setVariable(String name, IReturnValue value) {
-		variables.put(name, new StoredSymbol(value)); //TODO: a new StoredSymbol object?
+	public void setVariable(String name, StoredSymbol value) {
+		variables.put(name, value);
 		
 	}
 

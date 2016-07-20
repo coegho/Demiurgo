@@ -1,6 +1,6 @@
 package universe;
 
-import values.IReturnValue;
+import java.util.Map;
 
 /**
  * RootObjectClass represents the special "OBJECT" class, which is the parent of all other
@@ -9,21 +9,9 @@ import values.IReturnValue;
  *
  */
 public class RootObjectClass extends UserDefinedClass {
-	public RootObjectClass() {
-		super("object", null);
+	public RootObjectClass(World world) {
+		super("object", null, world);
 	}
-
-	@Override
-	public void setClassName(String className) { }
-
-	@Override
-	public void addField(String fieldName, IReturnValue defaultValue) { }
-
-	@Override
-	public void addMethod(String methodName, ClassMethod method) { }
-	
-	@Override
-	public void setParentClass(UserDefinedClass parentClass) { }
 
 	@Override
 	public UserDefinedClass getParentClass() {
@@ -31,12 +19,17 @@ public class RootObjectClass extends UserDefinedClass {
 	}
 
 	@Override
-	public IReturnValue getField(String fieldName) {
+	public Map<String, StoredSymbol> getFields() {
+		return fields; //Doesn't look in parent class
+	}
+	
+	@Override
+	public StoredSymbol getField(String fieldName) {
 		return fields.get(fieldName); //Doesn't look in parent class
 	}
 
 	@Override
 	public ClassMethod getMethod(String methodName) {
-		return methods.get(methodName);
+		return methods.get(methodName); //Doesn't look in parent class
 	}	
 }

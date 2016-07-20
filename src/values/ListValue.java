@@ -3,6 +3,8 @@ package values;
 import java.util.ArrayList;
 import java.util.List;
 
+import exceptions.ValueCastException;
+
 public class ListValue implements IReturnValue {
 	protected List<IReturnValue> value;
 	protected ReturnValueTypes innerType;
@@ -474,6 +476,30 @@ public class ListValue implements IReturnValue {
 		}
 		return null;
 	}
+	
+	@Override
+	public int castToInteger() throws ValueCastException {
+		throw new ValueCastException();
+	}
+
+	@Override
+	public float castToFloat() throws ValueCastException {
+		throw new ValueCastException();
+	}
+
+	@Override
+	public String castToString() throws ValueCastException {
+		throw new ValueCastException();
+	}
+
+	@Override
+	public boolean assign(IReturnValue newRValue) {
+		if(newRValue instanceof ListValue) {
+			value = ((ListValue)newRValue).getValue();
+			return true;
+		}
+		return false;
+	}
 
 	@Override
 	public IReturnValue getFromIndex(IReturnValue another) {
@@ -483,6 +509,10 @@ public class ListValue implements IReturnValue {
 			// TODO: exception
 		}
 		return null;
+	}
+	
+	public boolean set(int index, IReturnValue newRValue) {
+		return getValue().get(index).assign(newRValue);
 	}
 
 	@Override

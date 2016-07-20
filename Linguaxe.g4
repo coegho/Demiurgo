@@ -25,6 +25,7 @@ line : exp_if
 	| exp_user
 	| operation
 	| var_decl
+	| echo
 	;
 
 variable : SYMBOL					#rootVariable
@@ -77,21 +78,30 @@ exp_for : FOR '(' SYMBOL ':' operation ')' nl? '{' code '}' ;
 
 exp_user : USERNAME USEROBJ operation ;
 
-data_type : 'int'
-	| 'float'
-	| 'string'
-	| SYMBOL
-	| data_type '[]'
+echo : ECHO operation ;
+
+data_type : INT_TYPE										#intType
+	| FLOAT_TYPE											#floatType
+	| STRING_TYPE											#stringType
+	| SYMBOL												#symbolType
+	| ROOM													#roomType
+	| data_type '[]'										#listType
 	;
 
 nl : '\n'+;
 
 //Lexer rules
 
-D : [dD] ;
+D : [Dd] ;
 IF: [Ii][Ff] ;
 ELSE: [Ee][Ll][Ss][Ee] ;
 FOR: [Ff][Oo][Rr] ;
+
+ECHO: '!' ;
+
+INT_TYPE: [Ii][Nn][Tt] ;
+FLOAT_TYPE: [Ff][Ll][Oo][Aa][Tt] ;
+STRING_TYPE: [Ss][Tt][Rr][Ii][Nn][Gg] ;
 
 SYMBOL : ([dD][a-zA-Z_]|[a-cA-Ce-zE-Z_])[a-zA-Z0-9_]* ;
 USERNAME : '$'[a-zA-Z0-9_]+ ;

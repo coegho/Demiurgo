@@ -1,11 +1,10 @@
-package plataformarol;
+package universe;
 
 import values.IReturnValue;
 
 public class StoredSymbol {
 	protected IReturnValue value;
 	protected boolean writable = true;
-	protected String type;//TODO: enum
 	
 	public StoredSymbol(IReturnValue value) {
 		this.value = value;
@@ -21,10 +20,21 @@ public class StoredSymbol {
 	}
 	
 	public void setValue(IReturnValue value) {
-		this.value = value;
+		if(writable)
+			this.value = value;
+		//Only writes if it is writable
+		//TODO: may produce a warning?
 	}
 	
 	public boolean isWritable() {
 		return writable;
+	}
+	
+	public void setWritable(boolean writable) {
+		this.writable = writable;
+	}
+	
+	public boolean assign(IReturnValue newValue) {
+		return value.assign(newValue);
 	}
 }

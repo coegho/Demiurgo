@@ -1,5 +1,7 @@
 package values;
 
+import exceptions.ValueCastException;
+
 public class FloatValue implements IReturnValue {
 
 	protected float value;
@@ -251,6 +253,31 @@ public class FloatValue implements IReturnValue {
 			return lv;
 		}
 		return null;
+	}
+	
+	@Override
+	public int castToInteger() throws ValueCastException {
+		return (int)value;
+	}
+
+	@Override
+	public float castToFloat() throws ValueCastException {
+		return value;
+	}
+
+	@Override
+	public String castToString() throws ValueCastException {
+		return Float.toString(value);
+	}
+	
+	@Override
+	public boolean assign(IReturnValue newRValue) {
+		try {
+			value = newRValue.castToFloat();
+			return true;
+		} catch(ValueCastException ex) {
+			return false;
+		}
 	}
 
 	@Override

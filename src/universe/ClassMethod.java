@@ -1,18 +1,22 @@
 package universe;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.antlr.v4.runtime.tree.ParseTree;
 
 public class ClassMethod {
 	protected ParseTree node;
-	protected List<String> args; //TODO: types
-	protected String ReturnVariable; //TODO: types
+	protected List<String> argNames; //arguments ordered by num
+	protected Map<String, StoredSymbol> args;
+	protected String ReturnVariable;
 	
 	public ClassMethod(ParseTree node) {
 		this.node = node;
-		this.args = new ArrayList<>();
+		this.argNames = new ArrayList<>();
+		this.args = new HashMap<>();
 	}
 
 	public ParseTree getNode() {
@@ -33,12 +37,16 @@ public class ClassMethod {
 	
 	
 	public String getArgumentName(int index) {
-		return args.get(index);
+		return argNames.get(index);
 	}
 	
-	public void addArgument(String argName) {
-		//TODO typed variables
-		args.add(argName);
+	public StoredSymbol getArgumentType(String argName) {
+		return args.get(argName);
+	}
+	
+	public void addArgument(String argName, StoredSymbol type) {
+		argNames.add(argName);
+		args.put(argName, type);
 	}
 	
 }

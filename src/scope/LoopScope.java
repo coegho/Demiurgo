@@ -3,8 +3,7 @@ package scope;
 import java.util.HashMap;
 import java.util.Map;
 
-import plataformarol.StoredSymbol;
-import values.IReturnValue;
+import universe.StoredSymbol;
 
 /**
  * 
@@ -34,8 +33,8 @@ public class LoopScope extends Scope {
 	}
 
 	@Override
-	public void setVariable(String name, IReturnValue value) {
-		variables.put(name, new StoredSymbol(value));
+	public void setVariable(String name, StoredSymbol value) {
+		variables.put(name, value);
 	}
 
 }

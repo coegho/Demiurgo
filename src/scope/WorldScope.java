@@ -1,11 +1,10 @@
 package scope;
 
-import plataformarol.StoredSymbol;
+import universe.StoredSymbol;
 import universe.UserDefinedClass;
 import universe.World;
 import universe.WorldObject;
 import universe.WorldRoom;
-import values.IReturnValue;
 
 public class WorldScope extends Scope {
 	//TODO: Has world its own variables?
@@ -22,7 +21,7 @@ public class WorldScope extends Scope {
 	}
 
 	@Override
-	public void setVariable(String name, IReturnValue value) {
+	public void setVariable(String name, StoredSymbol value) {
 		// TODO Auto-generated method stub
 		
 	}

@@ -318,11 +318,53 @@ public interface LinguaxeVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitExp_user(LinguaxeParser.Exp_userContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link LinguaxeParser#data_type}.
+	 * Visit a parse tree produced by {@link LinguaxeParser#echo}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitData_type(LinguaxeParser.Data_typeContext ctx);
+	T visitEcho(LinguaxeParser.EchoContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code floatType}
+	 * labeled alternative in {@link LinguaxeParser#data_type}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFloatType(LinguaxeParser.FloatTypeContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code intType}
+	 * labeled alternative in {@link LinguaxeParser#data_type}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitIntType(LinguaxeParser.IntTypeContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code stringType}
+	 * labeled alternative in {@link LinguaxeParser#data_type}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitStringType(LinguaxeParser.StringTypeContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code listType}
+	 * labeled alternative in {@link LinguaxeParser#data_type}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitListType(LinguaxeParser.ListTypeContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code symbolType}
+	 * labeled alternative in {@link LinguaxeParser#data_type}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitSymbolType(LinguaxeParser.SymbolTypeContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code roomType}
+	 * labeled alternative in {@link LinguaxeParser#data_type}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitRoomType(LinguaxeParser.RoomTypeContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link LinguaxeParser#nl}.
 	 * @param ctx the parse tree

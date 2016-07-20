@@ -26,7 +26,7 @@ public class World {
 		objects = new HashMap<>();
 		userObjects = new HashMap<>();
 		rooms = new RoomGroup("", null);
-		rootClass = new RootObjectClass();
+		rootClass = new RootObjectClass(this);
 		classes.put("object", rootClass);
 	}
 	

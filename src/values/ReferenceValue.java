@@ -1,6 +1,7 @@
 package values;
 
-import plataformarol.StoredSymbol;
+import exceptions.ValueCastException;
+import universe.StoredSymbol;
 
 public class ReferenceValue implements IReturnValue {
 	protected StoredSymbol reference;
@@ -124,6 +125,30 @@ public class ReferenceValue implements IReturnValue {
 		return null;
 	}
 
+	@Override
+	public int castToInteger() throws ValueCastException {
+		throw new ValueCastException();
+	}
+
+	@Override
+	public float castToFloat() throws ValueCastException {
+		throw new ValueCastException();
+	}
+
+	@Override
+	public String castToString() throws ValueCastException {
+		throw new ValueCastException();
+	}
+
+	@Override
+	public boolean assign(IReturnValue newRValue) {
+		if(newRValue instanceof ReferenceValue) {
+			reference = ((ReferenceValue)newRValue).getReference();
+			return true;
+		}
+		return false;
+	}
+	
 	@Override
 	public IReturnValue getFromIndex(IReturnValue another) {
 		// TODO Auto-generated method stub

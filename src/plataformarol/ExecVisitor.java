@@ -3,6 +3,7 @@ package plataformarol;
 import java.util.ArrayList;
 import java.util.List;
 
+import exceptions.ValueCastException;
 import linguaxe.LinguaxeBaseVisitor;
 import linguaxe.LinguaxeParser;
 import linguaxe.LinguaxeParser.AddSubContext;
@@ -12,18 +13,21 @@ import linguaxe.LinguaxeParser.BoolContext;
 import linguaxe.LinguaxeParser.Class_defContext;
 import linguaxe.LinguaxeParser.CompareContext;
 import linguaxe.LinguaxeParser.DiceContext;
+import linguaxe.LinguaxeParser.EchoContext;
 import linguaxe.LinguaxeParser.Exp_forContext;
 import linguaxe.LinguaxeParser.Exp_ifContext;
 import linguaxe.LinguaxeParser.Exp_userContext;
 import linguaxe.LinguaxeParser.ExponentContext;
 import linguaxe.LinguaxeParser.FloatContext;
+import linguaxe.LinguaxeParser.FloatTypeContext;
 import linguaxe.LinguaxeParser.FunctionContext;
 import linguaxe.LinguaxeParser.IndexAssignContext;
 import linguaxe.LinguaxeParser.IndexContext;
 import linguaxe.LinguaxeParser.IntContext;
+import linguaxe.LinguaxeParser.IntTypeContext;
 import linguaxe.LinguaxeParser.IntermediateVariableContext;
-import linguaxe.LinguaxeParser.LineContext;
 import linguaxe.LinguaxeParser.ListContext;
+import linguaxe.LinguaxeParser.ListTypeContext;
 import linguaxe.LinguaxeParser.LogicContext;
 import linguaxe.LinguaxeParser.MethodContext;
 import linguaxe.LinguaxeParser.MoveContext;
@@ -34,17 +38,22 @@ import linguaxe.LinguaxeParser.New_objContext;
 import linguaxe.LinguaxeParser.OperationContext;
 import linguaxe.LinguaxeParser.ParensContext;
 import linguaxe.LinguaxeParser.RoomContext;
+import linguaxe.LinguaxeParser.RoomTypeContext;
 import linguaxe.LinguaxeParser.RootVariableContext;
 import linguaxe.LinguaxeParser.Sharp_identifierContext;
 import linguaxe.LinguaxeParser.StringContext;
+import linguaxe.LinguaxeParser.StringTypeContext;
+import linguaxe.LinguaxeParser.SymbolTypeContext;
 import linguaxe.LinguaxeParser.Var_declContext;
 import linguaxe.LinguaxeParser.VariableOpContext;
+import scope.ClassScope;
 import scope.ForScope;
 import scope.FunctionScope;
 import scope.LoopScope;
 import scope.ObjectScope;
 import scope.Scope;
 import universe.ClassMethod;
+import universe.StoredSymbol;
 import universe.UserDefinedClass;
 import universe.World;
 import universe.WorldObject;
@@ -84,14 +93,20 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	public void setSM(ScopeManager sm) {
 		this.sm = sm;
 	}
-
+	
 	@Override
-	public IReturnValue visitLine(LineContext ctx) {
-		IReturnValue x = super.visitLine(ctx);
-		// TODO: println
-		if (x != null)
-			System.out.println(x);
-		return x;
+	/**
+	 * Emits output. Useful for debugging and helping the DX to write the situation.
+	 */
+	public IReturnValue visitEcho(EchoContext ctx) {
+		IReturnValue v = visit(ctx.operation());
+		//TODO: temporal code for debugging
+		try {
+			System.out.println(v.castToString());
+		} catch (ValueCastException e) {
+			System.out.println("Cannot cast to string: " + v.toString());
+		}
+		return null;
 	}
 
 	/**
@@ -121,7 +136,8 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	 */
 	@Override
 	public IReturnValue visitString(StringContext ctx) {
-		return new StringValue(ctx.TEXT_STRING().getText());
+		String str = ctx.TEXT_STRING().getText();
+		return new StringValue(str.substring(1, str.length() - 1));
 	}
 
 	/**
@@ -152,6 +168,70 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 			lv.getValue().add(visit(op));
 		}
 		return lv;
+	}
+
+	/**
+	 * Returns a default FLOAT value (it counts as a type).
+	 */
+	@Override
+	public IReturnValue visitFloatType(FloatTypeContext ctx) {
+		return FloatValue.defaultValue();
+	}
+
+	/**
+	 * Returns a default INT value (it counts as a type).
+	 */
+	@Override
+	public IReturnValue visitIntType(IntTypeContext ctx) {
+		return IntegerValue.defaultValue();
+	}
+
+	/**
+	 * Returns a default STRING value (it counts as a type).
+	 */
+	@Override
+	public IReturnValue visitStringType(StringTypeContext ctx) {
+		return StringValue.defaultValue();
+	}
+
+	/**
+	 * Returns a default LIST value (it counts as a type).
+	 * <p>
+	 * data_type: data_type '[]'
+	 */
+	@Override
+	public IReturnValue visitListType(ListTypeContext ctx) {
+		IReturnValue innerType = visit(ctx.data_type());
+		if (innerType instanceof ListValue) {
+			// It has more depth than 1, ex. "int[][]"
+			ListValue lv = (ListValue) innerType;
+			return ListValue.defaultValue(lv.getInnerType(), lv.getDepth() + 1);
+		} else {
+			// Common list of depth=1
+			return ListValue.defaultValue(innerType.getType(), 1);
+		}
+		// TODO: could it be simplified?
+	}
+
+	/**
+	 * Returns a default OBJECT value (it counts as a type).
+	 * <p>
+	 * data_type: SYMBOL
+	 */
+	@Override
+	public IReturnValue visitSymbolType(SymbolTypeContext ctx) {
+		// First we get the type, in this case, a class
+		String className = ctx.SYMBOL().getText().toLowerCase();
+		UserDefinedClass itsClass = getSM().getClassFromName(className);
+		return ObjectValue.defaultValue(itsClass);
+	}
+
+	/**
+	 * Returns a default LOCATION value (it counts as a type).
+	 */
+	@Override
+	public IReturnValue visitRoomType(RoomTypeContext ctx) {
+		return LocationValue.defaultValue(getSM().getCurrentWorld());
 	}
 
 	/**
@@ -333,22 +413,38 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	}
 
 	/**
-	 * <p>
 	 * Assigns the value on the right to the variable on the left.
-	 * </p>
+	 * <p>
 	 */
 	@Override
 	public IReturnValue visitAssign(AssignContext ctx) {
 		ReferenceValue left = (ReferenceValue) visit(ctx.variable());
 		IReturnValue right = visit(ctx.operation());
-		left.getReference().setValue(right);
+		left.getReference().assign(right);
+		//TODO: check type
 		return right;
 	}
 
 	/**
-	 * <p>
-	 * Moves a game object between rooms. operation MOVE operation
+	 * Assigns the value on the right into the given position of the variable on
+	 * the left.
 	 * </p>
+	 * operation: variable '[' operation ']' ASSIGN operation
+	 */
+	@Override
+	public IReturnValue visitIndexAssign(IndexAssignContext ctx) {
+		ReferenceValue ref = (ReferenceValue) visit(ctx.variable());
+		IntegerValue index = (IntegerValue) visit(ctx.operation(0));
+		IReturnValue value = visit(ctx.operation(1));
+		((ListValue) ref.getReference().getValue()).set(index.getValue(), value);
+		//TODO: check type
+		return value;
+	}
+
+	/**
+	 * Moves a game object between rooms.
+	 * <p>
+	 * operation: operation MOVE operation
 	 */
 	@Override
 	public IReturnValue visitMove(MoveContext ctx) {
@@ -481,6 +577,7 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	 */
 	@Override
 	public IReturnValue visitExp_for(Exp_forContext ctx) {
+		// TODO: type
 		String auxVar = ctx.SYMBOL().getText().toLowerCase();
 		IReturnValue origin = visit(ctx.operation());
 
@@ -497,12 +594,11 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 		getSM().pushScope(newScope);
 
 		for (IReturnValue v : newScope.getOriginValues()) {
-			getSM().setVariable(auxVar, v);
+			getSM().setVariable(auxVar, new StoredSymbol(v, false));
 			visit(ctx.code());
 		}
 
 		getSM().popScope();
-		// TODO: cannot modify origin variable
 		return null;
 	}
 
@@ -518,43 +614,39 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 		UserDefinedClass newClass;
 		if (ctx.SYMBOL(1) != null) { // inherit from another class
 			String parentName = ctx.SYMBOL(1).getText().toLowerCase();
-			newClass = new UserDefinedClass(className, getSM().getClassFromName(parentName));
+			newClass = new UserDefinedClass(className, getSM().getClassFromName(parentName), getSM().getCurrentWorld());
 		} else { // inherit from "Object" class
-			newClass = new UserDefinedClass(className, getSM().getRootClass());
+			newClass = new UserDefinedClass(className, getSM().getRootClass(), getSM().getCurrentWorld());
 		}
-		getSM().setDefiningClass(newClass);
+		getSM().pushScope(new ClassScope(newClass));
 		getSM().addClass(className, newClass);
 		visit(ctx.fields());
 		visit(ctx.methods());
-		getSM().setDefiningClass(null);
+		getSM().popScope();
 		return null;
-		//TODO: do this in class scope
 	}
 
 	/**
-	 * Adds a new field to the class that is currently being defined.
+	 * Declares a new variable into the current room.
+	 * <p>
+	 * If a class is currently being defined, adds a new field to it.
 	 * <p>
 	 * var_decl : data_type SYMBOL (ASSIGN operation)? ;
 	 */
 	@Override
 	public IReturnValue visitVar_decl(Var_declContext ctx) {
-		// TODO: data type
+		IReturnValue type = visit(ctx.data_type());
 		String varName = ctx.SYMBOL().getText().toLowerCase();
-		IReturnValue value;
 		if (ctx.operation() != null) {
-			value = visit(ctx.operation());
-		} else {
-			value = new IntegerValue(0); // TODO: default values...
+			type.assign(visit(ctx.operation()));
+
 		}
 
-		// TODO: Class Scope
-		if (getSM().getDefiningClass() != null) {
-			// defining class fields
-			getSM().getDefiningClass().addField(varName, value);
-		} else {
-			// declaring a normal variable
-			getSM().setVariable(varName, value);
-		}
+		// If the Scope is a ClassScope, it will add a field to the current
+		// class
+		// if is not, it will add a normal variable
+		getSM().setVariable(varName, new StoredSymbol(type));
+
 		return null;
 	}
 
@@ -568,7 +660,8 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	public IReturnValue visitMethod(MethodContext ctx) {
 		String methodName = ctx.metname.getText().toLowerCase();
 
-		UserDefinedClass curClass = getSM().getDefiningClass();
+		// TODO: non-class methods?
+		UserDefinedClass curClass = ((ClassScope) getSM().getScope()).getCurrentClass();
 		ClassMethod cm = new ClassMethod(ctx.code());
 
 		// Return value
@@ -578,13 +671,13 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 
 		}
 
-		getSM().setDefiningMethod(cm);
+		((ClassScope) getSM().getScope()).setDefiningMethod(cm);
 
 		if (ctx.args() != null)
 			visit(ctx.args());
 
 		curClass.addMethod(methodName, cm);
-		getSM().setDefiningMethod(null);
+		((ClassScope) getSM().getScope()).setDefiningMethod(null);
 		return null;
 	}
 
@@ -595,9 +688,11 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	 */
 	@Override
 	public IReturnValue visitArgs(ArgsContext ctx) {
-		// TODO: typed args
 		for (int i = 0; i < ctx.SYMBOL().size(); i++) {
-			getSM().getDefiningMethod().addArgument(ctx.SYMBOL(i).getText().toLowerCase());
+			String argName = ctx.SYMBOL(i).getText().toLowerCase();
+			IReturnValue typeV = visit(ctx.data_type(i));
+
+			((ClassScope) getSM().getScope()).getDefiningMethod().addArgument(argName, new StoredSymbol(typeV));
 		}
 		return null;
 	}
@@ -651,22 +746,6 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 			getSM().setUserObject(username, obj);
 		}
 		return null;
-	}
-
-	/**
-	 * <p>
-	 * Assigns the value on the right into the given position of the variable on
-	 * the left.
-	 * </p>
-	 * variable '[' operation ']' ASSIGN operation
-	 */
-	@Override
-	public IReturnValue visitIndexAssign(IndexAssignContext ctx) {
-		ReferenceValue ref = (ReferenceValue) visit(ctx.variable());
-		IntegerValue index = (IntegerValue) visit(ctx.operation(0));
-		IReturnValue value = visit(ctx.operation(1));
-		((ListValue) ref.getReference().getValue()).getValue().set(index.getValue(), value);
-		return value;
 	}
 
 }

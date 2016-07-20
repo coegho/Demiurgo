@@ -3,9 +3,6 @@ package universe;
 import java.util.HashMap;
 import java.util.Map;
 
-import plataformarol.StoredSymbol;
-import values.IReturnValue;
-
 public class WorldRoom extends WorldContainer {
 	protected String longName;
 	protected Map<String, StoredSymbol> variables;
@@ -34,12 +31,7 @@ public class WorldRoom extends WorldContainer {
 		return variables.get(name);
 	}
 	
-	public void setVariable(String name, IReturnValue value) {
-		if(variables.containsKey(name)) {
-			variables.get(name).setValue(value);
-		}
-		else {
-			this.variables.put(name, new StoredSymbol(value));
-		}
+	public void setVariable(String name, StoredSymbol value) {
+		this.variables.put(name, value);
 	}
 }

@@ -1,5 +1,7 @@
 package values;
 
+import exceptions.ValueCastException;
+
 /**
  * This interface provides the methods required to perform operations with any
  * type of value. Any class that implements a basic type in this grammar must
@@ -163,6 +165,35 @@ public interface IReturnValue {
 	public IReturnValue exponent(IReturnValue another);
 
 	/**
+	 * Casts the inner value to an integer value. 
+	 * @return
+	 * @throws ValueCastException
+	 */
+	public int castToInteger() throws ValueCastException;
+	
+	/**
+	 * Casts the inner value to a float value. 
+	 * @return
+	 * @throws ValueCastException
+	 */
+	public float castToFloat() throws ValueCastException;
+	
+	/**
+	 * Casts the inner value to a string value. 
+	 * @return
+	 * @throws ValueCastException
+	 */
+	public String castToString() throws ValueCastException;
+	
+	/**
+	 * Assigns a new value without changing type, making the pertinent cast operations.
+	 * 
+	 * @param value
+	 * @return False if there is not cast operation.
+	 */
+	public boolean assign(IReturnValue newRValue);
+
+	/**
 	 * Returns the value specified by index from a list.
 	 * 
 	 * @param another
@@ -184,16 +215,18 @@ public interface IReturnValue {
 	 * @return
 	 */
 	public boolean isTrue();
-	
+
 	/**
-	 * Returns the type from a enum. Useful to check compatibility of types. 
+	 * Returns the type from a enum. Useful to check compatibility of types.
 	 * 
 	 * @return
 	 */
 	public ReturnValueTypes getType();
-	
+
 	/**
-	 * Returns the depth of the list if the value is a list; returns 0 otherwise.
+	 * Returns the depth of the list if the value is a list; returns 0
+	 * otherwise.
+	 * 
 	 * @return
 	 */
 	public int getDepth();
