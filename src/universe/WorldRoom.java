@@ -3,7 +3,7 @@ package universe;
 import java.util.HashMap;
 import java.util.Map;
 
-public class WorldRoom extends WorldContainer {
+public class WorldRoom extends WorldLocation {
 	protected String longName;
 	protected Map<String, StoredSymbol> variables;
 	

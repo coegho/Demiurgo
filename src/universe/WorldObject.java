@@ -3,13 +3,15 @@ package universe;
 import java.util.HashMap;
 import java.util.Map;
 
+import values.ObjectValue;
+
 public class WorldObject {
 	protected long id;
 	protected UserDefinedClass ownClass;
-	protected WorldContainer location;
+	protected WorldLocation location;
 	protected Map<String, StoredSymbol> fields;
 
-	public WorldObject(UserDefinedClass ownClass, WorldContainer location) {
+	public WorldObject(UserDefinedClass ownClass, WorldLocation location) {
 		this.ownClass = ownClass;
 		this.location = location;
 		this.fields = new HashMap<>();
@@ -17,6 +19,7 @@ public class WorldObject {
 			StoredSymbol field = ownClass.getField(varName);
 			fields.put(varName, new StoredSymbol(field.getValue().cloneValue()));
 		}
+		fields.put("this", new StoredSymbol(new ObjectValue(this), false));
 		location.addObject(this);
 		location.getWorld().addObject(this);
 	}
@@ -37,11 +40,11 @@ public class WorldObject {
 		this.ownClass = ownClass;
 	}
 
-	public WorldContainer getLocation() {
+	public WorldLocation getLocation() {
 		return location;
 	}
 
-	public void moveTo(WorldContainer location) {
+	public void moveTo(WorldLocation location) {
 		this.location.removeObject(this);
 		this.location = location;
 		location.addObject(this);

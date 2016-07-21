@@ -186,6 +186,14 @@ public interface IReturnValue {
 	public String castToString() throws ValueCastException;
 	
 	/**
+	 * Checks if the new value can be assigned on this object considering its type.
+	 * 
+	 * @param value
+	 * @return True if the new value can be assigned, false otherwise.
+	 */
+	public boolean canAssign(IReturnValue newRValue);
+	
+	/**
 	 * Assigns a new value without changing type, making the pertinent cast operations.
 	 * 
 	 * @param value

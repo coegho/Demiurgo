@@ -16,6 +16,7 @@ public class UserDefinedClass {
 	protected UserDefinedClass parentClass;
 	protected Map<String, StoredSymbol> fields;
 	protected Map<String, ClassMethod> methods;
+	protected ClassMethod constructor;
 	protected World world;
 
 	public UserDefinedClass(String className, UserDefinedClass parentClass, World world) {
@@ -66,6 +67,14 @@ public class UserDefinedClass {
 		else
 			return parentClass.getMethod(methodName);
 	}
+	
+	public void setConstructor(ClassMethod constructor) {
+		this.constructor = constructor;
+	}
+	
+	public ClassMethod getConstructor() {
+		return constructor;
+	}
 
 	public UserDefinedClass getParentClass() {
 		return parentClass;
@@ -79,7 +88,7 @@ public class UserDefinedClass {
 		if(tryParent == world.getRootClass()) {
 			return true;
 		}
-		UserDefinedClass p = parentClass;
+		UserDefinedClass p = this;
 		while(p != world.getRootClass()) {
 			if(p == tryParent) {
 				return true;

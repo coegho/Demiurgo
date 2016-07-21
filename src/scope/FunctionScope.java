@@ -7,7 +7,6 @@ import java.util.Map;
 import universe.ClassMethod;
 import universe.StoredSymbol;
 import values.IReturnValue;
-import values.IntegerValue;
 
 /**
  * 
@@ -32,8 +31,6 @@ public class FunctionScope extends Scope {
 			this.variables.put(argName,
 					new StoredSymbol(args.get(i)));
 		}
-		//return value, TODO: default values, type
-		this.variables.put(method.getReturnVariable(), new StoredSymbol(new IntegerValue(0)));
 	}
 	
 	@Override

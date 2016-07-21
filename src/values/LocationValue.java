@@ -2,12 +2,12 @@ package values;
 
 import exceptions.ValueCastException;
 import universe.World;
-import universe.WorldContainer;
+import universe.WorldLocation;
 
 public class LocationValue implements IReturnValue {
-	WorldContainer location;
+	WorldLocation location;
 
-	public LocationValue(WorldContainer location) {
+	public LocationValue(WorldLocation location) {
 		this.location = location;
 	}
 	
@@ -20,7 +20,7 @@ public class LocationValue implements IReturnValue {
 		return ReturnValueTypes.LOCATION;
 	}
 
-	public WorldContainer getLocation() {
+	public WorldLocation getLocation() {
 		return location;
 	}
 
@@ -141,6 +141,11 @@ public class LocationValue implements IReturnValue {
 		throw new ValueCastException();
 	}
 
+	@Override
+	public boolean canAssign(IReturnValue newRValue) {
+		return (newRValue instanceof LocationValue);
+	}
+	
 	@Override
 	public boolean assign(IReturnValue newRValue) {
 		if(newRValue instanceof LocationValue) {

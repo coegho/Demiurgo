@@ -141,6 +141,11 @@ public class ReferenceValue implements IReturnValue {
 	}
 
 	@Override
+	public boolean canAssign(IReturnValue newRValue) {
+		return (newRValue instanceof ReferenceValue);
+	}
+	
+	@Override
 	public boolean assign(IReturnValue newRValue) {
 		if(newRValue instanceof ReferenceValue) {
 			reference = ((ReferenceValue)newRValue).getReference();

@@ -154,6 +154,16 @@ public class ObjectValue implements IReturnValue {
 	public String castToString() throws ValueCastException {
 		throw new ValueCastException();
 	}
+	
+	@Override
+	public boolean canAssign(IReturnValue newRValue) {
+		if (newRValue instanceof ObjectValue) {
+			ObjectValue o = (ObjectValue)newRValue;
+			//check polymorphism
+			return (o.getObj().getUserClass().inheritFrom(itsClass));
+		}
+		return false;
+	}
 
 	@Override
 	public boolean assign(IReturnValue newRValue) {

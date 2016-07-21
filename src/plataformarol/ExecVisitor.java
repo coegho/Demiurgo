@@ -210,7 +210,6 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 			// Common list of depth=1
 			return ListValue.defaultValue(innerType.getType(), 1);
 		}
-		// TODO: could it be simplified?
 	}
 
 	/**
@@ -415,6 +414,7 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	/**
 	 * Assigns the value on the right to the variable on the left.
 	 * <p>
+	 * operation: variable ASSIGN operation
 	 */
 	@Override
 	public IReturnValue visitAssign(AssignContext ctx) {
@@ -422,7 +422,7 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 		IReturnValue right = visit(ctx.operation());
 		left.getReference().assign(right);
 		//TODO: check type
-		return right;
+		return left.getReference().getValue();
 	}
 
 	/**
@@ -538,8 +538,33 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	@Override
 	public IReturnValue visitNew_obj(New_objContext ctx) {
 		UserDefinedClass objClass = getSM().getClassFromName(ctx.SYMBOL().getText().toLowerCase());
-		// TODO: constructor parameters
-		return new ObjectValue(new WorldObject(objClass, getSM().getCurrentRoom()));
+		
+		List<IReturnValue> args = new ArrayList<>();
+		for(OperationContext a : ctx.operation()) {
+			args.add(visit(a));
+		}
+		
+		if(objClass.getConstructor() == null && args.size()> 1) {
+			//Unnecessary arguments, there is no constructor
+			return null;
+			//TODO: error
+		}
+		if(objClass.getConstructor() != null && !objClass.getConstructor().checkArgs(args)) {
+			//Wrong constructor arguments
+			return null;
+			//TODO: error
+		}
+		
+		WorldObject obj = new WorldObject(objClass, getSM().getCurrentRoom());
+
+		if(objClass.getConstructor() != null) {
+			ObjectScope os = new ObjectScope(obj);
+			getSM().pushScope(new FunctionScope(objClass.getConstructor(), args, os));
+			visit(objClass.getConstructor().getNode());
+			getSM().popScope();
+		}
+		
+		return new ObjectValue(obj);
 	}
 
 	/**
@@ -658,26 +683,34 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	 */
 	@Override
 	public IReturnValue visitMethod(MethodContext ctx) {
-		String methodName = ctx.metname.getText().toLowerCase();
-
 		// TODO: non-class methods?
 		UserDefinedClass curClass = ((ClassScope) getSM().getScope()).getCurrentClass();
+		String methodName = ctx.metname.getText().toLowerCase();
 		ClassMethod cm = new ClassMethod(ctx.code());
-
-		// Return value
-		if (ctx.ASSIGN() != null) {
-			String returnName = ctx.SYMBOL(0).getText().toLowerCase();
-			cm.setReturnVariable(returnName);
-
+		
+		if(methodName.equals(curClass.getClassName())) { //CONSTRUCTOR
+			if(ctx.ASSIGN() != null) {
+				//TODO: error
+				return null;
+			}
+			curClass.setConstructor(cm); //TODO: at this moment only one constructor is allowed
 		}
+		else {
+			// Return value
+			if (ctx.ASSIGN() != null) {
+				String returnName = ctx.SYMBOL(0).getText().toLowerCase();
+				cm.setReturnVariable(returnName, new StoredSymbol(visit(ctx.data_type())));
 
-		((ClassScope) getSM().getScope()).setDefiningMethod(cm);
-
-		if (ctx.args() != null)
+			}
+			curClass.addMethod(methodName, cm);
+		}
+		
+		if (ctx.args() != null) {
+			((ClassScope) getSM().getScope()).setDefiningMethod(cm);
 			visit(ctx.args());
-
-		curClass.addMethod(methodName, cm);
-		((ClassScope) getSM().getScope()).setDefiningMethod(null);
+			((ClassScope) getSM().getScope()).setDefiningMethod(null);
+		}
+		
 		return null;
 	}
 

@@ -271,6 +271,16 @@ public class FloatValue implements IReturnValue {
 	}
 	
 	@Override
+	public boolean canAssign(IReturnValue newRValue) {
+		try {
+			newRValue.castToFloat();
+			return true;
+		} catch(ValueCastException ex) {
+			return false;
+		}
+	}
+	
+	@Override
 	public boolean assign(IReturnValue newRValue) {
 		try {
 			value = newRValue.castToFloat();

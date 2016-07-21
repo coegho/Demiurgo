@@ -1,6 +1,6 @@
 package universe;
 
-public class Inventory extends WorldContainer {
+public class Inventory extends WorldLocation {
 	protected WorldObject container;
 
 	public Inventory(World world) {

@@ -290,6 +290,16 @@ public class IntegerValue implements IReturnValue {
 	public String castToString() throws ValueCastException {
 		return Integer.toString(value);
 	}
+	
+	@Override
+	public boolean canAssign(IReturnValue newRValue) {
+		try {
+			newRValue.castToInteger();
+			return true;
+		} catch(ValueCastException ex) {
+			return false;
+		}
+	}
 
 	@Override
 	public boolean assign(IReturnValue newRValue) {

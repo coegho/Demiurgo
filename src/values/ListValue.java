@@ -493,6 +493,15 @@ public class ListValue implements IReturnValue {
 	}
 
 	@Override
+	public boolean canAssign(IReturnValue newRValue) {
+		if(newRValue instanceof ListValue) {
+			ListValue lv = (ListValue)newRValue;
+			return getDepth() == lv.getDepth() && getInnerType() == lv.getInnerType();
+		}
+		return false;
+	}
+	
+	@Override
 	public boolean assign(IReturnValue newRValue) {
 		if(newRValue instanceof ListValue) {
 			value = ((ListValue)newRValue).getValue();

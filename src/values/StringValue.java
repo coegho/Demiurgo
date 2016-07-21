@@ -187,6 +187,16 @@ public class StringValue implements IReturnValue {
 	}
 
 	@Override
+	public boolean canAssign(IReturnValue newRValue) {
+		try {
+			newRValue.castToString();
+			return true;
+		} catch(ValueCastException ex) {
+			return false;
+		}
+	}
+	
+	@Override
 	public boolean assign(IReturnValue newRValue) {
 		try {
 			value = newRValue.castToString();

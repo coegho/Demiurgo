@@ -7,11 +7,13 @@ import java.util.Map;
 
 import org.antlr.v4.runtime.tree.ParseTree;
 
+import values.IReturnValue;
+
 public class ClassMethod {
 	protected ParseTree node;
 	protected List<String> argNames; //arguments ordered by num
 	protected Map<String, StoredSymbol> args;
-	protected String ReturnVariable;
+	protected String retVarName;
 	
 	public ClassMethod(ParseTree node) {
 		this.node = node;
@@ -28,11 +30,12 @@ public class ClassMethod {
 	}
 
 	public String getReturnVariable() {
-		return ReturnVariable;
+		return retVarName;
 	}
 
-	public void setReturnVariable(String returnVariable) {
-		ReturnVariable = returnVariable;
+	public void setReturnVariable(String varName, StoredSymbol varValue) {
+		retVarName = varName;
+		args.put(varName, varValue);
 	}
 	
 	
@@ -47,6 +50,18 @@ public class ClassMethod {
 	public void addArgument(String argName, StoredSymbol type) {
 		argNames.add(argName);
 		args.put(argName, type);
+	}
+
+	public boolean checkArgs(List<IReturnValue> argValues) {
+		if(argNames.size() != argValues.size()) {
+			return false;
+		}
+		for(int i=0; i < argNames.size(); i++) {
+			if(!args.get(argNames.get(i)).getValue().canAssign(argValues.get(i))) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 }

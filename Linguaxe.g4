@@ -2,8 +2,8 @@ grammar Linguaxe;
 
 //Parser rules
 
-s : class_def	#classDef
-	| code		#sCode
+s : nl? class_def nl?	#classDef
+	| nl? code nl?		#sCode
 	;
 
 class_def : SYMBOL ( INHERIT SYMBOL )? nl? '{' nl? fields? methods? '}' ;
@@ -14,11 +14,11 @@ var_decl : data_type SYMBOL (ASSIGN operation)? ;
 
 methods : (method nl?)+ ;
 
-method : ( data_type SYMBOL ASSIGN )? metname=SYMBOL '(' args? ')' nl? '{' code? '}' ;
+method : ( data_type SYMBOL ASSIGN )? metname=SYMBOL '(' args? ')' nl? '{' nl? code? nl? '}' ;
 
 args : data_type SYMBOL ( ',' data_type SYMBOL )* ;
 
-code : nl? line (nl line)* nl? ;
+code : line (nl line)* ;
 
 line : exp_if
 	| exp_for
@@ -72,9 +72,9 @@ room_path : SYMBOL											#relativeRoom
 	| room_path '/' SYMBOL									#leafRoom
 	;
 
-exp_if : IF '(' operation ')' nl? '{' code '}' ( nl? ELSE nl? '{' code '}' )? ;
+exp_if : IF '(' operation ')' nl? '{' nl? code? nl? '}' ( nl? ELSE nl? '{' nl? code? nl? '}' )? ;
 
-exp_for : FOR '(' SYMBOL ':' operation ')' nl? '{' code '}' ;
+exp_for : FOR '(' SYMBOL ':' operation ')' nl? '{' code? '}' ;
 
 exp_user : USERNAME USEROBJ operation ;
 
@@ -101,7 +101,7 @@ ECHO: '!' ;
 
 INT_TYPE: [Ii][Nn][Tt] ;
 FLOAT_TYPE: [Ff][Ll][Oo][Aa][Tt] ;
-STRING_TYPE: [Ss][Tt][Rr][Ii][Nn][Gg] ;
+STRING_TYPE: [Ss][Tt][Rr] ;
 
 SYMBOL : ([dD][a-zA-Z_]|[a-cA-Ce-zE-Z_])[a-zA-Z0-9_]* ;
 USERNAME : '$'[a-zA-Z0-9_]+ ;

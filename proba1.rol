@@ -1,7 +1,13 @@
 humano {
-int vida = d10
+int vida = 5
 int atAque = 2
 int defensa
+str nome = "humano"
+
+  humano(int vida, int ataque) {
+  	this.vida = vida
+  	this.ataque = ataque
+  }
 
   int dano = atacar(humano outro) {
     outro.vida = outro.vida - ataque

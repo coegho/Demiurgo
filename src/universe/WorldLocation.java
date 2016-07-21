@@ -3,11 +3,11 @@ package universe;
 import java.util.ArrayList;
 import java.util.List;
 
-public class WorldContainer {
+public class WorldLocation {
 	protected World world;
 	protected List<WorldObject> objects;
 	
-	public WorldContainer(World world) {
+	public WorldLocation(World world) {
 		this.world = world;
 		objects = new ArrayList<>();
 	}
