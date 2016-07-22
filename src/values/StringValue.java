@@ -156,12 +156,6 @@ public class StringValue implements IReturnValue {
 		// TODO: exception
 		return null;
 	}
-
-	@Override
-	public IReturnValue exponent(IReturnValue other) {
-		// TODO: throw exception
-		return null;
-	}
 	
 	@Override
 	public int castToInteger() throws ValueCastException {

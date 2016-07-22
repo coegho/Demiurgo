@@ -4,9 +4,7 @@ int atAque = 2
 int defensa
 str nome = "humano"
 
-  humano(int vida, int ataque) {
-  	this.vida = vida
-  	this.ataque = ataque
+  humano() {
   }
 
   int dano = atacar(humano outro) {

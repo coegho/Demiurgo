@@ -32,13 +32,12 @@ variable : SYMBOL					#rootVariable
 	| variable '.' SYMBOL			#intermediateVariable
 	;
 
-function : (variable '.')? SYMBOL '(' (operation (',' operation)*)? ')' ;
+function_call : (variable '.')? SYMBOL '(' (operation (',' operation)*)? ')' ;
 
-operation : function										#functionOp
+operation : function_call										#functionOp
 	| '-' operation											#negative
 	| D operation											#dice
 	| operation D operation									#multDice
-	| operation '^' operation								#exponent
 	| operation op=(MUL|DIV) operation						#MulDiv
 	| operation op=(ADD|SUB) operation						#AddSub
 	| operation op=(NEQ|EQ|GREQ|LESEQ|LESS|GREAT) operation	#compare
@@ -72,9 +71,14 @@ room_path : SYMBOL											#relativeRoom
 	| room_path '/' SYMBOL									#leafRoom
 	;
 
-exp_if : IF '(' operation ')' nl? '{' nl? code? nl? '}' ( nl? ELSE nl? '{' nl? code? nl? '}' )? ;
+exp_if : IF '(' operation ')' nl? '{' nl? code? nl? '}' exp_else?
+	| IF '(' operation ')' nl?  nl? line? nl? exp_else? ;
 
-exp_for : FOR '(' SYMBOL ':' operation ')' nl? '{' code? '}' ;
+exp_else : nl? ELSE nl? '{' nl? code? nl? '}'
+	| nl? ELSE nl? nl? line? nl?  ;
+
+exp_for : FOR '(' SYMBOL ':' operation ')' nl? '{'  nl? code? nl? '}'
+	| FOR '(' SYMBOL ':' operation ')' nl?  nl? line nl? ;
 
 exp_user : USERNAME USEROBJ operation ;
 

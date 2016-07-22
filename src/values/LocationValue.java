@@ -119,12 +119,6 @@ public class LocationValue implements IReturnValue {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
-	@Override
-	public IReturnValue exponent(IReturnValue another) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 	
 	@Override
 	public int castToInteger() throws ValueCastException {

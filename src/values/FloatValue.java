@@ -235,27 +235,6 @@ public class FloatValue implements IReturnValue {
 	}
 	
 	@Override
-	public IReturnValue exponent(IReturnValue other) {
-		if (other instanceof IntegerValue) {
-			return new FloatValue((float)Math.pow(getValue(), ((IntegerValue) other).getValue()));
-		}
-		if (other instanceof FloatValue) {
-			return new FloatValue((float)Math.pow(getValue(), ((FloatValue) other).getValue()));
-		}
-		if(other instanceof StringValue) {
-			//TODO: throw exception
-		}
-		if (other instanceof ListValue) {
-			ListValue lv = new ListValue();
-			for (IReturnValue x : ((ListValue)other).getValue()) {
-				lv.getValue().add(exponent(x));
-			}
-			return lv;
-		}
-		return null;
-	}
-	
-	@Override
 	public int castToInteger() throws ValueCastException {
 		return (int)value;
 	}

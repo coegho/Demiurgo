@@ -13,7 +13,7 @@ public class ListValue implements IReturnValue {
 	public ListValue(List<IReturnValue> value) {
 		this.value = value;
 	}
-
+	
 	public ListValue() {
 		this.value = new ArrayList<>();
 	}
@@ -441,39 +441,6 @@ public class ListValue implements IReturnValue {
 			}
 		}
 
-		return null;
-	}
-
-	@Override
-	public IReturnValue exponent(IReturnValue other) {
-		if (other instanceof StringValue) {
-			// TODO: throw exception
-		}
-		if (other instanceof IntegerValue || other instanceof FloatValue) {
-			ListValue lv = new ListValue();
-			for (IReturnValue x : getValue()) {
-				lv.getValue().add(x.exponent(other));
-			}
-			return lv;
-		}
-		if (other instanceof ListValue) {
-
-			if (getValue().size() == ((ListValue) other).getValue().size()) {
-				ListValue lv = new ListValue();
-				List<IReturnValue> a, b, out;
-				a = this.getValue();
-				b = ((ListValue) other).getValue();
-				out = lv.getValue();
-
-				for (int i = 0; i < a.size(); i++) {
-					out.add(a.get(i).exponent(b.get(i)));
-				}
-				return lv;
-			} else {
-				// throw new Exception("Number of elements doesn't match");
-				// //TODO
-			}
-		}
 		return null;
 	}
 	

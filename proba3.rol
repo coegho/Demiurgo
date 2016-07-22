@@ -1,0 +1,11 @@
+humano a = new Humano()
+humano b = new guerreiro()
+
+! a.nome + ", con "+ a.vida + " puntos de vida e " + a.ataque +" puntos de ataque"
+! "enfróntase a " + b.nome + ", con "+ b.vida + " puntos de vida e " + b.ataque +" puntos de ataque"
+! "B ataca a A e provócalle " + b.atacar(a) + " puntos de dano"
+! "Agora " + a.nome + " só ten " + a.vida + " puntos de vida"
+
+
+if(a.vida <= 0)
+  ! a.nome + " caeu en combate!"

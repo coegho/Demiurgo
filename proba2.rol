@@ -1,11 +1,7 @@
-humano a = new Humano(10,20)
-humano b = new humano(15,30)
-@ est = @estancia2
-
-
-! a.vida
-! a.ataque
-! b.vida
-! b.ataque
-
-a >> est
+guerreiro : humano {
+	guerreiro() {
+		this.vida = 15
+		this.ataque = 20
+		this.nome = "guerreiro"
+	}
+}

@@ -20,16 +20,23 @@ public class FunctionScope extends Scope {
 	protected ClassMethod method;
 	protected ObjectScope parent;
 	protected Map<String, StoredSymbol> variables;
+	protected String retVarName;
 	
 	public FunctionScope(ClassMethod method,
-			List<IReturnValue> args, ObjectScope parent) {
+			List<IReturnValue> args, String retVarName, ObjectScope parent) {
 		this.method = method;
 		this.parent = parent;
+		this.retVarName = retVarName;
 		this.variables = new HashMap<>();
 		for(int i = 0; i<args.size(); i++) {
 			String argName = method.getArgumentName(i);
 			this.variables.put(argName,
 					new StoredSymbol(args.get(i)));
+		}
+		if(method.hasReturnArgument()) {
+			String retArgName = method.getReturnArgumentName();
+			IReturnValue retArg = method.getArgumentType(retArgName);
+			this.variables.put(retArgName, new StoredSymbol(retArg));
 		}
 	}
 	
@@ -51,4 +58,7 @@ public class FunctionScope extends Scope {
 		return parent;
 	}
 
+	public StoredSymbol getReturnVariable() {
+		return variables.get(retVarName);
+	}
 }

@@ -135,12 +135,6 @@ public class ObjectValue implements IReturnValue {
 	}
 
 	@Override
-	public IReturnValue exponent(IReturnValue another) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public int castToInteger() throws ValueCastException {
 		throw new ValueCastException();
 	}

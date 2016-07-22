@@ -156,15 +156,6 @@ public interface IReturnValue {
 	public IReturnValue multDice(IReturnValue another);
 
 	/**
-	 * Returns the result of doing an exponentiation.
-	 * 
-	 * @param another
-	 * @return
-	 * 
-	 */
-	public IReturnValue exponent(IReturnValue another);
-
-	/**
 	 * Casts the inner value to an integer value. 
 	 * @return
 	 * @throws ValueCastException

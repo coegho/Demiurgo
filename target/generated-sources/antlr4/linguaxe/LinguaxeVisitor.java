@@ -88,11 +88,11 @@ public interface LinguaxeVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitIntermediateVariable(LinguaxeParser.IntermediateVariableContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link LinguaxeParser#function}.
+	 * Visit a parse tree produced by {@link LinguaxeParser#function_call}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitFunction(LinguaxeParser.FunctionContext ctx);
+	T visitFunction_call(LinguaxeParser.Function_callContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code parensOp}
 	 * labeled alternative in {@link LinguaxeParser#operation}.
@@ -248,13 +248,6 @@ public interface LinguaxeVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitAssign(LinguaxeParser.AssignContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code exponent}
-	 * labeled alternative in {@link LinguaxeParser#operation}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitExponent(LinguaxeParser.ExponentContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link LinguaxeParser#parens}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -305,6 +298,12 @@ public interface LinguaxeVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitExp_if(LinguaxeParser.Exp_ifContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link LinguaxeParser#exp_else}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExp_else(LinguaxeParser.Exp_elseContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link LinguaxeParser#exp_for}.
 	 * @param ctx the parse tree
