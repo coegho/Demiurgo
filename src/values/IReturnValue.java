@@ -1,5 +1,6 @@
 package values;
 
+import exceptions.IllegalOperationException;
 import exceptions.ValueCastException;
 
 /**
@@ -18,32 +19,36 @@ public interface IReturnValue {
 	 * 
 	 * @param another
 	 * @return
+	 * @throws IllegalOperationException
 	 */
-	public IReturnValue add(IReturnValue another);
+	public IReturnValue add(IReturnValue another) throws IllegalOperationException;
 
 	/**
 	 * Returns the result of subtracting another value from this one.
 	 * 
 	 * @param another
 	 * @return
+	 * @throws IllegalOperationException
 	 */
-	public IReturnValue sub(IReturnValue another);
+	public IReturnValue sub(IReturnValue another) throws IllegalOperationException;
 
 	/**
 	 * Returns the result of multiply this value to another.
 	 * 
 	 * @param another
 	 * @return
+	 * @throws IllegalOperationException
 	 */
-	public IReturnValue mul(IReturnValue another);
+	public IReturnValue mul(IReturnValue another) throws IllegalOperationException;
 
 	/**
 	 * Returns the result of divide this value by another.
 	 * 
 	 * @param another
 	 * @return
+	 * @throws IllegalOperationException
 	 */
-	public IReturnValue div(IReturnValue another);
+	public IReturnValue div(IReturnValue another) throws IllegalOperationException;
 
 	/**
 	 * Returns an IntegerValue with value 1 if this value is equal to another,
@@ -51,8 +56,9 @@ public interface IReturnValue {
 	 * 
 	 * @param another
 	 * @return
+	 * @throws IllegalOperationException
 	 */
-	public IReturnValue eq(IReturnValue another);
+	public IReturnValue eq(IReturnValue another) throws IllegalOperationException;
 
 	/**
 	 * Returns an IntegerValue with value 1 if this value is different from
@@ -60,8 +66,9 @@ public interface IReturnValue {
 	 * 
 	 * @param another
 	 * @return
+	 * @throws IllegalOperationException
 	 */
-	public IReturnValue neq(IReturnValue another);
+	public IReturnValue neq(IReturnValue another) throws IllegalOperationException;
 
 	/**
 	 * Returns an IntegerValue with value 1 if this value is greater of equal to
@@ -69,8 +76,9 @@ public interface IReturnValue {
 	 * 
 	 * @param another
 	 * @return
+	 * @throws IllegalOperationException
 	 */
-	public IReturnValue greq(IReturnValue another);
+	public IReturnValue greq(IReturnValue another) throws IllegalOperationException;
 
 	/**
 	 * Returns an IntegerValue with value 1 if this value is lesser of equal to
@@ -78,8 +86,9 @@ public interface IReturnValue {
 	 * 
 	 * @param another
 	 * @return
+	 * @throws IllegalOperationException
 	 */
-	public IReturnValue leseq(IReturnValue another);
+	public IReturnValue leseq(IReturnValue another) throws IllegalOperationException;
 
 	/**
 	 * Returns an IntegerValue with value 1 if this value is greater than
@@ -87,8 +96,9 @@ public interface IReturnValue {
 	 * 
 	 * @param another
 	 * @return
+	 * @throws IllegalOperationException
 	 */
-	public IReturnValue great(IReturnValue another);
+	public IReturnValue great(IReturnValue another) throws IllegalOperationException;
 
 	/**
 	 * Returns an IntegerValue with value 1 if this value is lesser than
@@ -96,8 +106,9 @@ public interface IReturnValue {
 	 * 
 	 * @param another
 	 * @return
+	 * @throws IllegalOperationException
 	 */
-	public IReturnValue less(IReturnValue another);
+	public IReturnValue less(IReturnValue another) throws IllegalOperationException;
 
 	/**
 	 * Returns an IntegerValue with value 1 if this value is true and another
@@ -105,9 +116,10 @@ public interface IReturnValue {
 	 * 
 	 * @param another
 	 * @return
+	 * @throws IllegalOperationException
 	 * 
 	 */
-	public IReturnValue and(IReturnValue another);
+	public IReturnValue and(IReturnValue another) throws IllegalOperationException;
 
 	/**
 	 * Returns an IntegerValue with value 1 if this value is true or another one
@@ -115,35 +127,39 @@ public interface IReturnValue {
 	 * 
 	 * @param another
 	 * @return
+	 * @throws IllegalOperationException
 	 * 
 	 */
-	public IReturnValue or(IReturnValue another);
+	public IReturnValue or(IReturnValue another) throws IllegalOperationException;
 
 	/**
 	 * Returns the negative of this value.
 	 * 
 	 * @return
+	 * @throws IllegalOperationException
 	 * 
 	 */
-	public IReturnValue negative();
+	public IReturnValue negative() throws IllegalOperationException;
 
 	/**
 	 * Returns an IntegerValue with value 1 if this value is false, or value 0
 	 * if not.
 	 * 
 	 * @return
+	 * @throws IllegalOperationException
 	 * 
 	 */
-	public IReturnValue not();
+	public IReturnValue not() throws IllegalOperationException;
 
 	/**
 	 * Returns the result of a dice roll. This value determines the number of
 	 * faces.
 	 * 
 	 * @return
+	 * @throws IllegalOperationException
 	 * 
 	 */
-	public IReturnValue dice();
+	public IReturnValue dice() throws IllegalOperationException;
 
 	/**
 	 * Returns the result of some dice rolls. This value determines the number
@@ -151,41 +167,55 @@ public interface IReturnValue {
 	 * 
 	 * @param another
 	 * @return
+	 * @throws IllegalOperationException
 	 * 
 	 */
-	public IReturnValue multDice(IReturnValue another);
+	public IReturnValue multDice(IReturnValue another) throws IllegalOperationException;
 
 	/**
-	 * Casts the inner value to an integer value. 
+	 * Casts the inner value to an integer value.
+	 * 
 	 * @return
 	 * @throws ValueCastException
 	 */
 	public int castToInteger() throws ValueCastException;
-	
+
 	/**
-	 * Casts the inner value to a float value. 
+	 * Casts the inner value to a float value.
+	 * 
 	 * @return
 	 * @throws ValueCastException
 	 */
 	public float castToFloat() throws ValueCastException;
-	
+
 	/**
-	 * Casts the inner value to a string value. 
+	 * Casts the inner value to a string value.
+	 * 
 	 * @return
 	 * @throws ValueCastException
 	 */
 	public String castToString() throws ValueCastException;
-	
+
 	/**
-	 * Checks if the new value can be assigned on this object considering its type.
+	 * Returns true if the value of this object counts as true, false otherwise.
+	 * 
+	 * @return
+	 * @throws ValueCastException
+	 */
+	public boolean isTrue() throws ValueCastException;
+
+	/**
+	 * Checks if the new value can be assigned on this object considering its
+	 * type.
 	 * 
 	 * @param value
 	 * @return True if the new value can be assigned, false otherwise.
 	 */
 	public boolean canAssign(IReturnValue newRValue);
-	
+
 	/**
-	 * Assigns a new value without changing type, making the pertinent cast operations.
+	 * Assigns a new value without changing type, making the pertinent cast
+	 * operations.
 	 * 
 	 * @param value
 	 * @return False if there is not cast operation.
@@ -195,11 +225,12 @@ public interface IReturnValue {
 	/**
 	 * Returns the value specified by index from a list.
 	 * 
-	 * @param another
+	 * @param index
 	 * @return
+	 * @throws IllegalOperationException
 	 * 
 	 */
-	public IReturnValue getFromIndex(IReturnValue another);
+	public IReturnValue getFromIndex(int index) throws IllegalOperationException;
 
 	/**
 	 * Returns an object with the same exact value as this one.
@@ -207,13 +238,6 @@ public interface IReturnValue {
 	 * @return
 	 */
 	public IReturnValue cloneValue();
-
-	/**
-	 * Returns true if the value of this object counts as true, false otherwise.
-	 * 
-	 * @return
-	 */
-	public boolean isTrue();
 
 	/**
 	 * Returns the type from a enum. Useful to check compatibility of types.

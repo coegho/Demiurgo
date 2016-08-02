@@ -3,6 +3,8 @@ package values;
 import java.util.ArrayList;
 import java.util.List;
 
+import exceptions.IllegalOperationException;
+import exceptions.SizeMismatchException;
 import exceptions.ValueCastException;
 
 public class ListValue implements IReturnValue {
@@ -56,7 +58,7 @@ public class ListValue implements IReturnValue {
 	}
 
 	@Override
-	public IReturnValue add(IReturnValue other) {
+	public IReturnValue add(IReturnValue other) throws IllegalOperationException {
 		if (other instanceof IntegerValue || other instanceof FloatValue || other instanceof StringValue) {
 			ListValue av = new ListValue();
 			for (IReturnValue x : getValue()) {
@@ -78,21 +80,19 @@ public class ListValue implements IReturnValue {
 				}
 				return av;
 			} else {
-				// throw new Exception("Number of elements doesn't match");
-				// //TODO
+				throw new SizeMismatchException();
 			}
 		}
-		return null;
+		throw new IllegalOperationException();
 	}
 
 	@Override
-	public IReturnValue sub(IReturnValue other) {
+	public IReturnValue sub(IReturnValue other) throws IllegalOperationException {
 		return add(other.negative());
-
 	}
 
 	@Override
-	public IReturnValue mul(IReturnValue other) {
+	public IReturnValue mul(IReturnValue other) throws IllegalOperationException {
 		if (other instanceof IntegerValue || other instanceof FloatValue || other instanceof StringValue) {
 			ListValue av = new ListValue();
 			for (IReturnValue x : getValue()) {
@@ -114,15 +114,14 @@ public class ListValue implements IReturnValue {
 				}
 				return av;
 			} else {
-				// throw new Exception("Number of elements doesn't match");
-				// //TODO
+				throw new SizeMismatchException();
 			}
 		}
-		return null;
+		throw new IllegalOperationException();
 	}
 
 	@Override
-	public IReturnValue div(IReturnValue other) {
+	public IReturnValue div(IReturnValue other) throws IllegalOperationException {
 		if (other instanceof IntegerValue || other instanceof FloatValue || other instanceof StringValue) {
 			ListValue av = new ListValue();
 			for (IReturnValue x : getValue()) {
@@ -144,15 +143,14 @@ public class ListValue implements IReturnValue {
 				}
 				return av;
 			} else {
-				// throw new Exception("Number of elements doesn't match");
-				// //TODO
+				throw new SizeMismatchException();
 			}
 		}
-		return null;
+		throw new IllegalOperationException();
 	}
 
 	@Override
-	public IReturnValue negative() {
+	public IReturnValue negative() throws IllegalOperationException {
 		ListValue lv = new ListValue();
 		for (IReturnValue x : getValue()) {
 			lv.getValue().add(x.negative());
@@ -161,7 +159,7 @@ public class ListValue implements IReturnValue {
 	}
 
 	@Override
-	public IReturnValue eq(IReturnValue other) {
+	public IReturnValue eq(IReturnValue other) throws IllegalOperationException {
 		if (other instanceof IntegerValue || other instanceof FloatValue || other instanceof StringValue) {
 			ListValue av = new ListValue();
 			for (IReturnValue x : getValue()) {
@@ -183,15 +181,14 @@ public class ListValue implements IReturnValue {
 				}
 				return av;
 			} else {
-				// throw new Exception("Number of elements doesn't match");
-				// //TODO
+				throw new SizeMismatchException();
 			}
 		}
-		return null;
+		throw new IllegalOperationException();
 	}
 
 	@Override
-	public IReturnValue neq(IReturnValue other) {
+	public IReturnValue neq(IReturnValue other) throws IllegalOperationException {
 		if (other instanceof IntegerValue || other instanceof FloatValue || other instanceof StringValue) {
 			ListValue av = new ListValue();
 			for (IReturnValue x : getValue()) {
@@ -213,15 +210,14 @@ public class ListValue implements IReturnValue {
 				}
 				return av;
 			} else {
-				// throw new Exception("Number of elements doesn't match");
-				// //TODO
+				throw new SizeMismatchException();
 			}
 		}
-		return null;
+		throw new IllegalOperationException();
 	}
 
 	@Override
-	public IReturnValue greq(IReturnValue other) {
+	public IReturnValue greq(IReturnValue other) throws IllegalOperationException {
 		if (other instanceof IntegerValue || other instanceof FloatValue || other instanceof StringValue) {
 			ListValue av = new ListValue();
 			for (IReturnValue x : getValue()) {
@@ -243,15 +239,14 @@ public class ListValue implements IReturnValue {
 				}
 				return av;
 			} else {
-				// throw new Exception("Number of elements doesn't match");
-				// //TODO
+				throw new SizeMismatchException();
 			}
 		}
-		return null;
+		throw new IllegalOperationException();
 	}
 
 	@Override
-	public IReturnValue leseq(IReturnValue other) {
+	public IReturnValue leseq(IReturnValue other) throws IllegalOperationException {
 		if (other instanceof IntegerValue || other instanceof FloatValue || other instanceof StringValue) {
 			ListValue av = new ListValue();
 			for (IReturnValue x : getValue()) {
@@ -273,15 +268,14 @@ public class ListValue implements IReturnValue {
 				}
 				return av;
 			} else {
-				// throw new Exception("Number of elements doesn't match");
-				// //TODO
+				throw new SizeMismatchException();
 			}
 		}
-		return null;
+		throw new IllegalOperationException();
 	}
 
 	@Override
-	public IReturnValue great(IReturnValue other) {
+	public IReturnValue great(IReturnValue other) throws IllegalOperationException {
 		if (other instanceof IntegerValue || other instanceof FloatValue || other instanceof StringValue) {
 			ListValue av = new ListValue();
 			for (IReturnValue x : getValue()) {
@@ -303,15 +297,14 @@ public class ListValue implements IReturnValue {
 				}
 				return av;
 			} else {
-				// throw new Exception("Number of elements doesn't match");
-				// //TODO
+				throw new SizeMismatchException();
 			}
 		}
-		return null;
+		throw new IllegalOperationException();
 	}
 
 	@Override
-	public IReturnValue less(IReturnValue other) {
+	public IReturnValue less(IReturnValue other) throws IllegalOperationException {
 		if (other instanceof IntegerValue || other instanceof FloatValue || other instanceof StringValue) {
 			ListValue av = new ListValue();
 			for (IReturnValue x : getValue()) {
@@ -333,24 +326,15 @@ public class ListValue implements IReturnValue {
 				}
 				return av;
 			} else {
-				// throw new Exception("Number of elements doesn't match");
-				// //TODO
+				throw new SizeMismatchException();
 			}
 		}
-		return null;
+		throw new IllegalOperationException();
 	}
 
 	@Override
-	public IReturnValue and(IReturnValue other) {
-		if (other instanceof IntegerValue || other instanceof FloatValue || other instanceof StringValue) {
-			ListValue av = new ListValue();
-			for (IReturnValue x : getValue()) {
-				av.getValue().add(x.and(other));
-			}
-			return av;
-		}
+	public IReturnValue and(IReturnValue other) throws IllegalOperationException {
 		if (other instanceof ListValue) {
-
 			if (getValue().size() == ((ListValue) other).getValue().size()) {
 				ListValue av = new ListValue();
 				List<IReturnValue> a, b, out;
@@ -363,24 +347,21 @@ public class ListValue implements IReturnValue {
 				}
 				return av;
 			} else {
-				// throw new Exception("Number of elements doesn't match");
-				// //TODO
+				throw new SizeMismatchException();
 			}
 		}
-		return null;
-	}
-
-	@Override
-	public IReturnValue or(IReturnValue other) {
-		if (other instanceof IntegerValue || other instanceof FloatValue || other instanceof StringValue) {
+		else {
 			ListValue av = new ListValue();
 			for (IReturnValue x : getValue()) {
-				av.getValue().add(x.or(other));
+				av.getValue().add(x.and(other));
 			}
 			return av;
 		}
-		if (other instanceof ListValue) {
+	}
 
+	@Override
+	public IReturnValue or(IReturnValue other) throws IllegalOperationException {
+		if (other instanceof ListValue) {
 			if (getValue().size() == ((ListValue) other).getValue().size()) {
 				ListValue av = new ListValue();
 				List<IReturnValue> a, b, out;
@@ -393,15 +374,20 @@ public class ListValue implements IReturnValue {
 				}
 				return av;
 			} else {
-				// throw new Exception("Number of elements doesn't match");
-				// //TODO
+				throw new SizeMismatchException();
 			}
 		}
-		return null;
+		else {
+			ListValue av = new ListValue();
+			for (IReturnValue x : getValue()) {
+				av.getValue().add(x.or(other));
+			}
+			return av;
+		}
 	}
 
 	@Override
-	public IReturnValue dice() {
+	public IReturnValue dice() throws IllegalOperationException {
 		ListValue lv = new ListValue();
 
 		for (IReturnValue x : getValue()) {
@@ -411,7 +397,7 @@ public class ListValue implements IReturnValue {
 	}
 
 	@Override
-	public IReturnValue multDice(IReturnValue other) {
+	public IReturnValue multDice(IReturnValue other) throws IllegalOperationException {
 		ListValue lv = new ListValue();
 
 		if (other instanceof FloatValue || other instanceof StringValue) {
@@ -436,12 +422,10 @@ public class ListValue implements IReturnValue {
 				}
 				return lv;
 			} else {
-				// throw new Exception("Number of elements doesn't match");
-				// //TODO
+				throw new SizeMismatchException();
 			}
 		}
-
-		return null;
+		throw new IllegalOperationException();
 	}
 	
 	@Override
@@ -478,13 +462,8 @@ public class ListValue implements IReturnValue {
 	}
 
 	@Override
-	public IReturnValue getFromIndex(IReturnValue another) {
-		if (another instanceof IntegerValue) {
-			return getValue().get(((IntegerValue) another).getValue());
-		} else {
-			// TODO: exception
-		}
-		return null;
+	public IReturnValue getFromIndex(int index) throws IllegalOperationException {
+		return getValue().get(index);
 	}
 	
 	public boolean set(int index, IReturnValue newRValue) {

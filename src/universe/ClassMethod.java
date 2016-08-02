@@ -80,7 +80,7 @@ public class ClassMethod {
 	public String toString() {
 		String r = "METHOD args={";
 		for(String n : argNames) {
-			r += " n";
+			r += " "+n;
 		}
 		r += " }";
 		return r;

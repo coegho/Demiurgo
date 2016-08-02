@@ -3,6 +3,8 @@ package plataformarol;
 import java.util.ArrayList;
 import java.util.List;
 
+import exceptions.IllegalOperationException;
+import exceptions.NotAListException;
 import exceptions.ValueCastException;
 import linguaxe.LinguaxeBaseVisitor;
 import linguaxe.LinguaxeParser;
@@ -97,7 +99,7 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 
 	@Override
 	/**
-	 * Emits output. Useful for debugging and helping the DX to write the
+	 * Emits output. Useful for debugging and helping the DX to describe the
 	 * situation.
 	 */
 	public IReturnValue visitEcho(EchoContext ctx) {
@@ -268,22 +270,28 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	 */
 	@Override
 	public IReturnValue visitCompare(CompareContext ctx) {
-		IReturnValue left = visit(ctx.operation(0));
-		IReturnValue right = visit(ctx.operation(1));
-		switch (ctx.op.getType()) {
-		case LinguaxeParser.EQ:
-			return left.eq(right);
-		case LinguaxeParser.NEQ:
-			return left.neq(right);
-		case LinguaxeParser.GREQ:
-			return left.greq(right);
-		case LinguaxeParser.LESEQ:
-			return left.leseq(right);
-		case LinguaxeParser.GREAT:
-			return left.great(right);
-		case LinguaxeParser.LESS:
-		default:
-			return left.less(right);
+		try {
+			IReturnValue left = visit(ctx.operation(0));
+			IReturnValue right = visit(ctx.operation(1));
+			switch (ctx.op.getType()) {
+			case LinguaxeParser.EQ:
+				return left.eq(right);
+			case LinguaxeParser.NEQ:
+				return left.neq(right);
+			case LinguaxeParser.GREQ:
+				return left.greq(right);
+			case LinguaxeParser.LESEQ:
+				return left.leseq(right);
+			case LinguaxeParser.GREAT:
+				return left.great(right);
+			case LinguaxeParser.LESS:
+			default:
+				return left.less(right);
+			}
+		} catch (IllegalOperationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
 		}
 	}
 
@@ -301,14 +309,20 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	 */
 	@Override
 	public IReturnValue visitAddSub(AddSubContext ctx) {
-		IReturnValue left = visit(ctx.operation(0));
-		IReturnValue right = visit(ctx.operation(1));
-		switch (ctx.op.getType()) {
-		case LinguaxeParser.ADD:
-			return left.add(right);
-		case LinguaxeParser.SUB:
-		default:
-			return left.sub(right);
+		try {
+			IReturnValue left = visit(ctx.operation(0));
+			IReturnValue right = visit(ctx.operation(1));
+			switch (ctx.op.getType()) {
+			case LinguaxeParser.ADD:
+				return left.add(right);
+			case LinguaxeParser.SUB:
+			default:
+				return left.sub(right);
+			}
+		} catch (IllegalOperationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
 		}
 	}
 
@@ -326,14 +340,20 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	 */
 	@Override
 	public IReturnValue visitMulDiv(MulDivContext ctx) {
-		IReturnValue left = visit(ctx.operation(0));
-		IReturnValue right = visit(ctx.operation(1));
-		switch (ctx.op.getType()) {
-		case LinguaxeParser.MUL:
-			return left.mul(right);
-		case LinguaxeParser.DIV:
-		default:
-			return left.div(right);
+		try {
+			IReturnValue left = visit(ctx.operation(0));
+			IReturnValue right = visit(ctx.operation(1));
+			switch (ctx.op.getType()) {
+			case LinguaxeParser.MUL:
+				return left.mul(right);
+			case LinguaxeParser.DIV:
+			default:
+				return left.div(right);
+			}
+		} catch (IllegalOperationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
 		}
 	}
 
@@ -354,7 +374,13 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	 */
 	@Override
 	public IReturnValue visitDice(DiceContext ctx) {
-		return visit(ctx.operation()).dice();
+		try {
+			return visit(ctx.operation()).dice();
+		} catch (IllegalOperationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	/**
@@ -364,9 +390,15 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	 */
 	@Override
 	public IReturnValue visitMultDice(MultDiceContext ctx) {
-		IReturnValue left = visit(ctx.operation(0));
-		IReturnValue right = visit(ctx.operation(1));
-		return left.multDice(right);
+		try {
+			IReturnValue left = visit(ctx.operation(0));
+			IReturnValue right = visit(ctx.operation(1));
+			return left.multDice(right);
+		} catch (IllegalOperationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	/**
@@ -376,9 +408,18 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	 */
 	@Override
 	public IReturnValue visitIndex(IndexContext ctx) {
-		IReturnValue left = visit(ctx.operation(0));
-		IReturnValue right = visit(ctx.operation(1));
-		return left.getFromIndex(right);
+		try {
+			IReturnValue left = visit(ctx.operation(0));
+			int index = visit(ctx.operation(1)).castToInteger();
+			return left.getFromIndex(index);
+		} catch (IllegalOperationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ValueCastException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	/**
@@ -388,7 +429,13 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	 */
 	@Override
 	public IReturnValue visitNegative(NegativeContext ctx) {
-		return visit(ctx.operation()).negative();
+		try {
+			return visit(ctx.operation()).negative();
+		} catch (IllegalOperationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	/**
@@ -405,14 +452,20 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	 */
 	@Override
 	public IReturnValue visitLogic(LogicContext ctx) {
-		IReturnValue left = visit(ctx.operation(0));
-		IReturnValue right = visit(ctx.operation(1));
-		switch (ctx.op.getType()) {
-		case LinguaxeParser.AND:
-			return left.and(right);
-		case LinguaxeParser.OR:
-		default:
-			return left.or(right);
+		try {
+			IReturnValue left = visit(ctx.operation(0));
+			IReturnValue right = visit(ctx.operation(1));
+			switch (ctx.op.getType()) {
+			case LinguaxeParser.AND:
+				return left.and(right);
+			case LinguaxeParser.OR:
+			default:
+				return left.or(right);
+			}
+		} catch (IllegalOperationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
 		}
 	}
 
@@ -425,9 +478,14 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	public IReturnValue visitAssign(AssignContext ctx) {
 		ReferenceValue left = (ReferenceValue) visit(ctx.variable());
 		IReturnValue right = visit(ctx.operation());
-		left.getReference().assign(right);
-		// TODO: check type
-		return left.getReference().getValue();
+		if(left.getReference().getValue().canAssign(right)) {
+			left.getReference().assign(right);
+			return left.getReference().getValue();
+		}
+		else {
+			//TODO: error
+			return null;
+		}
 	}
 
 	/**
@@ -439,11 +497,33 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	@Override
 	public IReturnValue visitIndexAssign(IndexAssignContext ctx) {
 		ReferenceValue ref = (ReferenceValue) visit(ctx.variable());
-		IntegerValue index = (IntegerValue) visit(ctx.operation(0));
-		IReturnValue value = visit(ctx.operation(1));
-		((ListValue) ref.getReference().getValue()).set(index.getValue(), value);
-		// TODO: check type
-		return value;
+		int index;
+		IReturnValue value;
+		IReturnValue element;
+		try {
+			index = visit(ctx.operation(0)).castToInteger();
+			value = visit(ctx.operation(1));
+			if(!(ref.getReference().getValue() instanceof ListValue))
+				throw new NotAListException();
+			element = ref.getReference().getValue().getFromIndex(index);
+			if(element.canAssign(value)) {
+				element.assign(value);
+				return value;
+			}
+			else {
+				throw new ValueCastException();
+			}
+		} catch (ValueCastException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NotAListException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalOperationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	/**
@@ -598,13 +678,18 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 		LoopScope newScope = new LoopScope(prevScope);
 		getSM().pushScope(newScope);
 
-		if (condition.isTrue()) {
-			if(ctx.code() != null)
-				visit(ctx.code());
-			else if(ctx.line() != null)
-				visit(ctx.line());
-		} else if (ctx.exp_else() != null) {
-			visit(ctx.exp_else());
+		try {
+			if (condition.isTrue()) {
+				if(ctx.code() != null)
+					visit(ctx.code());
+				else if(ctx.line() != null)
+					visit(ctx.line());
+			} else if (ctx.exp_else() != null) {
+				visit(ctx.exp_else());
+			}
+		} catch (ValueCastException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
 		getSM().popScope();
