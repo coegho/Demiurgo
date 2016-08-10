@@ -4,6 +4,7 @@ grammar Linguaxe;
 
 s : nl? class_def nl?	#classDef
 	| nl? code nl?		#sCode
+	|					#empty
 	;
 
 class_def : SYMBOL ( INHERIT SYMBOL )? nl? '{' nl? fields? methods? '}' ;
@@ -106,12 +107,14 @@ ECHO: '!' ;
 INT_TYPE: [Ii][Nn][Tt] ;
 FLOAT_TYPE: [Ff][Ll][Oo][Aa][Tt] ;
 STRING_TYPE: [Ss][Tt][Rr] ;
+TRUE: [Tt][Rr][Uu][Ee] ;
+FALSE: [Ff][Aa][Ll][Ss][Ee] ;
 
 SYMBOL : ([dD][a-zA-Z_]|[a-cA-Ce-zE-Z_])[a-zA-Z0-9_]* ;
 USERNAME : '$'[a-zA-Z0-9_]+ ;
 INT_NUMBER: [0-9]+;
 FLOAT_NUMBER : [0-9]+'.'[0-9]+ ;
-BOOLEAN : [Tt][Rr][Uu][Ee] | [Ff][Aa][Ll][Ss][Ee] ;
+BOOLEAN : TRUE | FALSE ;
 TEXT_STRING : '"' .*? '"' ;
 WS : [ \t\r]+ -> skip ; // skip spaces, tabs, newlines
 COMMENT : '/*' .*? '*/' -> skip ; // multiline comments

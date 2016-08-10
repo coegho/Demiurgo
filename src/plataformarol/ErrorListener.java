@@ -4,14 +4,17 @@ import java.util.Collections;
 import java.util.List;
 
 import org.antlr.v4.runtime.Recognizer;
+
+import exceptions.SyntaxErrorException;
+
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.RecognitionException;
 
 public class ErrorListener extends BaseErrorListener {
-	List<String> errors;
+	protected ErrorHandler errors;
 
-	public ErrorListener(List<String> errors) {
+	public ErrorListener(ErrorHandler errors) {
 		super();
 		this.errors = errors;
 	}
@@ -21,8 +24,7 @@ public class ErrorListener extends BaseErrorListener {
 			String msg, RecognitionException e) {
 		List<String> stack = ((Parser) recognizer).getRuleInvocationStack();
 		Collections.reverse(stack);
-		//System.err.println("rule stack: " + stack);
-		//System.err.println("line " + line + ":" + charPositionInLine + " at " + offendingSymbol + ": " + msg);
-		errors.add("line " + line + ":" + charPositionInLine + ": " + msg);
+		errors.notifyError(new SyntaxErrorException(
+				"line " + line + ":" + charPositionInLine + ": " + msg, e));
 	}
 }

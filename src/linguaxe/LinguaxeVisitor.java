@@ -26,6 +26,13 @@ public interface LinguaxeVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitSCode(LinguaxeParser.SCodeContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code empty}
+	 * labeled alternative in {@link LinguaxeParser#s}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitEmpty(LinguaxeParser.EmptyContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link LinguaxeParser#class_def}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

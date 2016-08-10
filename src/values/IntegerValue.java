@@ -7,6 +7,7 @@ import exceptions.ValueCastException;
 
 public class IntegerValue extends AbstractValue {
 	protected int value;
+	protected static Random r = new Random();
 
 	public IntegerValue(int value) {
 		this.value = value;
@@ -181,15 +182,12 @@ public class IntegerValue extends AbstractValue {
 
 	@Override
 	public IReturnValue dice() throws IllegalOperationException {
-		return new IntegerValue((new Random().nextInt(getValue())) + 1); // TODO:
-																			// Optimize
-																			// random
+		return new IntegerValue((r.nextInt(getValue())) + 1);
 	}
 
 	@Override
 	public IReturnValue multDice(IReturnValue other) throws IllegalOperationException {
 		ListValue lv = new ListValue();
-		Random r = new Random(); // TODO: Optimize random
 
 		if (other instanceof IntegerValue) {
 			for (int i = 0; i < getValue(); i++) {

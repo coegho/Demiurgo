@@ -28,6 +28,7 @@ public class PlataformaRol {
 	public static void main(String[] args) {
 		try {
 			//TODO: example data
+			ErrorHandler errors = new ErrorHandler();
 			List<String> users = new ArrayList<>();
 			users.add("user1");
 			World currentWorld = new World();
@@ -41,21 +42,21 @@ public class PlataformaRol {
 					LinguaxeLexer lexer = new LinguaxeLexer(input);
 					CommonTokenStream tokens = new CommonTokenStream(lexer);
 					LinguaxeParser parser = new LinguaxeParser(tokens);
+					parser.removeErrorListeners();
+					parser.addErrorListener(new ErrorListener(errors));
 					ParseTree tree = parser.s(); // parse; start at s
-					ExecVisitor eval = new ExecVisitor(currentWorld, currentRoom);
+					ExecVisitor eval = new ExecVisitor(currentWorld, currentRoom, errors);
 					eval.visit(tree);
 				}
 			} else {
-				InputStream is = System.in;
-				ANTLRInputStream input = new ANTLRInputStream(is);
-				LinguaxeLexer lexer = new LinguaxeLexer(input);
-				CommonTokenStream tokens = new CommonTokenStream(lexer);
-				LinguaxeParser parser = new LinguaxeParser(tokens);
-				ParseTree tree = parser.s(); // parse; start at s
-				ExecVisitor eval = new ExecVisitor(currentWorld, currentRoom);
-				eval.visit(tree);
+				//no input files
 			}
 
+			//Checking errors
+			for(String e : errors.getErrors()) {
+				System.out.println(e);
+			}
+			
 			//Checking world state
 			System.out.println("##########CHECKING WORLD STATE########");
 			System.out.println("--SEARCHING USERS--");
