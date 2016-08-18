@@ -3,6 +3,7 @@ package universe;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Represents a world into the system.
@@ -12,6 +13,7 @@ import java.util.Map;
  *
  */
 public class World {
+	protected String name;
 	protected Map<String, UserDefinedClass> classes;
 	protected Map<Long, WorldObject> objects;
 	protected Map<String, WorldObject> userObjects; //TODO: only a string to identify user?
@@ -20,7 +22,8 @@ public class World {
 	protected long currentId;
 	
 	
-	public World() {
+	public World(String name) {
+		this.name = name;
 		currentId = 0;
 		classes = new HashMap<>();
 		objects = new HashMap<>();
@@ -28,6 +31,14 @@ public class World {
 		rooms = new RoomGroup("", null);
 		rootClass = new RootObjectClass(this);
 		classes.put("object", rootClass);
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public void setName(String name) {
+		this.name = name;
 	}
 	
 	public UserDefinedClass getClassFromName(String className) {
@@ -126,11 +137,19 @@ public class World {
 	}
 	
 	/**
-	 * Debug method. It returns all rooms in the world.
+	 * Debug method. It returns all rooms in the world. TODO
 	 * @return
 	 */
 	public List<WorldRoom> getAllRooms() {
 		return rooms.getAllRooms();
+	}
+	
+	/**
+	 * Debug method. It returns all classes in the world. TODO
+	 * @return
+	 */
+	public Set<String> getAllClasses() {
+		return classes.keySet();
 	}
 	
 	/**
@@ -144,5 +163,6 @@ public class World {
 	
 	public void setUserObject(String user, WorldObject obj) {
 		userObjects.put(user, obj);
+		obj.setUser(user);
 	}
 }

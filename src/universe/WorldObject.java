@@ -10,6 +10,7 @@ public class WorldObject {
 	protected UserDefinedClass ownClass;
 	protected WorldLocation location;
 	protected Map<String, StoredSymbol> fields;
+	protected String user; //TODO: only a string?
 
 	public WorldObject(UserDefinedClass ownClass, WorldLocation location) {
 		this.ownClass = ownClass;
@@ -55,7 +56,22 @@ public class WorldObject {
 	}
 
 	public void setField(String fieldName, StoredSymbol value) {
-		//TODO: undeclared variables
 		fields.put(fieldName, value);
+	}
+	
+	public Map<String, String> fieldsToString() {
+		HashMap<String, String> ret = new HashMap<>();
+		for(String k : fields.keySet()) {
+			ret.put(k, fields.get(k).getValue().toString());
+		}
+		return ret;
+	}
+
+	public void setUser(String user) {
+		this.user = user;
+	}
+	
+	public String getUser() {
+		return user;
 	}
 }

@@ -1,7 +1,0 @@
-guerreiro : humano {
-	guerreiro() {
-		this.vida = 15
-		this.ataque = 20
-		this.nome = "guerreiro"
-	}
-}

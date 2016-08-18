@@ -19,11 +19,10 @@ public class UserDefinedClass {
 	protected ClassMethod constructor;
 	protected World world;
 
-	public UserDefinedClass(String className, UserDefinedClass parentClass, World world) {
+	public UserDefinedClass(String className, World world) {
 		this.className = className;
 		this.fields = new HashMap<>();
 		this.methods = new HashMap<>();
-		this.parentClass = parentClass;
 		this.world = world;
 	}
 
@@ -31,6 +30,10 @@ public class UserDefinedClass {
 		return className;
 	}
 
+	public World getWorld() {
+		return world;
+	}
+	
 	public Map<String, StoredSymbol> getRealFields() {
 		return fields;
 	}

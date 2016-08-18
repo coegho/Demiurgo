@@ -13,6 +13,7 @@ import exceptions.NotAListException;
 import exceptions.NotAnObjectException;
 import exceptions.RoomNotFoundException;
 import exceptions.UndeclaredVariableException;
+import exceptions.UndefinedClassException;
 import exceptions.ValueCastException;
 import exceptions.WrongMovementException;
 import linguaxe.LinguaxeBaseVisitor;
@@ -91,13 +92,12 @@ import values.StringValue;
  * @version %I%, %G%
  * @since 1.0
  */
-public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
+public abstract class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 
 	protected ScopeManager sm;
 	protected ErrorHandler errors;
 
-	public ExecVisitor(World world, WorldRoom room, ErrorHandler errors) {
-		sm = new ScopeManager(world, room);
+	public ExecVisitor(ErrorHandler errors) {
 		this.errors = errors;
 	}
 
@@ -116,8 +116,9 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	@Override
 	public IReturnValue visitEcho(EchoContext ctx) {
 		IReturnValue v = visit(ctx.operation());
-		if(errors.hasErrors()) return null;
-		
+		if (errors.hasErrors())
+			return null;
+
 		// TODO: temporal code for debugging
 		try {
 			System.out.println(v.castToString());
@@ -187,7 +188,8 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 			List<IReturnValue> l = new ArrayList<>();
 			for (OperationContext op : ctx.operation()) {
 				IReturnValue v = visit(op);
-				if(errors.hasErrors()) return null;
+				if (errors.hasErrors())
+					return null;
 				if ((depth == -1 || depth == v.getDepth()) && (type == null || type == v.getType())) {
 					depth = v.getDepth();
 					type = v.getType();
@@ -240,7 +242,8 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	@Override
 	public IReturnValue visitListType(ListTypeContext ctx) {
 		IReturnValue innerType = visit(ctx.data_type());
-		if(errors.hasErrors()) return null;
+		if (errors.hasErrors())
+			return null;
 		if (innerType instanceof ListValue) {
 			// It has more depth than 1, ex. "int[][]"
 			ListValue lv = (ListValue) innerType;
@@ -258,10 +261,18 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	 */
 	@Override
 	public IReturnValue visitSymbolType(SymbolTypeContext ctx) {
-		// First we get the type, in this case, a class
-		String className = ctx.SYMBOL().getText().toLowerCase();
-		UserDefinedClass itsClass = getSM().getClassFromName(className);
-		return ObjectValue.defaultValue(itsClass);
+		try {
+			// First we get the type, in this case, a class
+			String className = ctx.SYMBOL().getText().toLowerCase();
+			UserDefinedClass itsClass = getSM().getClassFromName(className);
+			if (itsClass == null) {
+				throw new UndefinedClassException(className);
+			}
+			return ObjectValue.defaultValue(itsClass);
+		} catch (UndefinedClassException e) {
+			errors.notifyError(e);
+			return null;
+		}
 	}
 
 	/**
@@ -293,7 +304,8 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 		try {
 			IReturnValue left = visit(ctx.operation(0));
 			IReturnValue right = visit(ctx.operation(1));
-			if(errors.hasErrors()) return null;
+			if (errors.hasErrors())
+				return null;
 			switch (ctx.op.getType()) {
 			case LinguaxeParser.EQ:
 				return left.eq(right);
@@ -326,11 +338,12 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	 */
 	@Override
 	public IReturnValue visitAddSub(AddSubContext ctx) {
-		
+
 		try {
 			IReturnValue left = visit(ctx.operation(0));
 			IReturnValue right = visit(ctx.operation(1));
-			if(errors.hasErrors()) return null;
+			if (errors.hasErrors())
+				return null;
 			switch (ctx.op.getType()) {
 			case LinguaxeParser.ADD:
 				return left.add(right);
@@ -359,7 +372,8 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 		try {
 			IReturnValue left = visit(ctx.operation(0));
 			IReturnValue right = visit(ctx.operation(1));
-			if(errors.hasErrors()) return null;
+			if (errors.hasErrors())
+				return null;
 			switch (ctx.op.getType()) {
 			case LinguaxeParser.MUL:
 				return left.mul(right);
@@ -393,7 +407,8 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	public IReturnValue visitDice(DiceContext ctx) {
 		try {
 			IReturnValue v = visit(ctx.operation());
-			if(errors.hasErrors()) return null;
+			if (errors.hasErrors())
+				return null;
 			return v.dice();
 		} catch (IllegalOperationException e) {
 			errors.notifyError(e);
@@ -412,7 +427,8 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 		try {
 			IReturnValue left = visit(ctx.operation(0));
 			IReturnValue right = visit(ctx.operation(1));
-			if(errors.hasErrors()) return null;
+			if (errors.hasErrors())
+				return null;
 			return left.multDice(right);
 		} catch (IllegalOperationException e) {
 			errors.notifyError(e);
@@ -432,7 +448,8 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 			IReturnValue left = visit(ctx.operation(0));
 			IReturnValue right = visit(ctx.operation(1));
 			int index = right.castToInteger();
-			if(errors.hasErrors()) return null;
+			if (errors.hasErrors())
+				return null;
 			return left.getFromIndex(index);
 		} catch (IllegalOperationException e) {
 			errors.notifyError(e);
@@ -451,7 +468,8 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	public IReturnValue visitNegative(NegativeContext ctx) {
 		try {
 			IReturnValue v = visit(ctx.operation());
-			if(errors.hasErrors()) return null;
+			if (errors.hasErrors())
+				return null;
 			return v.negative();
 		} catch (IllegalOperationException e) {
 			errors.notifyError(e);
@@ -477,7 +495,8 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 		try {
 			IReturnValue left = visit(ctx.operation(0));
 			IReturnValue right = visit(ctx.operation(1));
-			if(errors.hasErrors()) return null;
+			if (errors.hasErrors())
+				return null;
 			switch (ctx.op.getType()) {
 			case LinguaxeParser.AND:
 				return left.and(right);
@@ -502,7 +521,8 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 		try {
 			IReturnValue l = visit(ctx.variable());
 			IReturnValue right = visit(ctx.operation());
-			if(errors.hasErrors()) return null;
+			if (errors.hasErrors())
+				return null;
 			ReferenceValue left = (ReferenceValue) l;
 			if (left.getReference().getValue().canAssign(right)) {
 				left.getReference().assign(right);
@@ -527,13 +547,14 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 		IReturnValue r = visit(ctx.variable());
 		IReturnValue i = visit(ctx.operation(0));
 		IReturnValue value = visit(ctx.operation(1));
-		if(errors.hasErrors()) return null;
+		if (errors.hasErrors())
+			return null;
 		ReferenceValue ref = (ReferenceValue) r;
 		int index;
 		IReturnValue element;
 		try {
 			index = i.castToInteger();
-			
+
 			if (!(ref.getReference().getValue() instanceof ListValue))
 				throw new NotAListException();
 			element = ref.getReference().getValue().getFromIndex(index);
@@ -562,9 +583,10 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	public IReturnValue visitMove(MoveContext ctx) {
 		IReturnValue mobile = visit(ctx.operation(0));
 		IReturnValue room = visit(ctx.operation(1));
-		if(errors.hasErrors()) return null;
+		if (errors.hasErrors())
+			return null;
 		try {
-			
+
 			if (mobile instanceof ObjectValue && room instanceof LocationValue) {
 				((ObjectValue) mobile).getObj().moveTo(((LocationValue) room).getLocation());
 			} else {
@@ -601,7 +623,8 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	@Override
 	public IReturnValue visitIntermediateVariable(IntermediateVariableContext ctx) {
 		IReturnValue v = visit(ctx.variable());
-		if(errors.hasErrors()) return null;
+		if (errors.hasErrors())
+			return null;
 		try {
 			ReferenceValue prev = (ReferenceValue) v;
 			IReturnValue value = prev.getReference().getValue();
@@ -626,7 +649,8 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	@Override
 	public IReturnValue visitVariableOp(VariableOpContext ctx) {
 		IReturnValue v = visit(ctx.variable());
-		if(errors.hasErrors()) return null;
+		if (errors.hasErrors())
+			return null;
 		ReferenceValue var = (ReferenceValue) v;
 		return var.getReference().getValue();
 	}
@@ -654,13 +678,15 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 					List<IReturnValue> args = new ArrayList<>();
 					for (OperationContext x : ctx.operation()) {
 						IReturnValue a = visit(x);
-						if(errors.hasErrors()) return null;
+						if (errors.hasErrors())
+							return null;
 						args.add(a);
 					}
 
 					ClassMethod m = obj.getObj().getUserClass().getMethod(methodName);
 
 					if (!m.checkArgs(args)) {
+						System.out.println(m.getArgumentType("outro"));
 						throw new ArgumentMismatchException();
 					}
 
@@ -700,7 +726,8 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 			List<IReturnValue> args = new ArrayList<>();
 			for (OperationContext x : ctx.operation()) {
 				IReturnValue a = visit(x);
-				if(errors.hasErrors()) return null;
+				if (errors.hasErrors())
+					return null;
 				args.add(a);
 			}
 
@@ -741,7 +768,8 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	@Override
 	public IReturnValue visitExp_if(Exp_ifContext ctx) {
 		IReturnValue condition = visit(ctx.operation());
-		if(errors.hasErrors()) return null;
+		if (errors.hasErrors())
+			return null;
 
 		// SCOPE
 		Scope prevScope = getSM().getScope();
@@ -802,7 +830,8 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 		try {
 			String auxVar = ctx.SYMBOL().getText().toLowerCase();
 			IReturnValue origin = visit(ctx.operation());
-			if(errors.hasErrors()) return null;
+			if (errors.hasErrors())
+				return null;
 
 			// SCOPE
 			Scope prevScope = getSM().getScope();
@@ -821,7 +850,8 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 				getSM().setVariable(auxVar, new StoredSymbol(v, false));
 				if (ctx.code() != null) {
 					visit(ctx.code());
-					if(errors.hasErrors()) return null;
+					if (errors.hasErrors())
+						return null;
 				}
 			}
 
@@ -835,36 +865,6 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	}
 
 	/**
-	 * Defines a new class.
-	 * <p>
-	 * class_def : SYMBOL ( '(' SYMBOL ')' )? ('/n')* '{' ('/n')* fields?
-	 * methods? '}' ;
-	 */
-	@Override
-	public IReturnValue visitClass_def(Class_defContext ctx) {
-		String className = ctx.SYMBOL(0).getText().toLowerCase();
-		UserDefinedClass newClass;
-		if (ctx.SYMBOL(1) != null) { // inherit from another class
-			String parentName = ctx.SYMBOL(1).getText().toLowerCase();
-			newClass = new UserDefinedClass(className, getSM().getClassFromName(parentName), getSM().getCurrentWorld());
-		} else { // inherit from "Object" class
-			newClass = new UserDefinedClass(className, getSM().getRootClass(), getSM().getCurrentWorld());
-		}
-		getSM().pushScope(new ClassScope(newClass));
-		if (ctx.fields() != null) {
-			visit(ctx.fields());
-			if(errors.hasErrors()) return null;
-		}
-		if (ctx.methods() != null) {
-			visit(ctx.methods());
-			if(errors.hasErrors()) return null;
-		}
-		getSM().addClass(className, newClass);
-		getSM().popScope();
-		return new NullValue();
-	}
-
-	/**
 	 * Declares a new variable into the current room.
 	 * <p>
 	 * If a class is currently being defined, adds a new field to it.
@@ -874,11 +874,12 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	@Override
 	public IReturnValue visitVar_decl(Var_declContext ctx) {
 		IReturnValue type = visit(ctx.data_type());
-		
+
 		String varName = ctx.SYMBOL().getText().toLowerCase();
 		if (ctx.operation() != null) {
 			IReturnValue v = visit(ctx.operation());
-			if(errors.hasErrors()) return null;
+			if (errors.hasErrors())
+				return null;
 			type.assign(v);
 
 		}
@@ -916,7 +917,8 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 				if (ctx.ASSIGN() != null) {
 					String returnName = ctx.SYMBOL(0).getText().toLowerCase();
 					IReturnValue t = visit(ctx.data_type());
-					if(errors.hasErrors()) return null;
+					if (errors.hasErrors())
+						return null;
 					cm.setReturnArgument(returnName, t);
 
 				}
@@ -946,7 +948,8 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 		for (int i = 0; i < ctx.SYMBOL().size(); i++) {
 			String argName = ctx.SYMBOL(i).getText().toLowerCase();
 			IReturnValue typeV = visit(ctx.data_type(i));
-			if(errors.hasErrors()) return null;
+			if (errors.hasErrors())
+				return null;
 
 			((ClassScope) getSM().getScope()).getDefiningMethod().addArgument(argName, typeV);
 		}
@@ -1001,7 +1004,8 @@ public class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 		// We get the user name without the '$' symbol
 		String username = ctx.USERNAME().getText().toLowerCase().substring(1);
 		IReturnValue objref = visit(ctx.operation());
-		if(errors.hasErrors()) return null;
+		if (errors.hasErrors())
+			return null;
 		if (objref instanceof ObjectValue) {
 			WorldObject obj = ((ObjectValue) objref).getObj();
 			// TODO: check user

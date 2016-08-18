@@ -6,10 +6,12 @@ import java.util.List;
 import exceptions.IllegalOperationException;
 import exceptions.SizeMismatchException;
 import exceptions.ValueCastException;
+import universe.UserDefinedClass;
 
 public class ListValue implements IReturnValue {
 	protected List<IReturnValue> value;
 	protected ReturnValueTypes innerType;
+	protected UserDefinedClass classType;
 	protected int listDepth;
 
 	public ListValue(List<IReturnValue> value) {
@@ -24,6 +26,14 @@ public class ListValue implements IReturnValue {
 		ListValue lv = new ListValue();
 		lv.setDepth(depth);
 		lv.setInnerType(innerType);
+		return lv;
+	}
+	
+	public static ListValue defaultValue(UserDefinedClass cl, int depth) {
+		ListValue lv = new ListValue();
+		lv.setDepth(depth);
+		lv.setInnerType(ReturnValueTypes.OBJECT);
+		lv.classType = cl;
 		return lv;
 	}
 
@@ -401,7 +411,7 @@ public class ListValue implements IReturnValue {
 		ListValue lv = new ListValue();
 
 		if (other instanceof FloatValue || other instanceof StringValue) {
-			// TODO: exception
+			throw new IllegalOperationException();
 		}
 
 		if (other instanceof IntegerValue) {
@@ -447,6 +457,8 @@ public class ListValue implements IReturnValue {
 	public boolean canAssign(IReturnValue newRValue) {
 		if(newRValue instanceof ListValue) {
 			ListValue lv = (ListValue)newRValue;
+			if(getInnerType() == ReturnValueTypes.OBJECT && !lv.classType.inheritFrom(classType))
+				return false;
 			return getDepth() == lv.getDepth() && getInnerType() == lv.getInnerType();
 		}
 		return false;

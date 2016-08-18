@@ -25,8 +25,6 @@ public class WorldRoom extends WorldLocation {
 		return longName.substring(longName.lastIndexOf('.'));
 	}
 	
-	
-	//TODO: variables lack type definition
 	public StoredSymbol getVariable(String name) {
 		return variables.get(name);
 	}

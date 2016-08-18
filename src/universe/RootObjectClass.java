@@ -10,7 +10,7 @@ import java.util.Map;
  */
 public class RootObjectClass extends UserDefinedClass {
 	public RootObjectClass(World world) {
-		super("object", null, world);
+		super("object", world);
 	}
 
 	@Override

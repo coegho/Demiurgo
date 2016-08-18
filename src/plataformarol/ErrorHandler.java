@@ -12,7 +12,7 @@ public class ErrorHandler {
 	}
 
 	public void notifyError(Exception ex) {
-		errors.add(ex.getLocalizedMessage());
+		errors.add(ex.getMessage());
 	}
 	
 	public List<String> getErrors() {
