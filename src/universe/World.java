@@ -1,6 +1,7 @@
 package universe;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -232,8 +233,8 @@ public class World {
 		return users.keySet();
 	}
 
-	public Set<Long> getAllObjIds() {
-		return objects.keySet();
+	public Collection<WorldObject> getAllObjects() {
+		return objects.values();
 	}
 
 	/**
@@ -321,6 +322,10 @@ public class World {
 
 	public List<WorldRoom> getPendingRooms() {
 		return pendingRooms;
+	}
+
+	public Collection<User> getAllUsers() {
+		return users.values();
 	}
 	
 }

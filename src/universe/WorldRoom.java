@@ -1,5 +1,6 @@
 package universe;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,8 +11,12 @@ import serializable.SerializableDecision;
 import serializable.SerializableWorldRoom;
 import values.IReturnValue;
 
-public class WorldRoom extends WorldLocation {
+public class WorldRoom extends WorldLocation implements SerializableWorldRoom {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	protected String longPath;
 	protected Map<String, IReturnValue> variables;
 	protected String narratedAction;
@@ -21,6 +26,15 @@ public class WorldRoom extends WorldLocation {
 		super(world, id);
 		variables = new HashMap<>();
 		this.longPath = longName;
+	}
+	
+	/**
+	 * This constructor requires a posterior call to the method 'rebuild'.
+	 */
+	public WorldRoom(long id, String long_path, Map<String, IReturnValue> variables) {
+		super(id);
+		this.longPath = long_path;
+		this.variables = variables;
 	}
 
 	public String getLongPath() {
@@ -55,12 +69,12 @@ public class WorldRoom extends WorldLocation {
 		this.narratedAction = narratedAction;
 	}
 
-	public SerializableWorldRoom getSerializableWorldRoom() {
-		return new SerializableWorldRoom(id, longPath, variables);
-	}
-
 	public void addDecision(User user, String text) {
 		decisions.put(user, text);
+	}
+	
+	public Map<User, String> getDecisions() {
+		return decisions;
 	}
 
 	public List<SerializableDecision> getSerializableDecisions() {
@@ -69,5 +83,37 @@ public class WorldRoom extends WorldLocation {
 			l.add(new SerializableDecision(u.getUsername(), longPath, decisions.get(u)));
 		}
 		return l;
+	}
+
+	@Override
+	public Map<String, IReturnValue> getVariables() {
+		return variables;
+	}
+	
+	@Override
+	public void rebuild(World world) {
+		super.rebuild(world);
+		for(IReturnValue v : variables.values()) {
+			v.rebuild(world);
+		}
+	}
+	
+	private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+		out.defaultWriteObject();
+		out.writeLong(getId());
+		out.writeObject(getLongPath());
+		out.writeObject(getNarratedAction());
+		out.writeObject(getVariables());
+		out.writeObject(getDecisions());
+	}
+
+	@SuppressWarnings("unchecked")
+	private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+		in.defaultReadObject();
+		id = in.readLong();
+		longPath = (String) in.readObject();
+		narratedAction = (String)in.readObject();
+		variables = ((Map<String, IReturnValue>) in.readObject());
+		decisions = (Map<User, String>) in.readObject();
 	}
 }

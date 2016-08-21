@@ -6,12 +6,21 @@ import java.util.List;
 public class WorldLocation {
 
 	protected long id;
-	protected World world;
-	protected List<WorldObject> objects;
+	protected transient World world;
+	protected transient List<WorldObject> objects;
 
 	public WorldLocation(World world, long id) {
 		this.id = id;
 		this.world = world;
+		objects = new ArrayList<>();
+	}
+	
+	/**
+	 * This constructor requires a posterior call to the method 'rebuild'.
+	 * @param id
+	 */
+	public WorldLocation(long id) {
+		this.id = id;
 		objects = new ArrayList<>();
 	}
 
@@ -37,5 +46,9 @@ public class WorldLocation {
 
 	public void setId(long id) {
 		this.id = id;
+	}
+	
+	public void rebuild(World world) {
+		this.world = world;
 	}
 }

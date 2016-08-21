@@ -2,9 +2,9 @@ package database;
 
 import java.util.List;
 
-import serializable.SerializableUser;
-import serializable.SerializableWorldObject;
-import serializable.SerializableWorldRoom;
+import universe.User;
+import universe.WorldObject;
+import universe.WorldRoom;
 
 public interface DatabaseInterface {
 
@@ -12,17 +12,17 @@ public interface DatabaseInterface {
 	
 	public void stopConnection();
 	
-	public void writeUser(SerializableUser user);
+	public void writeUser(User user);
 	
-	public void writeWorldObject(SerializableWorldObject obj);
+	public void writeWorldObject(WorldObject obj);
 	
-	public void writeWorldRoom(SerializableWorldRoom room);
+	public void writeWorldRoom(WorldRoom room);
 	
-	public List<SerializableUser> readAllUsers();
+	public List<User> readAllUsers();
 	
-	public List<SerializableWorldObject> readAllObjects();
+	public List<WorldObject> readAllObjects();
 	
-	public List<SerializableWorldRoom> readAllRooms();
+	public List<WorldRoom> readAllRooms();
 
 	public long[] readCurrentIDs();
 

@@ -23,7 +23,7 @@ public class TestClient {
 
 			System.out.println("Lookup completed ");
 
-			//h.createRoom("mundo1", "/escenario2");
+			h.createRoom("mundo1", "/escenario1");
 
 			List<SerializableWorldObject> l;
 			l = h.checkRoom("mundo1", "/escenario1");

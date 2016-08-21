@@ -39,7 +39,7 @@ public class ServerInterfaceImpl extends UnicastRemoteObject implements ServerIn
 		}
 		ArrayList<SerializableWorldObject> ret = new ArrayList<>();
 		for (WorldObject o : room.getObjects()) {
-			ret.add(o.getSerializableWorldObject());
+			ret.add(o);
 		}
 		return ret;
 

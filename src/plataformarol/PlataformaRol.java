@@ -114,7 +114,7 @@ public class PlataformaRol {
 				System.out.println(" }");
 				System.out.print("| VARIABLES = {");
 				for (String s : r.getAllVarNames())
-					System.out.print(" " + s+"="+r.getVariable(s).toString());
+					System.out.print(" " + s + "=" + r.getVariable(s).toString());
 				System.out.println(" }");
 			}
 		}
@@ -144,51 +144,40 @@ public class PlataformaRol {
 		db.createConnection("plataformarol", "mysql", "mysql"); // TODO: config
 
 		// Reading rooms
-		List<SerializableWorldRoom> rooms = db.readAllRooms();
-		for (SerializableWorldRoom r : rooms) {
-			WorldRoom room = new WorldRoom(r.getLong_path(), world, r.getId());
-			world.newRoom(room);
+		List<WorldRoom> rooms = db.readAllRooms();
+		for (WorldRoom r : rooms) {
+			world.newRoom(r);
 		}
 
 		// Reading objects
-		List<SerializableWorldObject> objs = db.readAllObjects();
-		for (SerializableWorldObject o : objs) {
-			WorldObject obj = new WorldObject(world.getClassFromName(o.getClassName()),
-					world.getLocation(o.getLoc_id()));
-			obj.setId(o.getId());
-			world.addObject(obj);
+		List<WorldObject> objs = db.readAllObjects();
+		for (WorldObject o : objs) {
+			world.addObject(o);
 		}
-		
+
 		// Rebuilding room variables
-				for (SerializableWorldRoom r : rooms) {
-					WorldRoom room = (WorldRoom) world.getLocation(r.getId());
-					for (String var : r.getFields().keySet()) {
-						room.setVariable(var, r.getFields().get(var).rebuild(world));
-					}
-				}
-		
+		for (WorldRoom r : rooms) {
+			r.rebuild(world);
+		}
+
 		// Rebuilding object variables
-		for (SerializableWorldObject o : objs) {
-			WorldObject obj = world.getObject(o.getId());
-			for (String var : o.getFields().keySet()) {
-				obj.setField(var, o.getFields().get(var).rebuild(world));
-			}
+		for (WorldObject obj : objs) {
+			obj.rebuild(world);
 		}
 
 		// Reading users
-		List<SerializableUser> users = db.readAllUsers();
-		for (SerializableUser u : users) {
-			User user = new User(u.getUsername());
-			if (u.getObj_id() != -1)
-				user.setObj(world.getObject(u.getObj_id()));
-			world.addUser(user);
+		List<User> users = db.readAllUsers();
+		for (User u : users) {
+			if (u.getObjId() != -1)
+				u.setObj(world.getObject(u.getObjId()));
+			world.addUser(u);
 		}
 
 		long[] ids = db.readCurrentIDs();
-		
+
 		world.setCurrentObjId(ids[0]);
 		world.setCurrentRoomId(ids[1]);
-		
+
 		db.stopConnection();
 	}
 
@@ -198,24 +187,19 @@ public class PlataformaRol {
 
 		// Writing rooms
 		for (WorldRoom room : world.getAllRooms()) {
-			db.writeWorldRoom(room.getSerializableWorldRoom());
+			db.writeWorldRoom(room);
 		}
 
 		// Writing objects
-		for (long l : world.getAllObjIds()) {
-			db.writeWorldObject(world.getObject(l).getSerializableWorldObject());
+		for (WorldObject o : world.getAllObjects()) {
+			db.writeWorldObject(o);
 		}
 
 		// Writing users
-		for (String s : world.getAllUserNames()) {
-			User user = world.getUser(s);
-			WorldObject obj = user.getObj();
-			if (obj != null)
-				db.writeUser(new SerializableUser(user.getUsername(), obj.getId()));
-			else
-				db.writeUser(new SerializableUser(user.getUsername()));
+		for (User u : world.getAllUsers()) {
+			db.writeUser(u);
 		}
-		
+
 		db.setCurrentIDs(world.getCurrentObjId(), world.getCurrentRoomId());
 
 		db.stopConnection();
