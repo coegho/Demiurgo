@@ -223,6 +223,7 @@ public class IntegerValue extends AbstractValue {
 	
 	@Override
 	public boolean canAssign(IReturnValue newRValue) {
+		if(!writable) return false;
 		try {
 			newRValue.castToInteger();
 			return true;
@@ -233,6 +234,7 @@ public class IntegerValue extends AbstractValue {
 
 	@Override
 	public boolean assign(IReturnValue newRValue) {
+		if(!writable) return false;
 		try {
 			value = newRValue.castToInteger();
 			return true;

@@ -2,6 +2,8 @@ package universe;
 
 import java.util.Map;
 
+import values.IReturnValue;
+
 /**
  * RootObjectClass represents the special "OBJECT" class, which is the parent of all other
  * classes.
@@ -19,12 +21,12 @@ public class RootObjectClass extends UserDefinedClass {
 	}
 
 	@Override
-	public Map<String, StoredSymbol> getFields() {
+	public Map<String, IReturnValue> getFields() {
 		return fields; //Doesn't look in parent class
 	}
 	
 	@Override
-	public StoredSymbol getField(String fieldName) {
+	public IReturnValue getField(String fieldName) {
 		return fields.get(fieldName); //Doesn't look in parent class
 	}
 

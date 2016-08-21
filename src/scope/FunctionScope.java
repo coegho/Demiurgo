@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import universe.ClassMethod;
-import universe.StoredSymbol;
 import values.IReturnValue;
 
 /**
@@ -19,7 +18,7 @@ import values.IReturnValue;
 public class FunctionScope extends Scope {
 	protected ClassMethod method;
 	protected ObjectScope parent;
-	protected Map<String, StoredSymbol> variables;
+	protected Map<String, IReturnValue> variables;
 	protected String retVarName;
 	
 	public FunctionScope(ClassMethod method,
@@ -30,18 +29,17 @@ public class FunctionScope extends Scope {
 		this.variables = new HashMap<>();
 		for(int i = 0; i<args.size(); i++) {
 			String argName = method.getArgumentName(i);
-			this.variables.put(argName,
-					new StoredSymbol(args.get(i)));
+			this.variables.put(argName, args.get(i));
 		}
 		if(method.hasReturnArgument()) {
 			String retArgName = method.getReturnArgumentName();
 			IReturnValue retArg = method.getArgumentType(retArgName);
-			this.variables.put(retArgName, new StoredSymbol(retArg));
+			this.variables.put(retArgName, retArg);
 		}
 	}
 	
 	@Override
-	public StoredSymbol getVariable(String name) {
+	public IReturnValue getVariable(String name) {
 		if(variables.containsKey(name))
 			return variables.get(name);
 		else
@@ -49,7 +47,7 @@ public class FunctionScope extends Scope {
 	}
 
 	@Override
-	public void setVariable(String name, StoredSymbol value) {
+	public void setVariable(String name, IReturnValue value) {
 		variables.put(name, value);
 		
 	}
@@ -58,7 +56,7 @@ public class FunctionScope extends Scope {
 		return parent;
 	}
 
-	public StoredSymbol getReturnVariable() {
+	public IReturnValue getReturnVariable() {
 		return variables.get(retVarName);
 	}
 }

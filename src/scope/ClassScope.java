@@ -1,8 +1,8 @@
 package scope;
 
 import universe.ClassMethod;
-import universe.StoredSymbol;
 import universe.UserDefinedClass;
+import values.IReturnValue;
 
 public class ClassScope extends Scope {
 
@@ -14,12 +14,12 @@ public class ClassScope extends Scope {
 	}
 	
 	@Override
-	public StoredSymbol getVariable(String name) {
-		return currentClass.getField(name);//TODO
+	public IReturnValue getVariable(String name) {
+		return currentClass.getField(name);
 	}
 
 	@Override
-	public void setVariable(String name, StoredSymbol value) {
+	public void setVariable(String name, IReturnValue value) {
 		currentClass.addField(name, value);
 	}
 

@@ -4,26 +4,29 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import serializable.SerializableValue;
 import serializable.SerializableWorldObject;
+import values.IReturnValue;
 import values.ObjectValue;
 
 public class WorldObject {
 	protected long id;
 	protected UserDefinedClass ownClass;
 	protected WorldLocation location;
-	protected Map<String, StoredSymbol> fields;
+	protected Map<String, IReturnValue> fields;
 	protected User user;
 
 	public WorldObject(UserDefinedClass ownClass, WorldLocation location) {
+		this.id = -1;
 		this.ownClass = ownClass;
 		this.location = location;
 		this.fields = new HashMap<>();
 		for(String varName : ownClass.getFields().keySet()) {
-			StoredSymbol field = ownClass.getField(varName);
-			fields.put(varName, new StoredSymbol(field.getValue().cloneValue()));
+			IReturnValue field = ownClass.getField(varName);
+			fields.put(varName, field.cloneValue());
 		}
-		fields.put("this", new StoredSymbol(new ObjectValue(this), false));
+		ObjectValue v = new ObjectValue(this);
+		v.setWritable(false);
+		fields.put("this", v);
 		location.addObject(this);
 		location.getWorld().addObject(this);
 	}
@@ -54,11 +57,11 @@ public class WorldObject {
 		location.addObject(this);
 	}
 	
-	public StoredSymbol getField(String fieldName) {
+	public IReturnValue getField(String fieldName) {
 		return fields.get(fieldName);
 	}
 
-	public void setField(String fieldName, StoredSymbol value) {
+	public void setField(String fieldName, IReturnValue value) {
 		fields.put(fieldName, value);
 	}
 	
@@ -75,10 +78,6 @@ public class WorldObject {
 	}
 	
 	public SerializableWorldObject getSerializableWorldObject() {
-		Map<String, SerializableValue> variables = new HashMap<>();
-		for(String s : fields.keySet()) {
-			variables.put(s, fields.get(s).getValue());
-		}
-		return new SerializableWorldObject(id, ownClass.getClassName(), ((location!=null)?location.getId():null), variables, ((user!=null)?user.getUsername():null));
+		return new SerializableWorldObject(id, ownClass.getClassName(), ((location!=null)?location.getId():null), fields, ((user!=null)?user.getUsername():null));
 	}
 }

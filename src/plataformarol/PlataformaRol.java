@@ -22,10 +22,9 @@ import database.MariaDBDatabase;
 import linguaxe.LinguaxeLexer;
 import linguaxe.LinguaxeParser;
 import serializable.SerializableUser;
-import serializable.SerializableValue;
+import serializable.SerializableWorldObject;
 import serializable.SerializableWorldRoom;
 import serializable.ServerInterfaceImpl;
-import universe.StoredSymbol;
 import universe.User;
 import universe.UserDefinedClass;
 import universe.World;
@@ -71,18 +70,17 @@ public class PlataformaRol {
 			}
 		}
 
-		/*for(String w : worlds.keySet()) {
-			loadFromDatabase(worlds.get(w));
-		}*/
-		loadFromDatabase(worlds.get("mundo1")); //TODO: Example
-		
+		/*
+		 * for(String w : worlds.keySet()) { loadFromDatabase(worlds.get(w)); }
+		 */
+		loadFromDatabase(worlds.get("mundo1")); // TODO: Example
 
 		int portNum = 5555;
 		String registryURL = "plataformarol", hostName = "localhost";
 		try {
 			startRegistry(portNum);
 			ServerInterfaceImpl objetoServidor = new ServerInterfaceImpl();
-			registryURL = "rmi://"+hostName+":"+portNum+"/"+registryURL;
+			registryURL = "rmi://" + hostName + ":" + portNum + "/" + registryURL;
 			Naming.rebind(registryURL, objetoServidor);
 			System.out.println("RMI READY");
 		} catch (RemoteException re) {
@@ -115,22 +113,23 @@ public class PlataformaRol {
 				}
 				System.out.println(" }");
 				System.out.print("| VARIABLES = {");
-				for(String s : r.getAllVarNames())
-					System.out.print(" " + s);
+				for (String s : r.getAllVarNames())
+					System.out.print(" " + s+"="+r.getVariable(s).toString());
 				System.out.println(" }");
 			}
 		}
-		
+
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {
 				System.out.println("Saving changes...");
 				saveAllInDatabase();
+				System.out.println("Changes saved correctly");
 			}
 		});
-		
-		//TODO: little eclipse hack
-		
+
+		// TODO: little eclipse hack
+
 		try {
 			System.in.read();
 		} catch (IOException e) {
@@ -142,55 +141,83 @@ public class PlataformaRol {
 
 	private static synchronized void loadFromDatabase(World world) {
 		DatabaseInterface db = new MariaDBDatabase();
-		db.createConnection("plataformarol", "mysql", "mysql"); //TODO: config
-		
-		//Reading rooms
+		db.createConnection("plataformarol", "mysql", "mysql"); // TODO: config
+
+		// Reading rooms
 		List<SerializableWorldRoom> rooms = db.readAllRooms();
-		for(SerializableWorldRoom r : rooms) {
+		for (SerializableWorldRoom r : rooms) {
 			WorldRoom room = new WorldRoom(r.getLong_path(), world, r.getId());
 			world.newRoom(room);
 		}
-		//Rebuilding room variables
-		for(SerializableWorldRoom r : rooms) {
-			WorldRoom room = (WorldRoom)world.getLocation(r.getId());
-			for(String var : r.getFields().keySet()) {
-				IReturnValue v = (IReturnValue)r.getFields().get(var);
-				room.setVariable(var, new StoredSymbol(v.rebuild(world)));
-			}
+
+		// Reading objects
+		List<SerializableWorldObject> objs = db.readAllObjects();
+		for (SerializableWorldObject o : objs) {
+			WorldObject obj = new WorldObject(world.getClassFromName(o.getClassName()),
+					world.getLocation(o.getLoc_id()));
+			obj.setId(o.getId());
+			world.addObject(obj);
 		}
 		
-		//Reading users
-		List<SerializableUser> users = db.readAllUsers();
-		for(SerializableUser u : users) {
-			world.addUser(new User(u.getUsername()));
+		// Rebuilding room variables
+				for (SerializableWorldRoom r : rooms) {
+					WorldRoom room = (WorldRoom) world.getLocation(r.getId());
+					for (String var : r.getFields().keySet()) {
+						room.setVariable(var, r.getFields().get(var).rebuild(world));
+					}
+				}
+		
+		// Rebuilding object variables
+		for (SerializableWorldObject o : objs) {
+			WorldObject obj = world.getObject(o.getId());
+			for (String var : o.getFields().keySet()) {
+				obj.setField(var, o.getFields().get(var).rebuild(world));
+			}
 		}
+
+		// Reading users
+		List<SerializableUser> users = db.readAllUsers();
+		for (SerializableUser u : users) {
+			User user = new User(u.getUsername());
+			if (u.getObj_id() != -1)
+				user.setObj(world.getObject(u.getObj_id()));
+			world.addUser(user);
+		}
+
+		long[] ids = db.readCurrentIDs();
+		
+		world.setCurrentObjId(ids[0]);
+		world.setCurrentRoomId(ids[1]);
 		
 		db.stopConnection();
 	}
-	
+
 	private static synchronized void saveWorldInDatabase(World world) {
 		DatabaseInterface db = new MariaDBDatabase();
-		db.createConnection("plataformarol", "mysql", "mysql"); //TODO: config
-		
-		//Writing rooms
-		for(WorldRoom room : world.getAllRooms()) {
-			Map<String, SerializableValue> variables = new HashMap<>();
-			for(String v : room.getAllVarNames()) {
-				variables.put(v, room.getVariable(v).getValue());
-			}
-			db.writeWorldRoom(new SerializableWorldRoom(room.getId(), room.getLongName(), variables));
+		db.createConnection("plataformarol", "mysql", "mysql"); // TODO: config
+
+		// Writing rooms
+		for (WorldRoom room : world.getAllRooms()) {
+			db.writeWorldRoom(room.getSerializableWorldRoom());
 		}
-		
-		//Writing users
-		for(String s : world.getAllUserNames()) {
+
+		// Writing objects
+		for (long l : world.getAllObjIds()) {
+			db.writeWorldObject(world.getObject(l).getSerializableWorldObject());
+		}
+
+		// Writing users
+		for (String s : world.getAllUserNames()) {
 			User user = world.getUser(s);
 			WorldObject obj = user.getObj();
-			if(obj != null)
+			if (obj != null)
 				db.writeUser(new SerializableUser(user.getUsername(), obj.getId()));
 			else
 				db.writeUser(new SerializableUser(user.getUsername()));
 		}
 		
+		db.setCurrentIDs(world.getCurrentObjId(), world.getCurrentRoomId());
+
 		db.stopConnection();
 	}
 
@@ -247,23 +274,24 @@ public class PlataformaRol {
 
 		} catch (RemoteException e) {
 			// No valid registry at that port.
-			/*Registry registry = */LocateRegistry.createRegistry(RMIPortNum);
+			/* Registry registry = */LocateRegistry.createRegistry(RMIPortNum);
 		}
 	}
 
 	public static World getWorld(String name) {
 		return worlds.get(name);
 	}
-	
+
 	public static Map<String, World> getWorlds() {
 		return worlds;
 	}
 
 	private static void saveAllInDatabase() {
-		/*for(String s : worlds.keySet()) {
-			saveWorldInDatabase(worlds.get(s));
-		}*/
-		saveWorldInDatabase(worlds.get("mundo1")); //TODO: Example
+		/*
+		 * for(String s : worlds.keySet()) { saveWorldInDatabase(worlds.get(s));
+		 * }
+		 */
+		saveWorldInDatabase(worlds.get("mundo1")); // TODO: Example
 	}
 }
 

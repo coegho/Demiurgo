@@ -81,7 +81,7 @@ public class ObjectValue extends AbstractValue {
 
 	@Override
 	public String toString() {
-		return "OBJ/" + obj.getId();
+		return "OBJ/" + obj_id;
 	}
 	
 	@Override

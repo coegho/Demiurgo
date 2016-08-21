@@ -109,6 +109,13 @@ public class LinguaxeBaseVisitor<T> extends AbstractParseTreeVisitor<T> implemen
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
+	@Override public T visitRootObject(LinguaxeParser.RootObjectContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
 	@Override public T visitFunction_call(LinguaxeParser.Function_callContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}

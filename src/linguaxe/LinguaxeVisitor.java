@@ -95,6 +95,13 @@ public interface LinguaxeVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitIntermediateVariable(LinguaxeParser.IntermediateVariableContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code rootObject}
+	 * labeled alternative in {@link LinguaxeParser#variable}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitRootObject(LinguaxeParser.RootObjectContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link LinguaxeParser#function_call}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

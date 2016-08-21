@@ -9,12 +9,12 @@ import scope.ClassScope;
 import scope.RoomScope;
 import scope.Scope;
 import scope.WorldScope;
-import universe.StoredSymbol;
 import universe.User;
 import universe.UserDefinedClass;
 import universe.World;
 import universe.WorldObject;
 import universe.WorldRoom;
+import values.IReturnValue;
 
 /**
  * This class manages all the symbols found on the input. It manage code scopes
@@ -27,7 +27,7 @@ import universe.WorldRoom;
  *
  */
 public class ScopeManager {
-	protected Map<String, StoredSymbol> variables;
+	protected Map<String, IReturnValue> variables;
 	protected WorldScope globals;
 	protected List<Scope> scopes;
 	protected Scope currentScope;
@@ -67,11 +67,11 @@ public class ScopeManager {
 		scopes.add(currentScope);
 	}
 
-	public StoredSymbol getVariable(String name) {
+	public IReturnValue getVariable(String name) {
 		return currentScope.getVariable(name);
 	}
 
-	public void setVariable(String name, StoredSymbol value) {
+	public void setVariable(String name, IReturnValue value) {
 		currentScope.setVariable(name, value);
 	}
 

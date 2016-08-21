@@ -192,6 +192,7 @@ public class FloatValue extends AbstractValue {
 	
 	@Override
 	public boolean canAssign(IReturnValue newRValue) {
+		if(!writable) return false;
 		try {
 			newRValue.castToFloat();
 			return true;
@@ -202,6 +203,7 @@ public class FloatValue extends AbstractValue {
 	
 	@Override
 	public boolean assign(IReturnValue newRValue) {
+		if(!writable) return false;
 		try {
 			value = newRValue.castToFloat();
 			return true;

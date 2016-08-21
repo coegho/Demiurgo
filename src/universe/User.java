@@ -22,5 +22,8 @@ public class User {
 	
 	public void setObj(WorldObject obj) {
 		this.obj = obj;
+		if(obj.getUser() != this) {
+			obj.setUser(this);
+		}
 	}
 }

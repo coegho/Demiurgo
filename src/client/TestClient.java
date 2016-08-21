@@ -23,7 +23,7 @@ public class TestClient {
 
 			System.out.println("Lookup completed ");
 
-			//h.createRoom("mundo1", "/escenario1");
+			//h.createRoom("mundo1", "/escenario2");
 
 			List<SerializableWorldObject> l;
 			l = h.checkRoom("mundo1", "/escenario1");
@@ -34,7 +34,7 @@ public class TestClient {
 			System.out.println("Reading input.rol...");
 			String code = new String(Files.readAllBytes(Paths.get("input.rol")), StandardCharsets.UTF_8);
 
-			h.executeCode("mundo1", "/escenario1", code);
+			h.executeCode("mundo1", "/escenario2", code);
 
 			l = h.checkRoom("mundo1", "/escenario1");
 			for (SerializableWorldObject o : l) {

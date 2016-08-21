@@ -30,6 +30,7 @@ line : exp_if
 	;
 
 variable : SYMBOL					#rootVariable
+	| sharp_identifier				#rootObject
 	| variable '.' SYMBOL			#intermediateVariable
 	;
 

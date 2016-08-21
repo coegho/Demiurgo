@@ -520,6 +520,9 @@ public class ListValue extends AbstractValue {
 	@Override
 	public IReturnValue rebuild(World world) {
 		this.classType = world.getClassFromName(className);
+		for(IReturnValue v : value) {
+			v.rebuild(world);
+		}
 		return this;
 	}
 }

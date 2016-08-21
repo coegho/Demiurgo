@@ -3,6 +3,8 @@ package universe;
 import java.util.HashMap;
 import java.util.Map;
 
+import values.IReturnValue;
+
 /**
  * Represents a class in the world defined by the user. These classes will be used to create
  * new objects.
@@ -14,7 +16,7 @@ import java.util.Map;
 public class UserDefinedClass {
 	protected String className;
 	protected UserDefinedClass parentClass;
-	protected Map<String, StoredSymbol> fields;
+	protected Map<String, IReturnValue> fields;
 	protected Map<String, ClassMethod> methods;
 	protected ClassMethod constructor;
 	protected World world;
@@ -34,12 +36,12 @@ public class UserDefinedClass {
 		return world;
 	}
 	
-	public Map<String, StoredSymbol> getRealFields() {
+	public Map<String, IReturnValue> getRealFields() {
 		return fields;
 	}
 	
-	public Map<String, StoredSymbol> getFields() {
-		Map<String, StoredSymbol> map = new HashMap<>();
+	public Map<String, IReturnValue> getFields() {
+		Map<String, IReturnValue> map = new HashMap<>();
 		map.putAll(parentClass.getFields());
 		map.putAll(fields);
 		return map;
@@ -49,11 +51,11 @@ public class UserDefinedClass {
 		this.className = className;
 	}
 
-	public void addField(String fieldName, StoredSymbol defaultValue) {
+	public void addField(String fieldName, IReturnValue defaultValue) {
 		fields.put(fieldName, defaultValue);
 	}
 
-	public StoredSymbol getField(String fieldName) {
+	public IReturnValue getField(String fieldName) {
 		if(fields.containsKey(fieldName))
 			return fields.get(fieldName);
 		else

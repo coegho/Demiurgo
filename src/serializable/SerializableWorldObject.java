@@ -14,9 +14,9 @@ public class SerializableWorldObject implements Serializable {
 	protected String className;
 	protected long loc_id;
 	protected String user;
-	protected Map<String, SerializableValue> fields;
+	protected Map<String, IReturnValue> fields;
 
-	public SerializableWorldObject(long id, String className, long loc_id, Map<String, SerializableValue> fields, String user) {
+	public SerializableWorldObject(long id, String className, long loc_id, Map<String, IReturnValue> fields, String user) {
 		this.id = id;
 		this.className = className;
 		this.loc_id = loc_id;
@@ -24,7 +24,7 @@ public class SerializableWorldObject implements Serializable {
 		this.fields = fields;
 	}
 	
-	public SerializableWorldObject(long id, String className, long loc_id, Map<String, SerializableValue> fields) {
+	public SerializableWorldObject(long id, String className, long loc_id, Map<String, IReturnValue> fields) {
 		this.id = id;
 		this.className = className;
 		this.loc_id = loc_id;
@@ -69,11 +69,11 @@ public class SerializableWorldObject implements Serializable {
 		this.user = user;
 	}
 
-	public Map<String, SerializableValue> getFields() {
+	public Map<String, IReturnValue> getFields() {
 		return fields;
 	}
 
-	public void setFields(Map<String, SerializableValue> fields) {
+	public void setFields(Map<String, IReturnValue> fields) {
 		this.fields = fields;
 	}
 	

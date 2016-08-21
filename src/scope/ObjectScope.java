@@ -1,7 +1,7 @@
 package scope;
 
-import universe.StoredSymbol;
 import universe.WorldObject;
+import values.IReturnValue;
 
 public class ObjectScope extends Scope {
 	protected WorldObject obj;
@@ -11,12 +11,12 @@ public class ObjectScope extends Scope {
 	}
 
 	@Override
-	public StoredSymbol getVariable(String name) {
+	public IReturnValue getVariable(String name) {
 		return obj.getField(name);
 	}
 
 	@Override
-	public void setVariable(String name, StoredSymbol value) {
+	public void setVariable(String name, IReturnValue value) {
 		obj.setField(name, value);
 		
 	}

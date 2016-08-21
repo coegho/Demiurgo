@@ -3,7 +3,7 @@ package scope;
 import java.util.HashMap;
 import java.util.Map;
 
-import universe.StoredSymbol;
+import values.IReturnValue;
 
 /**
  * 
@@ -15,7 +15,7 @@ import universe.StoredSymbol;
 public class LoopScope extends Scope {
 
 	protected Scope parent;
-	protected Map<String, StoredSymbol> variables;
+	protected Map<String, IReturnValue> variables;
 	
 	public LoopScope(Scope parent) {
 		this.parent = parent;
@@ -23,7 +23,7 @@ public class LoopScope extends Scope {
 	}
 	
 	@Override
-	public StoredSymbol getVariable(String name) {
+	public IReturnValue getVariable(String name) {
 		if(variables.containsKey(name)) {
 			return variables.get(name);
 		}
@@ -33,7 +33,7 @@ public class LoopScope extends Scope {
 	}
 
 	@Override
-	public void setVariable(String name, StoredSymbol value) {
+	public void setVariable(String name, IReturnValue value) {
 		variables.put(name, value);
 	}
 

@@ -1,6 +1,6 @@
 package scope;
 
-import universe.StoredSymbol;
+import values.IReturnValue;
 
 /**
  * 
@@ -10,12 +10,12 @@ import universe.StoredSymbol;
  *
  */
 public abstract class Scope {
-	public abstract StoredSymbol getVariable(String name);
+	public abstract IReturnValue getVariable(String name);
 	
 	/**
 	 * Defines a new variable; if the variable already exists in scope, modifies its value. 
 	 * @param name Variable's name.
 	 * @param value Variable's value.
 	 */
-	public abstract void setVariable(String name, StoredSymbol value);
+	public abstract void setVariable(String name, IReturnValue value);
 }

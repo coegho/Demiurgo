@@ -4,9 +4,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import serializable.SerializableWorldRoom;
+import values.IReturnValue;
+
 public class WorldRoom extends WorldLocation {
 	protected String longName;
-	protected Map<String, StoredSymbol> variables;
+	protected Map<String, IReturnValue> variables;
 	
 	public WorldRoom(String longName, World world, long id) {
 		super(world, id);
@@ -26,16 +29,20 @@ public class WorldRoom extends WorldLocation {
 		return longName.substring(longName.lastIndexOf('.'));
 	}
 	
-	public StoredSymbol getVariable(String name) {
+	public IReturnValue getVariable(String name) {
 		return variables.get(name);
 	}
 	
-	public void setVariable(String name, StoredSymbol value) {
+	public void setVariable(String name, IReturnValue value) {
 		this.variables.put(name, value);
 	}
 	
 	
 	public Set<String> getAllVarNames() {
 		return variables.keySet();
+	}
+	
+	public SerializableWorldRoom getSerializableWorldRoom() {
+		return new SerializableWorldRoom(id, longName, variables);
 	}
 }

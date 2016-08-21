@@ -64,8 +64,10 @@ public class World {
 	}
 
 	public void addObject(WorldObject obj) {
-		obj.setId(currentObjId);
-		currentObjId++;
+		if(obj.getId() == -1) {
+			obj.setId(currentObjId);
+			currentObjId++;
+		}
 		objects.put(obj.getId(), obj);
 	}
 
@@ -202,6 +204,10 @@ public class World {
 	public Set<String> getAllUserNames() {
 		return users.keySet();
 	}
+	
+	public Set<Long> getAllObjIds() {
+		return objects.keySet();
+	}
 
 	/**
 	 * Get the object associated to the given user.
@@ -249,6 +255,22 @@ public class World {
 
 	public WorldLocation getLocation(long loc_id) {
 		return locations.get(loc_id);
+	}
+
+	public void setCurrentObjId(long objId) {
+		this.currentObjId = objId;
+	}
+	
+	public void setCurrentRoomId(long roomId) {
+		this.currentRoomId = roomId;
+	}
+
+	public long getCurrentObjId() {
+		return currentObjId;
+	}
+
+	public long getCurrentRoomId() {
+		return currentRoomId;
 	}
 
 }

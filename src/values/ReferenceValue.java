@@ -1,24 +1,22 @@
 package values;
 
-import universe.StoredSymbol;
-
 public class ReferenceValue extends AbstractValue {
-	protected transient StoredSymbol reference;
+	protected transient IReturnValue reference;
 
 	@Override
 	public ReturnValueTypes getType() {
 		return ReturnValueTypes.REFERENCE;
 	}
 	
-	public ReferenceValue(StoredSymbol reference) {
+	public ReferenceValue(IReturnValue reference) {
 		this.reference = reference;
 	}
 
-	public StoredSymbol getReference() {
+	public IReturnValue getReference() {
 		return reference;
 	}
 
-	public void setReference(StoredSymbol reference) {
+	public void setReference(IReturnValue reference) {
 		this.reference = reference;
 	}
 

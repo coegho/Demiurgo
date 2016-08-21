@@ -1,8 +1,9 @@
 package values;
 
+import java.io.Serializable;
+
 import exceptions.IllegalOperationException;
 import exceptions.ValueCastException;
-import serializable.SerializableValue;
 import universe.World;
 
 /**
@@ -15,7 +16,7 @@ import universe.World;
  * @since 1.0
  *
  */
-public interface IReturnValue extends SerializableValue {
+public interface IReturnValue extends Serializable {
 	/**
 	 * Returns the result of adding this value to another.
 	 * 
@@ -257,7 +258,15 @@ public interface IReturnValue extends SerializableValue {
 	public int getDepth();
 
 	/**
+	 * Sets this variable as writable or not (writable by default).
+	 * 
+	 * @param writable
+	 */
+	public void setWritable(boolean writable);
+
+	/**
 	 * Rebuild the value. This method must be called after a deserialization.
+	 * 
 	 * @return The value itself rebuilded.
 	 */
 	public IReturnValue rebuild(World world);

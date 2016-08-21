@@ -23,7 +23,6 @@ import linguaxe.LinguaxeParser.AddSubContext;
 import linguaxe.LinguaxeParser.ArgsContext;
 import linguaxe.LinguaxeParser.AssignContext;
 import linguaxe.LinguaxeParser.BoolContext;
-import linguaxe.LinguaxeParser.Class_defContext;
 import linguaxe.LinguaxeParser.CompareContext;
 import linguaxe.LinguaxeParser.DiceContext;
 import linguaxe.LinguaxeParser.EchoContext;
@@ -52,6 +51,7 @@ import linguaxe.LinguaxeParser.OperationContext;
 import linguaxe.LinguaxeParser.ParensContext;
 import linguaxe.LinguaxeParser.RoomContext;
 import linguaxe.LinguaxeParser.RoomTypeContext;
+import linguaxe.LinguaxeParser.RootObjectContext;
 import linguaxe.LinguaxeParser.RootVariableContext;
 import linguaxe.LinguaxeParser.Sharp_identifierContext;
 import linguaxe.LinguaxeParser.StringContext;
@@ -66,10 +66,8 @@ import scope.LoopScope;
 import scope.ObjectScope;
 import scope.Scope;
 import universe.ClassMethod;
-import universe.StoredSymbol;
 import universe.User;
 import universe.UserDefinedClass;
-import universe.World;
 import universe.WorldObject;
 import universe.WorldRoom;
 import values.FloatValue;
@@ -526,9 +524,9 @@ public abstract class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 			if (errors.hasErrors())
 				return null;
 			ReferenceValue left = (ReferenceValue) l;
-			if (left.getReference().getValue().canAssign(right)) {
+			if (left.getReference().canAssign(right)) {
 				left.getReference().assign(right);
-				return left.getReference().getValue();
+				return left.getReference();
 			} else {
 				throw new ValueCastException();
 			}
@@ -557,9 +555,9 @@ public abstract class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 		try {
 			index = i.castToInteger();
 
-			if (!(ref.getReference().getValue() instanceof ListValue))
+			if (!(ref.getReference() instanceof ListValue))
 				throw new NotAListException();
-			element = ref.getReference().getValue().getFromIndex(index);
+			element = ref.getReference().getFromIndex(index);
 			if (element.canAssign(value)) {
 				element.assign(value);
 				return value;
@@ -609,7 +607,7 @@ public abstract class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	@Override
 	public IReturnValue visitRootVariable(RootVariableContext ctx) {
 		try {
-			StoredSymbol v = getSM().getVariable(ctx.SYMBOL().getText().toLowerCase());
+			IReturnValue v = getSM().getVariable(ctx.SYMBOL().getText().toLowerCase());
 			if (v == null)
 				throw new UndeclaredVariableException();
 			return new ReferenceValue(v);
@@ -617,6 +615,15 @@ public abstract class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 			errors.notifyError(e);
 		}
 		return null;
+	}
+	
+	
+	/**
+	 * Returns a ReferenceObject with an object identified by its ID.
+	 */
+	@Override
+	public IReturnValue visitRootObject(RootObjectContext ctx) {
+		return new ReferenceValue(visit(ctx.sharp_identifier()));
 	}
 
 	/**
@@ -629,7 +636,7 @@ public abstract class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 			return null;
 		try {
 			ReferenceValue prev = (ReferenceValue) v;
-			IReturnValue value = prev.getReference().getValue();
+			IReturnValue value = prev.getReference();
 			String fieldName = ctx.SYMBOL().getText().toLowerCase();
 			if (value instanceof ObjectValue) {
 				WorldObject obj = ((ObjectValue) value).getObj();
@@ -657,7 +664,7 @@ public abstract class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 		if (errors.hasErrors())
 			return null;
 		ReferenceValue var = (ReferenceValue) v;
-		return var.getReference().getValue();
+		return var.getReference().cloneValue();
 	}
 
 	/**
@@ -673,8 +680,8 @@ public abstract class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 			String methodName = ctx.SYMBOL().getText().toLowerCase();
 			if (ctx.variable() != null) {
 				ReferenceValue ref = (ReferenceValue) v;
-				if (ref.getReference().getValue() instanceof ObjectValue) {
-					ObjectValue obj = (ObjectValue) ref.getReference().getValue();
+				if (ref.getReference() instanceof ObjectValue) {
+					ObjectValue obj = (ObjectValue) ref.getReference();
 
 					if (obj.getObj().getUserClass().getClassName().equalsIgnoreCase(methodName)) {
 						throw new IllegalOperationException();
@@ -705,7 +712,7 @@ public abstract class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 					getSM().popScope();
 
 					if (m.hasReturnArgument())
-						return fs.getReturnVariable().getValue();
+						return fs.getReturnVariable();
 				}
 			} else {
 				// TODO: non-class functions
@@ -852,7 +859,9 @@ public abstract class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 			getSM().pushScope(newScope);
 
 			for (IReturnValue v : newScope.getOriginValues()) {
-				getSM().setVariable(auxVar, new StoredSymbol(v, false));
+				IReturnValue vv = v.cloneValue();
+				v.setWritable(false);
+				getSM().setVariable(auxVar, vv);
 				if (ctx.code() != null) {
 					visit(ctx.code());
 					if (errors.hasErrors())
@@ -892,7 +901,7 @@ public abstract class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 		// If the Scope is a ClassScope, it will add a field to the current
 		// class
 		// if is not, it will add a normal variable
-		getSM().setVariable(varName, new StoredSymbol(type));
+		getSM().setVariable(varName, type);
 
 		return new NullValue();
 	}

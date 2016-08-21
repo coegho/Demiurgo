@@ -10,6 +10,7 @@ public abstract class AbstractValue implements IReturnValue {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	protected boolean writable = true;
 
 	@Override
 	public IReturnValue add(IReturnValue another) throws IllegalOperationException {
@@ -65,26 +66,24 @@ public abstract class AbstractValue implements IReturnValue {
 	public IReturnValue and(IReturnValue another) throws IllegalOperationException {
 		if (another instanceof ListValue) {
 			return another.and(this);
-		}
-		else
-		try {
-			return new IntegerValue(isTrue() && another.isTrue());
-		} catch (ValueCastException e) {
-			throw new IllegalOperationException();
-		}
+		} else
+			try {
+				return new IntegerValue(isTrue() && another.isTrue());
+			} catch (ValueCastException e) {
+				throw new IllegalOperationException();
+			}
 	}
 
 	@Override
 	public IReturnValue or(IReturnValue another) throws IllegalOperationException {
 		if (another instanceof ListValue) {
 			return another.or(this);
-		}
-		else
-		try {
-			return new IntegerValue(isTrue() || another.isTrue());
-		} catch (ValueCastException e) {
-			throw new IllegalOperationException();
-		}
+		} else
+			try {
+				return new IntegerValue(isTrue() || another.isTrue());
+			} catch (ValueCastException e) {
+				throw new IllegalOperationException();
+			}
 	}
 
 	@Override
@@ -140,7 +139,12 @@ public abstract class AbstractValue implements IReturnValue {
 	public boolean isTrue() throws ValueCastException {
 		throw new ValueCastException();
 	}
-	
+
+	@Override
+	public void setWritable(boolean writable) {
+		this.writable = writable;
+	}
+
 	@Override
 	public IReturnValue rebuild(World world) {
 		return this;

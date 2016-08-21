@@ -24,5 +24,7 @@ public interface DatabaseInterface {
 	
 	public List<SerializableWorldRoom> readAllRooms();
 
-	
+	public long[] readCurrentIDs();
+
+	public void setCurrentIDs(long objId, long RoomId);
 }

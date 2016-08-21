@@ -14,9 +14,9 @@ public class SerializableWorldRoom implements Serializable {
 
 	protected long id;
 	protected String long_path;
-	protected Map<String, SerializableValue> fields;
+	protected Map<String, IReturnValue> fields;
 	
-	public SerializableWorldRoom(long id, String long_path, Map<String, SerializableValue> fields) {
+	public SerializableWorldRoom(long id, String long_path, Map<String, IReturnValue> fields) {
 		this.id = id;
 		this.long_path = long_path;
 		this.fields = fields;
@@ -38,11 +38,11 @@ public class SerializableWorldRoom implements Serializable {
 		this.long_path = long_path;
 	}
 	
-	public Map<String, SerializableValue> getFields() {
+	public Map<String, IReturnValue> getFields() {
 		return fields;
 	}
 	
-	public void setFields(Map<String, SerializableValue> fields) {
+	public void setFields(Map<String, IReturnValue> fields) {
 		this.fields = fields;
 	}
 }
