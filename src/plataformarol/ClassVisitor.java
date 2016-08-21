@@ -4,9 +4,7 @@ import exceptions.ClassFilenameMismatchException;
 import exceptions.CodeClassInClassFileException;
 import linguaxe.LinguaxeParser.Class_defContext;
 import linguaxe.LinguaxeParser.CodeContext;
-import scope.ClassScope;
 import universe.UserDefinedClass;
-import universe.World;
 import values.IReturnValue;
 import values.NullValue;
 

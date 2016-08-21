@@ -50,11 +50,13 @@ public class WorldObject {
 	public WorldLocation getLocation() {
 		return location;
 	}
+	
+	public void setLocation(WorldLocation location) {
+		this.location = location;
+	}
 
 	public void moveTo(WorldLocation location) {
-		this.location.removeObject(this);
-		this.location = location;
-		location.addObject(this);
+		this.location.getWorld().moveTo(this.location, location, this);
 	}
 	
 	public IReturnValue getField(String fieldName) {
@@ -80,4 +82,6 @@ public class WorldObject {
 	public SerializableWorldObject getSerializableWorldObject() {
 		return new SerializableWorldObject(id, ownClass.getClassName(), ((location!=null)?location.getId():null), fields, ((user!=null)?user.getUsername():null));
 	}
+
+	
 }

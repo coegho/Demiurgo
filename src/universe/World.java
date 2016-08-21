@@ -1,9 +1,12 @@
 package universe;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import serializable.SerializableDecision;
 
 /**
  * Represents a world into the system.
@@ -24,6 +27,8 @@ public class World {
 	protected UserDefinedClass rootClass;
 	protected long currentObjId;
 	protected long currentRoomId;
+	protected Map<User, String> untraceableDecisions;
+	protected List<WorldRoom> pendingRooms;
 
 	public World(String name) {
 		this.name = name;
@@ -36,6 +41,8 @@ public class World {
 		userObjects = new HashMap<>();
 		rooms = new RoomGroup("", null);
 		rootClass = new RootObjectClass(this);
+		untraceableDecisions = new HashMap<>();
+		pendingRooms = new ArrayList<>();
 		classes.put("object", rootClass);
 	}
 
@@ -51,8 +58,12 @@ public class World {
 		return classes.get(className);
 	}
 
-	public void addClass(String className, UserDefinedClass newClass) {
-		classes.put(className, newClass);
+	public void addClass(UserDefinedClass newClass) {
+		classes.put(newClass.getClassName(), newClass);
+	}
+
+	public void removeClass(String className) {
+		classes.remove(className);
 	}
 
 	public UserDefinedClass getRootClass() {
@@ -64,7 +75,7 @@ public class World {
 	}
 
 	public void addObject(WorldObject obj) {
-		if(obj.getId() == -1) {
+		if (obj.getId() == -1) {
 			obj.setId(currentObjId);
 			currentObjId++;
 		}
@@ -77,6 +88,22 @@ public class World {
 
 	public WorldObject getObject(long id) {
 		return objects.get(id);
+	}
+
+	/**
+	 * Moves an object from one location to another.
+	 * 
+	 * @param origin
+	 *            Original location.
+	 * @param destination
+	 *            Future location.
+	 * @param obj
+	 *            Moved object.
+	 */
+	public void moveTo(WorldLocation origin, WorldLocation destination, WorldObject obj) {
+		origin.removeObject(obj);
+		obj.setLocation(destination);
+		destination.addObject(obj);
 	}
 
 	/**
@@ -128,7 +155,7 @@ public class World {
 	 * @return
 	 */
 	public WorldRoom newRoom(WorldRoom room) {
-		RoomGroup rg = searchRoomGroup(room.getLongName(), true);
+		RoomGroup rg = searchRoomGroup(room.getLongPath(), true);
 		rg.setOwnRoom(room);
 		locations.put(room.getId(), room);
 		return rg.getOwnRoom();
@@ -177,7 +204,7 @@ public class World {
 	 */
 	public WorldRoom getRoom(String roomLongName) {
 		RoomGroup rg = searchRoomGroup(roomLongName, false);
-		if(rg == null)
+		if (rg == null)
 			return null;
 		else
 			return rg.getOwnRoom();
@@ -204,7 +231,7 @@ public class World {
 	public Set<String> getAllUserNames() {
 		return users.keySet();
 	}
-	
+
 	public Set<Long> getAllObjIds() {
 		return objects.keySet();
 	}
@@ -260,7 +287,7 @@ public class World {
 	public void setCurrentObjId(long objId) {
 		this.currentObjId = objId;
 	}
-	
+
 	public void setCurrentRoomId(long roomId) {
 		this.currentRoomId = roomId;
 	}
@@ -273,4 +300,27 @@ public class World {
 		return currentRoomId;
 	}
 
+	public void addDecision(User user, String text) {
+		if(user.getObj() != null && user.getObj().getLocation() instanceof WorldRoom) {
+			WorldRoom room = (WorldRoom)user.getObj().getLocation();
+			pendingRooms.add(room);
+			room.addDecision(user, text);
+		}
+		else {
+			untraceableDecisions.put(user, text);
+		}
+	}
+
+	public List<SerializableDecision> getSerializableDecisions() {
+		List<SerializableDecision> l = new ArrayList<>();
+		for(User u : untraceableDecisions.keySet()) {
+			l.add(new SerializableDecision(u.getUsername(), null, untraceableDecisions.get(u)));
+		}
+		return l;
+	}
+
+	public List<WorldRoom> getPendingRooms() {
+		return pendingRooms;
+	}
+	
 }

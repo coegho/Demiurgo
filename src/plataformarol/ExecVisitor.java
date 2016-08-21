@@ -994,7 +994,7 @@ public abstract class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 			if (path.startsWith("/")) { // absolute path
 				room = getSM().getRoom(path);
 			} else { // relative path
-				String curRoom = getSM().getCurrentRoom().getLongName();
+				String curRoom = getSM().getCurrentRoom().getLongPath();
 				String curPath = curRoom.substring(0, curRoom.lastIndexOf('/') + 1);
 				room = getSM().getRoom(path, curPath);
 			}

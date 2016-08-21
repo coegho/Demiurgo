@@ -39,8 +39,8 @@ public class WorldScope extends Scope {
 		return world.getRootClass();
 	}
 
-	public void addClass(String className, UserDefinedClass newClass) {
-		world.addClass(className, newClass);
+	public void addClass(UserDefinedClass newClass) {
+		world.addClass(newClass);
 		
 	}
 

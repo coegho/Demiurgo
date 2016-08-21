@@ -1,6 +1,7 @@
 package serializable;
 
 import java.rmi.Remote;
+import java.rmi.RemoteException;
 import java.util.List;
 
 /**
@@ -52,6 +53,7 @@ public interface ServerInterface extends Remote {
 	public boolean newClass(String world, String name, String code) throws java.rmi.RemoteException;
 
 	/**
+	 * Creates a new room.
 	 * 
 	 * @param world
 	 *            World's name.
@@ -61,4 +63,39 @@ public interface ServerInterface extends Remote {
 	 * @throws java.rmi.RemoteException
 	 */
 	public boolean createRoom(String world, String path) throws java.rmi.RemoteException;
+
+	/**
+	 * Submits a decision from an user.
+	 * 
+	 * @param world
+	 *            World's name.
+	 * @param user
+	 *            User who submit his decision. //TODO: identify users
+	 * @param text
+	 *            Decision's text.
+	 * @throws java.rmi.RemoteException
+	 */
+	public void submitDecision(String world, String user, String text) throws java.rmi.RemoteException;
+
+	/**
+	 * Returns a list with all the rooms with pending decisions.
+	 * 
+	 * @param world
+	 *            World's name.
+	 * @return
+	 * @throws RemoteException
+	 */
+	public List<String> getPendingRooms(String world) throws RemoteException;
+	
+	/**
+	 * Returns a list with all decisions submitted on a room.
+	 * 
+	 * @param world
+	 *            World's name.
+	 * @param room
+	 *            Room's path.
+	 * @return
+	 * @throws RemoteException
+	 */
+	public List<SerializableDecision> getDecisions(String world, String room) throws RemoteException;
 }

@@ -106,7 +106,7 @@ public class PlataformaRol {
 			}
 			System.out.println("--CHECKING ROOMS--");
 			for (WorldRoom r : w.getAllRooms()) {
-				System.out.println("ROOM " + r.getLongName());
+				System.out.println("ROOM " + r.getLongPath());
 				System.out.print("| OBJECTS = {");
 				for (WorldObject o : r.getObjects()) {
 					System.out.print(" #" + o.getId() + ":" + o.getUserClass().getClassName());
@@ -230,7 +230,7 @@ public class PlataformaRol {
 			if (c.exists() && c.isFile()) {
 				String filename = c.getName().toLowerCase();
 				String className = filename.substring(0, filename.length() - RolFileFilter.extension.length());
-				world.addClass(className, new UserDefinedClass(className, world));
+				world.addClass(new UserDefinedClass(className, world));
 			} else {
 				System.err.print(c.getName());
 			}
