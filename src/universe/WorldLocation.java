@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class WorldLocation {
+	protected long id;
 	protected World world;
 	protected List<WorldObject> objects;
 	
-	public WorldLocation(World world) {
+	public WorldLocation(World world, long id) {
+		this.id = id;
 		this.world = world;
 		objects = new ArrayList<>();
 	}
@@ -26,5 +28,13 @@ public class WorldLocation {
 	
 	public List<WorldObject> getObjects() {
 		return objects;
+	}
+	
+	public long getId() {
+		return id;
+	}
+	
+	public void setId(long id) {
+		this.id = id;
 	}
 }

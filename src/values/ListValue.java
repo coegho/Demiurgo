@@ -7,11 +7,17 @@ import exceptions.IllegalOperationException;
 import exceptions.SizeMismatchException;
 import exceptions.ValueCastException;
 import universe.UserDefinedClass;
+import universe.World;
 
-public class ListValue implements IReturnValue {
+public class ListValue extends AbstractValue {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	protected List<IReturnValue> value;
 	protected ReturnValueTypes innerType;
-	protected UserDefinedClass classType;
+	protected transient UserDefinedClass classType;
+	protected String className;
 	protected int listDepth;
 
 	public ListValue(List<IReturnValue> value) {
@@ -34,6 +40,7 @@ public class ListValue implements IReturnValue {
 		lv.setDepth(depth);
 		lv.setInnerType(ReturnValueTypes.OBJECT);
 		lv.classType = cl;
+		lv.className = cl.getClassName();
 		return lv;
 	}
 
@@ -507,6 +514,12 @@ public class ListValue implements IReturnValue {
 		for (IReturnValue x : getValue()) {
 			content += " " + x.toString() + " ";
 		}
-		return "{LIST=[" + content + "]}";
+		return "LIST/[" + content + "]";
+	}
+	
+	@Override
+	public IReturnValue rebuild(World world) {
+		this.classType = world.getClassFromName(className);
+		return this;
 	}
 }

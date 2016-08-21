@@ -1,4 +1,4 @@
-package serverinterface;
+package serializable;
 
 import java.rmi.Remote;
 import java.util.List;
@@ -21,7 +21,7 @@ public interface ServerInterface extends Remote {
 	 *            Room's path.
 	 * @throws java.rmi.RemoteException
 	 */
-	public List<ResultObject> checkRoom(String world, String path) throws java.rmi.RemoteException;
+	public List<SerializableWorldObject> checkRoom(String world, String path) throws java.rmi.RemoteException;
 
 	/**
 	 * Executes code related to an action.

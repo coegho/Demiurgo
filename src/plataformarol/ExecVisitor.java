@@ -14,6 +14,7 @@ import exceptions.NotAnObjectException;
 import exceptions.RoomNotFoundException;
 import exceptions.UndeclaredVariableException;
 import exceptions.UndefinedClassException;
+import exceptions.UnexistentUserException;
 import exceptions.ValueCastException;
 import exceptions.WrongMovementException;
 import linguaxe.LinguaxeBaseVisitor;
@@ -66,6 +67,7 @@ import scope.ObjectScope;
 import scope.Scope;
 import universe.ClassMethod;
 import universe.StoredSymbol;
+import universe.User;
 import universe.UserDefinedClass;
 import universe.World;
 import universe.WorldObject;
@@ -631,11 +633,14 @@ public abstract class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 			String fieldName = ctx.SYMBOL().getText().toLowerCase();
 			if (value instanceof ObjectValue) {
 				WorldObject obj = ((ObjectValue) value).getObj();
+				if (obj.getField(fieldName) == null) {
+					throw new UndeclaredVariableException();
+				}
 				return new ReferenceValue(obj.getField(fieldName));
 			} else {
 				throw new NotAnObjectException();
 			}
-		} catch (NotAnObjectException e) {
+		} catch (NotAnObjectException | UndeclaredVariableException e) {
 			errors.notifyError(e);
 		}
 		return null;
@@ -1001,17 +1006,25 @@ public abstract class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	 */
 	@Override
 	public IReturnValue visitExp_user(Exp_userContext ctx) {
-		// We get the user name without the '$' symbol
-		String username = ctx.USERNAME().getText().toLowerCase().substring(1);
-		IReturnValue objref = visit(ctx.operation());
-		if (errors.hasErrors())
-			return null;
-		if (objref instanceof ObjectValue) {
-			WorldObject obj = ((ObjectValue) objref).getObj();
-			// TODO: check user
-			getSM().setUserObject(username, obj);
+		try {
+			// We get the user name without the '$' symbol
+			String username = ctx.USERNAME().getText().toLowerCase().substring(1);
+			IReturnValue objref = visit(ctx.operation());
+			if (errors.hasErrors())
+				return null;
+			if (objref instanceof ObjectValue) {
+				WorldObject obj = ((ObjectValue) objref).getObj();
+				User user = getSM().getCurrentWorld().getUser(username);
+				if (user == null) {
+					throw new UnexistentUserException(username);
+				}
+				getSM().setUserObject(user, obj);
+			}
+			return new NullValue();
+		} catch (UnexistentUserException e) {
+			errors.notifyError(e);
 		}
-		return new NullValue();
+		return null;
 	}
 
 	@Override

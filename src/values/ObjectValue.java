@@ -3,15 +3,24 @@ package values;
 import exceptions.IllegalOperationException;
 import exceptions.ValueCastException;
 import universe.UserDefinedClass;
+import universe.World;
 import universe.WorldObject;
 
 public class ObjectValue extends AbstractValue {
-	protected UserDefinedClass itsClass;
-	protected WorldObject obj;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	protected transient UserDefinedClass itsClass;
+	protected transient WorldObject obj;
+	protected String className;
+	protected long obj_id;
 	
 	public ObjectValue(WorldObject obj) {
 		this.obj = obj;
 		this.itsClass = obj.getUserClass();
+		obj_id = obj.getId();
+		className = itsClass.getClassName();
 	}
 	
 	/**
@@ -20,6 +29,7 @@ public class ObjectValue extends AbstractValue {
 	 */
 	public ObjectValue(UserDefinedClass itsClass) {
 		this.itsClass = itsClass;
+		className = itsClass.getClassName();
 	}
 
 	@Override
@@ -37,6 +47,7 @@ public class ObjectValue extends AbstractValue {
 
 	public void setObj(WorldObject obj) {
 		this.obj = obj;
+		obj_id = obj.getId();
 	}
 	
 	@Override
@@ -56,6 +67,7 @@ public class ObjectValue extends AbstractValue {
 			//check polymorphism
 			if(o.getObj().getUserClass().inheritFrom(itsClass)) {
 				obj = o.getObj();
+				obj_id = obj.getId();
 				return true;
 			}
 		}
@@ -69,6 +81,13 @@ public class ObjectValue extends AbstractValue {
 
 	@Override
 	public String toString() {
-		return "{OBJ=" + obj.getId() + "}";
+		return "OBJ/" + obj.getId();
+	}
+	
+	@Override
+	public IReturnValue rebuild(World world) {
+		this.itsClass = world.getClassFromName(className);
+		this.obj = world.getObject(obj_id);
+		return this;
 	}
 }

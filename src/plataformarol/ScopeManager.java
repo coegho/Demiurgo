@@ -10,6 +10,7 @@ import scope.RoomScope;
 import scope.Scope;
 import scope.WorldScope;
 import universe.StoredSymbol;
+import universe.User;
 import universe.UserDefinedClass;
 import universe.World;
 import universe.WorldObject;
@@ -106,7 +107,7 @@ public class ScopeManager {
 		return globals.getRoom(roomRelativeName, currentRoom);
 	}
 
-	public void setUserObject(String user, WorldObject obj) {
+	public void setUserObject(User user, WorldObject obj) {
 		globals.setUserObject(user, obj);
 	}
 

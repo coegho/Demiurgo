@@ -2,6 +2,7 @@ package universe;
 
 public class User {
 	protected String username;
+	protected WorldObject obj;
 	
 	public User(String username) {
 		this.username = username;
@@ -13,5 +14,13 @@ public class User {
 	
 	public void setUsername(String username) {
 		this.username = username;
+	}
+	
+	public WorldObject getObj() {
+		return obj;
+	}
+	
+	public void setObj(WorldObject obj) {
+		this.obj = obj;
 	}
 }

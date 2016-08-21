@@ -22,4 +22,8 @@ public class NullValue extends AbstractValue {
 		return null;
 	}
 
+	@Override
+	public String toString() {
+		return "NULL";
+	}
 }

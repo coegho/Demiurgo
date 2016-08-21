@@ -1,14 +1,19 @@
 package values;
 
-import exceptions.ValueCastException;
 import universe.World;
 import universe.WorldLocation;
 
 public class LocationValue extends AbstractValue {
-	WorldLocation location;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	protected transient WorldLocation location;
+	protected long loc_id;
 
 	public LocationValue(WorldLocation location) {
 		this.location = location;
+		loc_id = location.getId();
 	}
 	
 	public static LocationValue defaultValue(World world) {
@@ -33,6 +38,7 @@ public class LocationValue extends AbstractValue {
 	public boolean assign(IReturnValue newRValue) {
 		if(newRValue instanceof LocationValue) {
 			location = ((LocationValue)newRValue).getLocation();
+			loc_id = location.getId();
 			return true;
 		}
 		return false;
@@ -41,5 +47,16 @@ public class LocationValue extends AbstractValue {
 	@Override
 	public IReturnValue cloneValue() {
 		return new LocationValue(getLocation());
+	}
+	
+	@Override
+	public String toString() {
+		return "LOC/" + location.getId();
+	}
+	
+	@Override
+	public IReturnValue rebuild(World world) {
+		this.location = world.getLocation(loc_id);
+		return this;
 	}
 }

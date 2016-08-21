@@ -1,4 +1,4 @@
-package serverinterface;
+package serializable;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -7,7 +7,9 @@ import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.antlr.v4.runtime.tree.ParseTree;
 
@@ -29,14 +31,14 @@ public class ServerInterfaceImpl extends UnicastRemoteObject implements ServerIn
 	private static final long serialVersionUID = 1L;
 
 	@Override
-	public List<ResultObject> checkRoom(String world, String path) throws RemoteException {
+	public List<SerializableWorldObject> checkRoom(String world, String path) throws RemoteException {
 		WorldRoom room = PlataformaRol.getWorld(world).getRoom(path);
 		if (room == null) {
 			return null;
 		}
-		ArrayList<ResultObject> ret = new ArrayList<>();
+		ArrayList<SerializableWorldObject> ret = new ArrayList<>();
 		for (WorldObject o : room.getObjects()) {
-			ret.add(new ResultObject(o.getId(), o.getUserClass().getClassName(), o.fieldsToString(), o.getUser()));
+			ret.add(o.getSerializableWorldObject());
 		}
 		return ret;
 
@@ -75,8 +77,8 @@ public class ServerInterfaceImpl extends UnicastRemoteObject implements ServerIn
 
 	@Override
 	public boolean createRoom(String world, String path) throws RemoteException {
-		// TODO Auto-generated method stub
-		return false;
+		WorldRoom room = PlataformaRol.getWorld(world).newRoom(path);
+		return room != null;
 	}
 
 }

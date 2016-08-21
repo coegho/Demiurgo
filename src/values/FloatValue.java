@@ -228,6 +228,6 @@ public class FloatValue extends AbstractValue {
 	
 	@Override
 	public String toString() {
-		return "{FLOAT=" + getValue() + "}";
+		return "FLOAT/" + getValue() + "}";
 	}
 }

@@ -1,6 +1,7 @@
 package scope;
 
 import universe.StoredSymbol;
+import universe.User;
 import universe.UserDefinedClass;
 import universe.World;
 import universe.WorldObject;
@@ -55,7 +56,7 @@ public class WorldScope extends Scope {
 		return world.getRoom(roomRelativeName, currentRoom);
 	}
 
-	public void setUserObject(String user, WorldObject obj) {
+	public void setUserObject(User user, WorldObject obj) {
 		world.setUserObject(user, obj);
 	}
 }

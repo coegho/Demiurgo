@@ -2,7 +2,10 @@ package universe;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
+import serializable.SerializableValue;
+import serializable.SerializableWorldObject;
 import values.ObjectValue;
 
 public class WorldObject {
@@ -10,7 +13,7 @@ public class WorldObject {
 	protected UserDefinedClass ownClass;
 	protected WorldLocation location;
 	protected Map<String, StoredSymbol> fields;
-	protected String user; //TODO: only a string?
+	protected User user;
 
 	public WorldObject(UserDefinedClass ownClass, WorldLocation location) {
 		this.ownClass = ownClass;
@@ -59,19 +62,23 @@ public class WorldObject {
 		fields.put(fieldName, value);
 	}
 	
-	public Map<String, String> fieldsToString() {
-		HashMap<String, String> ret = new HashMap<>();
-		for(String k : fields.keySet()) {
-			ret.put(k, fields.get(k).getValue().toString());
-		}
-		return ret;
+	public Set<String> getAllFieldNames() {
+		return fields.keySet();
 	}
 
-	public void setUser(String user) {
+	public void setUser(User user) {
 		this.user = user;
 	}
 	
-	public String getUser() {
+	public User getUser() {
 		return user;
+	}
+	
+	public SerializableWorldObject getSerializableWorldObject() {
+		Map<String, SerializableValue> variables = new HashMap<>();
+		for(String s : fields.keySet()) {
+			variables.put(s, fields.get(s).getValue());
+		}
+		return new SerializableWorldObject(id, ownClass.getClassName(), ((location!=null)?location.getId():null), variables, ((user!=null)?user.getUsername():null));
 	}
 }

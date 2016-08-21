@@ -2,6 +2,8 @@ package values;
 
 import exceptions.IllegalOperationException;
 import exceptions.ValueCastException;
+import serializable.SerializableValue;
+import universe.World;
 
 /**
  * This interface provides the methods required to perform operations with any
@@ -13,7 +15,7 @@ import exceptions.ValueCastException;
  * @since 1.0
  *
  */
-public interface IReturnValue {
+public interface IReturnValue extends SerializableValue {
 	/**
 	 * Returns the result of adding this value to another.
 	 * 
@@ -253,5 +255,11 @@ public interface IReturnValue {
 	 * @return
 	 */
 	public int getDepth();
+
+	/**
+	 * Rebuild the value. This method must be called after a deserialization.
+	 * @return The value itself rebuilded.
+	 */
+	public IReturnValue rebuild(World world);
 
 }

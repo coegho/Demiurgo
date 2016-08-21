@@ -7,7 +7,7 @@ import exceptions.ValueCastException;
 
 public class IntegerValue extends AbstractValue {
 	protected int value;
-	protected static Random r = new Random();
+	protected transient static Random r = new Random();
 
 	public IntegerValue(int value) {
 		this.value = value;
@@ -253,6 +253,6 @@ public class IntegerValue extends AbstractValue {
 
 	@Override
 	public String toString() {
-		return "{INT=" + getValue() + "}";
+		return "INT/" + getValue();
 	}
 }

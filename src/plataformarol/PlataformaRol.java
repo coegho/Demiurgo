@@ -10,19 +10,28 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 
+import database.DatabaseInterface;
+import database.MariaDBDatabase;
 import linguaxe.LinguaxeLexer;
 import linguaxe.LinguaxeParser;
-import serverinterface.ServerInterfaceImpl;
+import serializable.SerializableUser;
+import serializable.SerializableValue;
+import serializable.SerializableWorldRoom;
+import serializable.ServerInterfaceImpl;
+import universe.StoredSymbol;
+import universe.User;
 import universe.UserDefinedClass;
 import universe.World;
 import universe.WorldObject;
 import universe.WorldRoom;
+import values.IReturnValue;
 
 /**
  * 
@@ -62,26 +71,11 @@ public class PlataformaRol {
 			}
 		}
 
-		// TODO: Test
-		worlds.get("mundo1").newRoom("/escenario1");
-
-		ErrorHandler errors = new ErrorHandler();
-		ParseTree tree = null;
-		try {
-			tree = parseStream(new FileInputStream(new File("input.rol")), errors);
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		CodeVisitor eval = new CodeVisitor(worlds.get("mundo1").getRoom("/escenario1"), errors);
-		eval.visit(tree);
-
-		if (errors.hasErrors()) {
-			for (String e : errors.getErrors()) {
-				System.err.println(e);
-			}
-			System.exit(3);
-		}
+		/*for(String w : worlds.keySet()) {
+			loadFromDatabase(worlds.get(w));
+		}*/
+		loadFromDatabase(worlds.get("mundo1")); //TODO: Example
+		
 
 		int portNum = 5555;
 		String registryURL = "plataformarol", hostName = "localhost";
@@ -90,7 +84,7 @@ public class PlataformaRol {
 			ServerInterfaceImpl objetoServidor = new ServerInterfaceImpl();
 			registryURL = "rmi://"+hostName+":"+portNum+"/"+registryURL;
 			Naming.rebind(registryURL, objetoServidor);
-			System.out.println("PREPARADO");
+			System.out.println("RMI READY");
 		} catch (RemoteException re) {
 			System.out.println("RemoteException in PlataformaRol.main: " + re);
 			System.out.println(re.getCause() + ":::" + re.getLocalizedMessage());
@@ -108,6 +102,10 @@ public class PlataformaRol {
 			for (String c : w.getAllClasses()) {
 				System.out.println(c);
 			}
+			System.out.println("--USERS--");
+			for (String c : w.getAllUserNames()) {
+				System.out.println(c);
+			}
 			System.out.println("--CHECKING ROOMS--");
 			for (WorldRoom r : w.getAllRooms()) {
 				System.out.println("ROOM " + r.getLongName());
@@ -116,8 +114,84 @@ public class PlataformaRol {
 					System.out.print(" #" + o.getId() + ":" + o.getUserClass().getClassName());
 				}
 				System.out.println(" }");
+				System.out.print("| VARIABLES = {");
+				for(String s : r.getAllVarNames())
+					System.out.print(" " + s);
+				System.out.println(" }");
 			}
 		}
+		
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
+			public void run() {
+				System.out.println("Saving changes...");
+				saveAllInDatabase();
+			}
+		});
+		
+		//TODO: little eclipse hack
+		
+		try {
+			System.in.read();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.exit(0);
+	}
+
+	private static synchronized void loadFromDatabase(World world) {
+		DatabaseInterface db = new MariaDBDatabase();
+		db.createConnection("plataformarol", "mysql", "mysql"); //TODO: config
+		
+		//Reading rooms
+		List<SerializableWorldRoom> rooms = db.readAllRooms();
+		for(SerializableWorldRoom r : rooms) {
+			WorldRoom room = new WorldRoom(r.getLong_path(), world, r.getId());
+			world.newRoom(room);
+		}
+		//Rebuilding room variables
+		for(SerializableWorldRoom r : rooms) {
+			WorldRoom room = (WorldRoom)world.getLocation(r.getId());
+			for(String var : r.getFields().keySet()) {
+				IReturnValue v = (IReturnValue)r.getFields().get(var);
+				room.setVariable(var, new StoredSymbol(v.rebuild(world)));
+			}
+		}
+		
+		//Reading users
+		List<SerializableUser> users = db.readAllUsers();
+		for(SerializableUser u : users) {
+			world.addUser(new User(u.getUsername()));
+		}
+		
+		db.stopConnection();
+	}
+	
+	private static synchronized void saveWorldInDatabase(World world) {
+		DatabaseInterface db = new MariaDBDatabase();
+		db.createConnection("plataformarol", "mysql", "mysql"); //TODO: config
+		
+		//Writing rooms
+		for(WorldRoom room : world.getAllRooms()) {
+			Map<String, SerializableValue> variables = new HashMap<>();
+			for(String v : room.getAllVarNames()) {
+				variables.put(v, room.getVariable(v).getValue());
+			}
+			db.writeWorldRoom(new SerializableWorldRoom(room.getId(), room.getLongName(), variables));
+		}
+		
+		//Writing users
+		for(String s : world.getAllUserNames()) {
+			User user = world.getUser(s);
+			WorldObject obj = user.getObj();
+			if(obj != null)
+				db.writeUser(new SerializableUser(user.getUsername(), obj.getId()));
+			else
+				db.writeUser(new SerializableUser(user.getUsername()));
+		}
+		
+		db.stopConnection();
 	}
 
 	private static World rebuildWorld(File w) throws IOException {
@@ -173,12 +247,23 @@ public class PlataformaRol {
 
 		} catch (RemoteException e) {
 			// No valid registry at that port.
-			Registry registry = LocateRegistry.createRegistry(RMIPortNum);
+			/*Registry registry = */LocateRegistry.createRegistry(RMIPortNum);
 		}
 	}
 
 	public static World getWorld(String name) {
 		return worlds.get(name);
+	}
+	
+	public static Map<String, World> getWorlds() {
+		return worlds;
+	}
+
+	private static void saveAllInDatabase() {
+		/*for(String s : worlds.keySet()) {
+			saveWorldInDatabase(worlds.get(s));
+		}*/
+		saveWorldInDatabase(worlds.get("mundo1")); //TODO: Example
 	}
 }
 

@@ -2,8 +2,14 @@ package values;
 
 import exceptions.IllegalOperationException;
 import exceptions.ValueCastException;
+import universe.World;
 
 public abstract class AbstractValue implements IReturnValue {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
 	@Override
 	public IReturnValue add(IReturnValue another) throws IllegalOperationException {
@@ -133,5 +139,10 @@ public abstract class AbstractValue implements IReturnValue {
 	@Override
 	public boolean isTrue() throws ValueCastException {
 		throw new ValueCastException();
+	}
+	
+	@Override
+	public IReturnValue rebuild(World world) {
+		return this;
 	}
 }

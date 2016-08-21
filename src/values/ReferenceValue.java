@@ -1,10 +1,9 @@
 package values;
 
-import exceptions.ValueCastException;
 import universe.StoredSymbol;
 
 public class ReferenceValue extends AbstractValue {
-	protected StoredSymbol reference;
+	protected transient StoredSymbol reference;
 
 	@Override
 	public ReturnValueTypes getType() {

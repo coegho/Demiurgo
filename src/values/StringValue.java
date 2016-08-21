@@ -135,6 +135,6 @@ public class StringValue extends AbstractValue {
 
 	@Override
 	public String toString() {
-		return "{STRING=\"" + getValue() + "\"}";
+		return "STRING/\"" + getValue() + "\"";
 	}
 }
