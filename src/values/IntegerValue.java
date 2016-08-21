@@ -4,8 +4,14 @@ import java.util.Random;
 
 import exceptions.IllegalOperationException;
 import exceptions.ValueCastException;
+import serializable.ReturnValueTypes;
 
 public class IntegerValue extends AbstractValue {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	protected int value;
 	protected transient static Random r = new Random();
 
@@ -256,5 +262,12 @@ public class IntegerValue extends AbstractValue {
 	@Override
 	public String toString() {
 		return "INT/" + getValue();
+	}
+	
+	@Override
+	public String[] getValueCodes() {
+		String[] r = super.getValueCodes();
+		r[2] = Integer.toString(value);
+		return r;
 	}
 }

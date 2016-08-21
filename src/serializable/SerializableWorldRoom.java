@@ -1,9 +1,6 @@
 package serializable;
 
 import java.io.Serializable;
-import java.util.Map;
-
-import values.IReturnValue;
 
 public interface SerializableWorldRoom extends Serializable {
 
@@ -11,5 +8,5 @@ public interface SerializableWorldRoom extends Serializable {
 
 	public String getLongPath();
 
-	public Map<String, IReturnValue> getVariables();
+	public SerializableValue getVariable(String name);
 }

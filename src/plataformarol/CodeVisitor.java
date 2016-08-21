@@ -2,7 +2,6 @@ package plataformarol;
 
 import exceptions.ClassDefinitionOnCodeException;
 import linguaxe.LinguaxeParser.Class_defContext;
-import universe.World;
 import universe.WorldRoom;
 import values.IReturnValue;
 

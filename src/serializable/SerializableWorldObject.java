@@ -1,9 +1,6 @@
 package serializable;
 
 import java.io.Serializable;
-import java.util.Map;
-
-import values.IReturnValue;
 
 public interface SerializableWorldObject extends Serializable {
 
@@ -15,5 +12,5 @@ public interface SerializableWorldObject extends Serializable {
 
 	public String getUsername();
 
-	public Map<String, IReturnValue> getFields();
+	public SerializableValue getField(String name);
 }

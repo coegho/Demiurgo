@@ -49,6 +49,7 @@ public class WorldRoom extends WorldLocation implements SerializableWorldRoom {
 		return longPath.substring(longPath.lastIndexOf('.'));
 	}
 
+	@Override
 	public IReturnValue getVariable(String name) {
 		return variables.get(name);
 	}
@@ -85,7 +86,7 @@ public class WorldRoom extends WorldLocation implements SerializableWorldRoom {
 		return l;
 	}
 
-	@Override
+	
 	public Map<String, IReturnValue> getVariables() {
 		return variables;
 	}

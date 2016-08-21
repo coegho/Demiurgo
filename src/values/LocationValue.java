@@ -1,5 +1,6 @@
 package values;
 
+import serializable.ReturnValueTypes;
 import universe.World;
 import universe.WorldLocation;
 
@@ -58,5 +59,12 @@ public class LocationValue extends AbstractValue {
 	public IReturnValue rebuild(World world) {
 		this.location = world.getLocation(loc_id);
 		return this;
+	}
+	
+	@Override
+	public String[] getValueCodes() {
+		String[] r = super.getValueCodes();
+		r[2] = Long.toString(loc_id);
+		return r;
 	}
 }

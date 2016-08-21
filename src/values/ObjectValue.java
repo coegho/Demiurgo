@@ -1,7 +1,6 @@
 package values;
 
-import exceptions.IllegalOperationException;
-import exceptions.ValueCastException;
+import serializable.ReturnValueTypes;
 import universe.UserDefinedClass;
 import universe.World;
 import universe.WorldObject;
@@ -81,7 +80,7 @@ public class ObjectValue extends AbstractValue {
 
 	@Override
 	public String toString() {
-		return "OBJ/" + obj_id;
+		return "OBJ/" + className + "/"+ obj_id;
 	}
 	
 	@Override
@@ -89,5 +88,13 @@ public class ObjectValue extends AbstractValue {
 		this.itsClass = world.getClassFromName(className);
 		this.obj = world.getObject(obj_id);
 		return this;
+	}
+	
+	@Override
+	public String[] getValueCodes() {
+		String[] r = super.getValueCodes();
+		r[1] = className;
+		r[2] = Long.toString(obj_id);
+		return r;
 	}
 }

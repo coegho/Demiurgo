@@ -2,8 +2,13 @@ package values;
 
 import exceptions.IllegalOperationException;
 import exceptions.ValueCastException;
+import serializable.ReturnValueTypes;
 
 public class StringValue extends AbstractValue {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	protected String value;
 
 	@Override
@@ -136,5 +141,12 @@ public class StringValue extends AbstractValue {
 	@Override
 	public String toString() {
 		return "STRING/\"" + getValue() + "\"";
+	}
+	
+	@Override
+	public String[] getValueCodes() {
+		String[] r = super.getValueCodes();
+		r[2] = value;
+		return r;
 	}
 }

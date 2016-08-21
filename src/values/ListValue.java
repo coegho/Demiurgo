@@ -6,6 +6,7 @@ import java.util.List;
 import exceptions.IllegalOperationException;
 import exceptions.SizeMismatchException;
 import exceptions.ValueCastException;
+import serializable.ReturnValueTypes;
 import universe.UserDefinedClass;
 import universe.World;
 
@@ -524,5 +525,17 @@ public class ListValue extends AbstractValue {
 			v.rebuild(world);
 		}
 		return this;
+	}
+	
+	@Override
+	public String[] getValueCodes() {
+		String[] r = super.getValueCodes();
+		r[1] = getInnerType().name();
+		r[2] = "{";
+		for(IReturnValue v : value) {
+			r[2] += v.getValueCodes();
+		}
+		r[2] += "}";
+		return r;
 	}
 }

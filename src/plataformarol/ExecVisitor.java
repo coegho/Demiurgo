@@ -65,6 +65,7 @@ import scope.FunctionScope;
 import scope.LoopScope;
 import scope.ObjectScope;
 import scope.Scope;
+import serializable.ReturnValueTypes;
 import universe.ClassMethod;
 import universe.User;
 import universe.UserDefinedClass;
@@ -78,7 +79,6 @@ import values.LocationValue;
 import values.NullValue;
 import values.ObjectValue;
 import values.ReferenceValue;
-import values.ReturnValueTypes;
 import values.StringValue;
 
 /**

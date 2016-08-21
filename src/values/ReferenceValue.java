@@ -1,6 +1,12 @@
 package values;
 
+import serializable.ReturnValueTypes;
+
 public class ReferenceValue extends AbstractValue {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	protected transient IReturnValue reference;
 
 	@Override

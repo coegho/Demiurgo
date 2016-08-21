@@ -1,6 +1,13 @@
 package values;
 
+import serializable.ReturnValueTypes;
+
 public class NullValue extends AbstractValue {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
 	@Override
 	public boolean canAssign(IReturnValue newRValue) {
@@ -25,5 +32,12 @@ public class NullValue extends AbstractValue {
 	@Override
 	public String toString() {
 		return "NULL";
+	}
+	
+	@Override
+	public String[] getValueCodes() {
+		String[] r = new String[3];
+		r[0] = "NULL";
+		return r;
 	}
 }

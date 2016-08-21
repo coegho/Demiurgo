@@ -88,6 +88,7 @@ public class WorldObject implements SerializableWorldObject {
 		this.location.getWorld().moveTo(this.location, location, this);
 	}
 
+	@Override
 	public IReturnValue getField(String fieldName) {
 		return fields.get(fieldName);
 	}
@@ -126,7 +127,6 @@ public class WorldObject implements SerializableWorldObject {
 		return null;
 	}
 
-	@Override
 	public Map<String, IReturnValue> getFields() {
 		return fields;
 	}

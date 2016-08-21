@@ -149,4 +149,11 @@ public abstract class AbstractValue implements IReturnValue {
 	public IReturnValue rebuild(World world) {
 		return this;
 	}
+	
+	@Override
+	public String[] getValueCodes() {
+		String[] r = new String[3];
+		r[0] = getType().name();
+		return r;
+	}
 }

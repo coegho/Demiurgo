@@ -1,9 +1,9 @@
 package values;
 
-import java.io.Serializable;
-
 import exceptions.IllegalOperationException;
 import exceptions.ValueCastException;
+import serializable.ReturnValueTypes;
+import serializable.SerializableValue;
 import universe.World;
 
 /**
@@ -16,7 +16,7 @@ import universe.World;
  * @since 1.0
  *
  */
-public interface IReturnValue extends Serializable {
+public interface IReturnValue extends SerializableValue {
 	/**
 	 * Returns the result of adding this value to another.
 	 * 

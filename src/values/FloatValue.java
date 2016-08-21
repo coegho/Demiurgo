@@ -2,9 +2,14 @@ package values;
 
 import exceptions.IllegalOperationException;
 import exceptions.ValueCastException;
+import serializable.ReturnValueTypes;
 
 public class FloatValue extends AbstractValue {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	protected float value;
 
 	public FloatValue(float value) {
@@ -231,5 +236,12 @@ public class FloatValue extends AbstractValue {
 	@Override
 	public String toString() {
 		return "FLOAT/" + getValue() + "}";
+	}
+	
+	@Override
+	public String[] getValueCodes() {
+		String[] r = super.getValueCodes();
+		r[2] = Float.toString(value);
+		return r;
 	}
 }
