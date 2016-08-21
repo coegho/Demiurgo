@@ -1,10 +1,52 @@
-package plataformarol;
+package demiurgo;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.antlr.v4.runtime.tree.RuleNode;
 
+import coe.COEBaseVisitor;
+import coe.COEParser;
+import coe.COEParser.AddSubContext;
+import coe.COEParser.ArgsContext;
+import coe.COEParser.AssignContext;
+import coe.COEParser.BoolContext;
+import coe.COEParser.CompareContext;
+import coe.COEParser.DiceContext;
+import coe.COEParser.EchoContext;
+import coe.COEParser.Exp_elseContext;
+import coe.COEParser.Exp_forContext;
+import coe.COEParser.Exp_ifContext;
+import coe.COEParser.Exp_userContext;
+import coe.COEParser.FloatContext;
+import coe.COEParser.FloatTypeContext;
+import coe.COEParser.Function_callContext;
+import coe.COEParser.IndexAssignContext;
+import coe.COEParser.IndexContext;
+import coe.COEParser.IntContext;
+import coe.COEParser.IntTypeContext;
+import coe.COEParser.IntermediateVariableContext;
+import coe.COEParser.ListContext;
+import coe.COEParser.ListTypeContext;
+import coe.COEParser.LogicContext;
+import coe.COEParser.MethodContext;
+import coe.COEParser.MoveContext;
+import coe.COEParser.MulDivContext;
+import coe.COEParser.MultDiceContext;
+import coe.COEParser.NegativeContext;
+import coe.COEParser.New_objContext;
+import coe.COEParser.OperationContext;
+import coe.COEParser.ParensContext;
+import coe.COEParser.RoomContext;
+import coe.COEParser.RoomTypeContext;
+import coe.COEParser.RootObjectContext;
+import coe.COEParser.RootVariableContext;
+import coe.COEParser.Sharp_identifierContext;
+import coe.COEParser.StringContext;
+import coe.COEParser.StringTypeContext;
+import coe.COEParser.SymbolTypeContext;
+import coe.COEParser.Var_declContext;
+import coe.COEParser.VariableOpContext;
 import exceptions.ArgumentMismatchException;
 import exceptions.BadConstructorException;
 import exceptions.IllegalOperationException;
@@ -17,48 +59,6 @@ import exceptions.UndefinedClassException;
 import exceptions.UnexistentUserException;
 import exceptions.ValueCastException;
 import exceptions.WrongMovementException;
-import linguaxe.LinguaxeBaseVisitor;
-import linguaxe.LinguaxeParser;
-import linguaxe.LinguaxeParser.AddSubContext;
-import linguaxe.LinguaxeParser.ArgsContext;
-import linguaxe.LinguaxeParser.AssignContext;
-import linguaxe.LinguaxeParser.BoolContext;
-import linguaxe.LinguaxeParser.CompareContext;
-import linguaxe.LinguaxeParser.DiceContext;
-import linguaxe.LinguaxeParser.EchoContext;
-import linguaxe.LinguaxeParser.Exp_elseContext;
-import linguaxe.LinguaxeParser.Exp_forContext;
-import linguaxe.LinguaxeParser.Exp_ifContext;
-import linguaxe.LinguaxeParser.Exp_userContext;
-import linguaxe.LinguaxeParser.FloatContext;
-import linguaxe.LinguaxeParser.FloatTypeContext;
-import linguaxe.LinguaxeParser.Function_callContext;
-import linguaxe.LinguaxeParser.IndexAssignContext;
-import linguaxe.LinguaxeParser.IndexContext;
-import linguaxe.LinguaxeParser.IntContext;
-import linguaxe.LinguaxeParser.IntTypeContext;
-import linguaxe.LinguaxeParser.IntermediateVariableContext;
-import linguaxe.LinguaxeParser.ListContext;
-import linguaxe.LinguaxeParser.ListTypeContext;
-import linguaxe.LinguaxeParser.LogicContext;
-import linguaxe.LinguaxeParser.MethodContext;
-import linguaxe.LinguaxeParser.MoveContext;
-import linguaxe.LinguaxeParser.MulDivContext;
-import linguaxe.LinguaxeParser.MultDiceContext;
-import linguaxe.LinguaxeParser.NegativeContext;
-import linguaxe.LinguaxeParser.New_objContext;
-import linguaxe.LinguaxeParser.OperationContext;
-import linguaxe.LinguaxeParser.ParensContext;
-import linguaxe.LinguaxeParser.RoomContext;
-import linguaxe.LinguaxeParser.RoomTypeContext;
-import linguaxe.LinguaxeParser.RootObjectContext;
-import linguaxe.LinguaxeParser.RootVariableContext;
-import linguaxe.LinguaxeParser.Sharp_identifierContext;
-import linguaxe.LinguaxeParser.StringContext;
-import linguaxe.LinguaxeParser.StringTypeContext;
-import linguaxe.LinguaxeParser.SymbolTypeContext;
-import linguaxe.LinguaxeParser.Var_declContext;
-import linguaxe.LinguaxeParser.VariableOpContext;
 import scope.ClassScope;
 import scope.ForScope;
 import scope.FunctionScope;
@@ -92,7 +92,7 @@ import values.StringValue;
  * @version %I%, %G%
  * @since 1.0
  */
-public abstract class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
+public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 
 	protected ScopeManager sm;
 	protected ErrorHandler errors;
@@ -167,9 +167,9 @@ public abstract class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 	@Override
 	public IReturnValue visitBool(BoolContext ctx) {
 		switch (ctx.BOOLEAN().getSymbol().getType()) {
-		case LinguaxeParser.TRUE:
+		case COEParser.TRUE:
 			return new IntegerValue(1);
-		case LinguaxeParser.FALSE:
+		case COEParser.FALSE:
 		default:
 			return new IntegerValue(0);
 		}
@@ -307,17 +307,17 @@ public abstract class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 			if (errors.hasErrors())
 				return null;
 			switch (ctx.op.getType()) {
-			case LinguaxeParser.EQ:
+			case COEParser.EQ:
 				return left.eq(right);
-			case LinguaxeParser.NEQ:
+			case COEParser.NEQ:
 				return left.neq(right);
-			case LinguaxeParser.GREQ:
+			case COEParser.GREQ:
 				return left.greq(right);
-			case LinguaxeParser.LESEQ:
+			case COEParser.LESEQ:
 				return left.leseq(right);
-			case LinguaxeParser.GREAT:
+			case COEParser.GREAT:
 				return left.great(right);
-			case LinguaxeParser.LESS:
+			case COEParser.LESS:
 			default:
 				return left.less(right);
 			}
@@ -345,9 +345,9 @@ public abstract class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 			if (errors.hasErrors())
 				return null;
 			switch (ctx.op.getType()) {
-			case LinguaxeParser.ADD:
+			case COEParser.ADD:
 				return left.add(right);
-			case LinguaxeParser.SUB:
+			case COEParser.SUB:
 			default:
 				return left.sub(right);
 			}
@@ -375,9 +375,9 @@ public abstract class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 			if (errors.hasErrors())
 				return null;
 			switch (ctx.op.getType()) {
-			case LinguaxeParser.MUL:
+			case COEParser.MUL:
 				return left.mul(right);
-			case LinguaxeParser.DIV:
+			case COEParser.DIV:
 			default:
 				return left.div(right);
 			}
@@ -498,9 +498,9 @@ public abstract class ExecVisitor extends LinguaxeBaseVisitor<IReturnValue> {
 			if (errors.hasErrors())
 				return null;
 			switch (ctx.op.getType()) {
-			case LinguaxeParser.AND:
+			case COEParser.AND:
 				return left.and(right);
-			case LinguaxeParser.OR:
+			case COEParser.OR:
 			default:
 				return left.or(right);
 			}

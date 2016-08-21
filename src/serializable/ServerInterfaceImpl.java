@@ -11,10 +11,10 @@ import java.util.List;
 
 import org.antlr.v4.runtime.tree.ParseTree;
 
-import plataformarol.ClassVisitor;
-import plataformarol.CodeVisitor;
-import plataformarol.ErrorHandler;
-import plataformarol.PlataformaRol;
+import demiurgo.ClassVisitor;
+import demiurgo.CodeVisitor;
+import demiurgo.ErrorHandler;
+import demiurgo.Demiurgo;
 import universe.UserDefinedClass;
 import universe.World;
 import universe.WorldObject;
@@ -33,7 +33,7 @@ public class ServerInterfaceImpl extends UnicastRemoteObject implements ServerIn
 
 	@Override
 	public List<SerializableWorldObject> checkRoom(String world, String path) throws RemoteException {
-		WorldRoom room = PlataformaRol.getWorld(world).getRoom(path);
+		WorldRoom room = Demiurgo.getWorld(world).getRoom(path);
 		if (room == null) {
 			return null;
 		}
@@ -51,11 +51,11 @@ public class ServerInterfaceImpl extends UnicastRemoteObject implements ServerIn
 		InputStream is = new ByteArrayInputStream(code.getBytes(StandardCharsets.UTF_8));
 		ParseTree tree;
 		try {
-			tree = PlataformaRol.parseStream(is, errors);
+			tree = Demiurgo.parseStream(is, errors);
 		} catch (IOException e1) {
 			return false;
 		}
-		WorldRoom room = PlataformaRol.getWorld(world).getRoom(path);
+		WorldRoom room = Demiurgo.getWorld(world).getRoom(path);
 		if (room == null) {
 			return false;
 		}
@@ -72,12 +72,12 @@ public class ServerInterfaceImpl extends UnicastRemoteObject implements ServerIn
 
 	@Override
 	public boolean newClass(String world, String name, String code) throws RemoteException {
-		World w = PlataformaRol.getWorld(world);
+		World w = Demiurgo.getWorld(world);
 		ErrorHandler errors = new ErrorHandler();
 		InputStream is = new ByteArrayInputStream(code.getBytes(StandardCharsets.UTF_8));
 		ParseTree tree;
 		try {
-			tree = PlataformaRol.parseStream(is, errors);
+			tree = Demiurgo.parseStream(is, errors);
 		} catch (IOException e1) {
 			return false;
 		}
@@ -98,20 +98,20 @@ public class ServerInterfaceImpl extends UnicastRemoteObject implements ServerIn
 
 	@Override
 	public boolean createRoom(String world, String path) throws RemoteException {
-		WorldRoom room = PlataformaRol.getWorld(world).newRoom(path);
+		WorldRoom room = Demiurgo.getWorld(world).newRoom(path);
 		return room != null;
 	}
 
 	@Override
 	public void submitDecision(String world, String user, String text) throws RemoteException {
 		// TODO: identify user
-		World w = PlataformaRol.getWorld(world);
+		World w = Demiurgo.getWorld(world);
 		w.addDecision(w.getUser(user), text);
 	}
 
 	@Override
 	public List<String> getPendingRooms(String world) throws RemoteException {
-		World w = PlataformaRol.getWorld(world);
+		World w = Demiurgo.getWorld(world);
 		if (w == null)
 			return null;
 		List<String> l = new ArrayList<>();
@@ -123,7 +123,7 @@ public class ServerInterfaceImpl extends UnicastRemoteObject implements ServerIn
 
 	@Override
 	public List<SerializableDecision> getDecisions(String world, String room) throws RemoteException {
-		World w = PlataformaRol.getWorld(world);
+		World w = Demiurgo.getWorld(world);
 		if (w == null)
 			return null;
 		if (room == null) {

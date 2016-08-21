@@ -9,7 +9,7 @@ import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNodeImpl;
 
-import linguaxe.LinguaxeLexer;
+import coe.COELexer;
 import values.IReturnValue;
 
 public class ClassMethod {
@@ -22,7 +22,7 @@ public class ClassMethod {
 		if(node != null)
 			this.node = node;
 		else //creates a dummy node
-			this.node = new TerminalNodeImpl(new CommonToken(LinguaxeLexer.WS));
+			this.node = new TerminalNodeImpl(new CommonToken(COELexer.WS));
 		this.argNames = new ArrayList<>();
 		this.args = new HashMap<>();
 	}

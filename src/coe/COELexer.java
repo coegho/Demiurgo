@@ -1,5 +1,5 @@
-// Generated from Linguaxe.g4 by ANTLR 4.5
-package linguaxe;
+// Generated from COE.g4 by ANTLR 4.5
+package coe;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Token;
@@ -10,7 +10,7 @@ import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.misc.*;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast"})
-public class LinguaxeLexer extends Lexer {
+public class COELexer extends Lexer {
 	static { RuntimeMetaData.checkVersion("4.5", RuntimeMetaData.VERSION); }
 
 	protected static final DFA[] _decisionToDFA;
@@ -86,13 +86,13 @@ public class LinguaxeLexer extends Lexer {
 	}
 
 
-	public LinguaxeLexer(CharStream input) {
+	public COELexer(CharStream input) {
 		super(input);
 		_interp = new LexerATNSimulator(this,_ATN,_decisionToDFA,_sharedContextCache);
 	}
 
 	@Override
-	public String getGrammarFileName() { return "Linguaxe.g4"; }
+	public String getGrammarFileName() { return "COE.g4"; }
 
 	@Override
 	public String[] getRuleNames() { return ruleNames; }

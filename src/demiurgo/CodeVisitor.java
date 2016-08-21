@@ -1,7 +1,7 @@
-package plataformarol;
+package demiurgo;
 
+import coe.COEParser.Class_defContext;
 import exceptions.ClassDefinitionOnCodeException;
-import linguaxe.LinguaxeParser.Class_defContext;
 import universe.WorldRoom;
 import values.IReturnValue;
 

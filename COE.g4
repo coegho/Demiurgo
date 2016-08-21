@@ -1,4 +1,4 @@
-grammar Linguaxe;
+grammar COE;
 
 //Parser rules
 

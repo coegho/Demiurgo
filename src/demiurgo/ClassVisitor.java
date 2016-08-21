@@ -1,9 +1,9 @@
-package plataformarol;
+package demiurgo;
 
+import coe.COEParser.Class_defContext;
+import coe.COEParser.CodeContext;
 import exceptions.ClassFilenameMismatchException;
 import exceptions.CodeClassInClassFileException;
-import linguaxe.LinguaxeParser.Class_defContext;
-import linguaxe.LinguaxeParser.CodeContext;
 import universe.UserDefinedClass;
 import values.IReturnValue;
 import values.NullValue;

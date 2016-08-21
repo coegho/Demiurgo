@@ -1,4 +1,4 @@
-package plataformarol;
+package demiurgo;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -17,10 +17,10 @@ import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 
+import coe.COELexer;
+import coe.COEParser;
 import database.DatabaseInterface;
 import database.MariaDBDatabase;
-import linguaxe.LinguaxeLexer;
-import linguaxe.LinguaxeParser;
 import serializable.ServerInterfaceImpl;
 import universe.User;
 import universe.UserDefinedClass;
@@ -35,7 +35,7 @@ import universe.WorldRoom;
  * @since 1.0
  *
  */
-public class PlataformaRol {
+public class Demiurgo {
 	protected static Map<String, World> worlds;
 
 	public static void main(String[] args) {
@@ -238,9 +238,9 @@ public class PlataformaRol {
 
 	public static ParseTree parseStream(InputStream is, ErrorHandler errors) throws IOException {
 		ANTLRInputStream input = new ANTLRInputStream(is);
-		LinguaxeLexer lexer = new LinguaxeLexer(input);
+		COELexer lexer = new COELexer(input);
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
-		LinguaxeParser parser = new LinguaxeParser(tokens);
+		COEParser parser = new COEParser(tokens);
 		parser.removeErrorListeners();
 		parser.addErrorListener(new ErrorListener(errors));
 		ParseTree tree = parser.s(); // parse; start at s

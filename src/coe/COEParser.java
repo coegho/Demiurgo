@@ -1,5 +1,5 @@
-// Generated from Linguaxe.g4 by ANTLR 4.5
-package linguaxe;
+// Generated from COE.g4 by ANTLR 4.5
+package coe;
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.*;
@@ -10,7 +10,7 @@ import java.util.Iterator;
 import java.util.ArrayList;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast"})
-public class LinguaxeParser extends Parser {
+public class COEParser extends Parser {
 	static { RuntimeMetaData.checkVersion("4.5", RuntimeMetaData.VERSION); }
 
 	protected static final DFA[] _decisionToDFA;
@@ -87,7 +87,7 @@ public class LinguaxeParser extends Parser {
 	}
 
 	@Override
-	public String getGrammarFileName() { return "Linguaxe.g4"; }
+	public String getGrammarFileName() { return "COE.g4"; }
 
 	@Override
 	public String[] getRuleNames() { return ruleNames; }
@@ -98,7 +98,7 @@ public class LinguaxeParser extends Parser {
 	@Override
 	public ATN getATN() { return _ATN; }
 
-	public LinguaxeParser(TokenStream input) {
+	public COEParser(TokenStream input) {
 		super(input);
 		_interp = new ParserATNSimulator(this,_ATN,_decisionToDFA,_sharedContextCache);
 	}
@@ -126,7 +126,7 @@ public class LinguaxeParser extends Parser {
 		public SCodeContext(SContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitSCode(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitSCode(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -143,7 +143,7 @@ public class LinguaxeParser extends Parser {
 		public ClassDefContext(SContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitClassDef(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitClassDef(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -151,7 +151,7 @@ public class LinguaxeParser extends Parser {
 		public EmptyContext(SContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitEmpty(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitEmpty(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -235,11 +235,11 @@ public class LinguaxeParser extends Parser {
 	}
 
 	public static class Class_defContext extends ParserRuleContext {
-		public List<TerminalNode> SYMBOL() { return getTokens(LinguaxeParser.SYMBOL); }
+		public List<TerminalNode> SYMBOL() { return getTokens(COEParser.SYMBOL); }
 		public TerminalNode SYMBOL(int i) {
-			return getToken(LinguaxeParser.SYMBOL, i);
+			return getToken(COEParser.SYMBOL, i);
 		}
-		public TerminalNode INHERIT() { return getToken(LinguaxeParser.INHERIT, 0); }
+		public TerminalNode INHERIT() { return getToken(COEParser.INHERIT, 0); }
 		public List<NlContext> nl() {
 			return getRuleContexts(NlContext.class);
 		}
@@ -258,7 +258,7 @@ public class LinguaxeParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_class_def; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitClass_def(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitClass_def(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -355,7 +355,7 @@ public class LinguaxeParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_fields; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitFields(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitFields(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -406,8 +406,8 @@ public class LinguaxeParser extends Parser {
 		public Data_typeContext data_type() {
 			return getRuleContext(Data_typeContext.class,0);
 		}
-		public TerminalNode SYMBOL() { return getToken(LinguaxeParser.SYMBOL, 0); }
-		public TerminalNode ASSIGN() { return getToken(LinguaxeParser.ASSIGN, 0); }
+		public TerminalNode SYMBOL() { return getToken(COEParser.SYMBOL, 0); }
+		public TerminalNode ASSIGN() { return getToken(COEParser.ASSIGN, 0); }
 		public OperationContext operation() {
 			return getRuleContext(OperationContext.class,0);
 		}
@@ -417,7 +417,7 @@ public class LinguaxeParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_var_decl; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitVar_decl(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitVar_decl(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -476,7 +476,7 @@ public class LinguaxeParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_methods; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitMethods(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitMethods(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -526,14 +526,14 @@ public class LinguaxeParser extends Parser {
 
 	public static class MethodContext extends ParserRuleContext {
 		public Token metname;
-		public List<TerminalNode> SYMBOL() { return getTokens(LinguaxeParser.SYMBOL); }
+		public List<TerminalNode> SYMBOL() { return getTokens(COEParser.SYMBOL); }
 		public TerminalNode SYMBOL(int i) {
-			return getToken(LinguaxeParser.SYMBOL, i);
+			return getToken(COEParser.SYMBOL, i);
 		}
 		public Data_typeContext data_type() {
 			return getRuleContext(Data_typeContext.class,0);
 		}
-		public TerminalNode ASSIGN() { return getToken(LinguaxeParser.ASSIGN, 0); }
+		public TerminalNode ASSIGN() { return getToken(COEParser.ASSIGN, 0); }
 		public ArgsContext args() {
 			return getRuleContext(ArgsContext.class,0);
 		}
@@ -552,7 +552,7 @@ public class LinguaxeParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_method; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitMethod(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitMethod(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -652,9 +652,9 @@ public class LinguaxeParser extends Parser {
 		public Data_typeContext data_type(int i) {
 			return getRuleContext(Data_typeContext.class,i);
 		}
-		public List<TerminalNode> SYMBOL() { return getTokens(LinguaxeParser.SYMBOL); }
+		public List<TerminalNode> SYMBOL() { return getTokens(COEParser.SYMBOL); }
 		public TerminalNode SYMBOL(int i) {
-			return getToken(LinguaxeParser.SYMBOL, i);
+			return getToken(COEParser.SYMBOL, i);
 		}
 		public ArgsContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
@@ -662,7 +662,7 @@ public class LinguaxeParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_args; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitArgs(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitArgs(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -728,7 +728,7 @@ public class LinguaxeParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_code; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitCode(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitCode(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -798,7 +798,7 @@ public class LinguaxeParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_line; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitLine(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitLine(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -876,11 +876,11 @@ public class LinguaxeParser extends Parser {
 		}
 	}
 	public static class RootVariableContext extends VariableContext {
-		public TerminalNode SYMBOL() { return getToken(LinguaxeParser.SYMBOL, 0); }
+		public TerminalNode SYMBOL() { return getToken(COEParser.SYMBOL, 0); }
 		public RootVariableContext(VariableContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitRootVariable(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitRootVariable(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -888,11 +888,11 @@ public class LinguaxeParser extends Parser {
 		public VariableContext variable() {
 			return getRuleContext(VariableContext.class,0);
 		}
-		public TerminalNode SYMBOL() { return getToken(LinguaxeParser.SYMBOL, 0); }
+		public TerminalNode SYMBOL() { return getToken(COEParser.SYMBOL, 0); }
 		public IntermediateVariableContext(VariableContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitIntermediateVariable(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitIntermediateVariable(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -903,7 +903,7 @@ public class LinguaxeParser extends Parser {
 		public RootObjectContext(VariableContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitRootObject(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitRootObject(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -986,7 +986,7 @@ public class LinguaxeParser extends Parser {
 	}
 
 	public static class Function_callContext extends ParserRuleContext {
-		public TerminalNode SYMBOL() { return getToken(LinguaxeParser.SYMBOL, 0); }
+		public TerminalNode SYMBOL() { return getToken(COEParser.SYMBOL, 0); }
 		public VariableContext variable() {
 			return getRuleContext(VariableContext.class,0);
 		}
@@ -1002,7 +1002,7 @@ public class LinguaxeParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_function_call; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitFunction_call(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitFunction_call(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1087,7 +1087,7 @@ public class LinguaxeParser extends Parser {
 		public ParensOpContext(OperationContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitParensOp(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitParensOp(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1099,16 +1099,16 @@ public class LinguaxeParser extends Parser {
 		public OperationContext operation(int i) {
 			return getRuleContext(OperationContext.class,i);
 		}
-		public TerminalNode NEQ() { return getToken(LinguaxeParser.NEQ, 0); }
-		public TerminalNode EQ() { return getToken(LinguaxeParser.EQ, 0); }
-		public TerminalNode GREQ() { return getToken(LinguaxeParser.GREQ, 0); }
-		public TerminalNode LESEQ() { return getToken(LinguaxeParser.LESEQ, 0); }
-		public TerminalNode LESS() { return getToken(LinguaxeParser.LESS, 0); }
-		public TerminalNode GREAT() { return getToken(LinguaxeParser.GREAT, 0); }
+		public TerminalNode NEQ() { return getToken(COEParser.NEQ, 0); }
+		public TerminalNode EQ() { return getToken(COEParser.EQ, 0); }
+		public TerminalNode GREQ() { return getToken(COEParser.GREQ, 0); }
+		public TerminalNode LESEQ() { return getToken(COEParser.LESEQ, 0); }
+		public TerminalNode LESS() { return getToken(COEParser.LESS, 0); }
+		public TerminalNode GREAT() { return getToken(COEParser.GREAT, 0); }
 		public CompareContext(OperationContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitCompare(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitCompare(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1119,29 +1119,29 @@ public class LinguaxeParser extends Parser {
 		public OperationContext operation(int i) {
 			return getRuleContext(OperationContext.class,i);
 		}
-		public TerminalNode MOVE() { return getToken(LinguaxeParser.MOVE, 0); }
+		public TerminalNode MOVE() { return getToken(COEParser.MOVE, 0); }
 		public MoveContext(OperationContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitMove(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitMove(this);
 			else return visitor.visitChildren(this);
 		}
 	}
 	public static class BoolContext extends OperationContext {
-		public TerminalNode BOOLEAN() { return getToken(LinguaxeParser.BOOLEAN, 0); }
+		public TerminalNode BOOLEAN() { return getToken(COEParser.BOOLEAN, 0); }
 		public BoolContext(OperationContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitBool(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitBool(this);
 			else return visitor.visitChildren(this);
 		}
 	}
 	public static class StringContext extends OperationContext {
-		public TerminalNode TEXT_STRING() { return getToken(LinguaxeParser.TEXT_STRING, 0); }
+		public TerminalNode TEXT_STRING() { return getToken(COEParser.TEXT_STRING, 0); }
 		public StringContext(OperationContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitString(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitString(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1152,7 +1152,7 @@ public class LinguaxeParser extends Parser {
 		public RoomOpContext(OperationContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitRoomOp(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitRoomOp(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1164,12 +1164,12 @@ public class LinguaxeParser extends Parser {
 		public OperationContext operation(int i) {
 			return getRuleContext(OperationContext.class,i);
 		}
-		public TerminalNode MUL() { return getToken(LinguaxeParser.MUL, 0); }
-		public TerminalNode DIV() { return getToken(LinguaxeParser.DIV, 0); }
+		public TerminalNode MUL() { return getToken(COEParser.MUL, 0); }
+		public TerminalNode DIV() { return getToken(COEParser.DIV, 0); }
 		public MulDivContext(OperationContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitMulDiv(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitMulDiv(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1181,12 +1181,12 @@ public class LinguaxeParser extends Parser {
 		public OperationContext operation(int i) {
 			return getRuleContext(OperationContext.class,i);
 		}
-		public TerminalNode ADD() { return getToken(LinguaxeParser.ADD, 0); }
-		public TerminalNode SUB() { return getToken(LinguaxeParser.SUB, 0); }
+		public TerminalNode ADD() { return getToken(COEParser.ADD, 0); }
+		public TerminalNode SUB() { return getToken(COEParser.SUB, 0); }
 		public AddSubContext(OperationContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitAddSub(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitAddSub(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1197,19 +1197,19 @@ public class LinguaxeParser extends Parser {
 		public VariableOpContext(OperationContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitVariableOp(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitVariableOp(this);
 			else return visitor.visitChildren(this);
 		}
 	}
 	public static class DiceContext extends OperationContext {
-		public TerminalNode D() { return getToken(LinguaxeParser.D, 0); }
+		public TerminalNode D() { return getToken(COEParser.D, 0); }
 		public OperationContext operation() {
 			return getRuleContext(OperationContext.class,0);
 		}
 		public DiceContext(OperationContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitDice(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitDice(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1223,7 +1223,7 @@ public class LinguaxeParser extends Parser {
 		public IndexContext(OperationContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitIndex(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitIndex(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1234,16 +1234,16 @@ public class LinguaxeParser extends Parser {
 		public NewObjContext(OperationContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitNewObj(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitNewObj(this);
 			else return visitor.visitChildren(this);
 		}
 	}
 	public static class FloatContext extends OperationContext {
-		public TerminalNode FLOAT_NUMBER() { return getToken(LinguaxeParser.FLOAT_NUMBER, 0); }
+		public TerminalNode FLOAT_NUMBER() { return getToken(COEParser.FLOAT_NUMBER, 0); }
 		public FloatContext(OperationContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitFloat(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitFloat(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1257,7 +1257,7 @@ public class LinguaxeParser extends Parser {
 		public ListContext(OperationContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitList(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitList(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1271,20 +1271,20 @@ public class LinguaxeParser extends Parser {
 		public OperationContext operation(int i) {
 			return getRuleContext(OperationContext.class,i);
 		}
-		public TerminalNode ASSIGN() { return getToken(LinguaxeParser.ASSIGN, 0); }
+		public TerminalNode ASSIGN() { return getToken(COEParser.ASSIGN, 0); }
 		public IndexAssignContext(OperationContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitIndexAssign(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitIndexAssign(this);
 			else return visitor.visitChildren(this);
 		}
 	}
 	public static class IntContext extends OperationContext {
-		public TerminalNode INT_NUMBER() { return getToken(LinguaxeParser.INT_NUMBER, 0); }
+		public TerminalNode INT_NUMBER() { return getToken(COEParser.INT_NUMBER, 0); }
 		public IntContext(OperationContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitInt(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitInt(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1295,7 +1295,7 @@ public class LinguaxeParser extends Parser {
 		public SharpContext(OperationContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitSharp(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitSharp(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1306,11 +1306,11 @@ public class LinguaxeParser extends Parser {
 		public OperationContext operation(int i) {
 			return getRuleContext(OperationContext.class,i);
 		}
-		public TerminalNode D() { return getToken(LinguaxeParser.D, 0); }
+		public TerminalNode D() { return getToken(COEParser.D, 0); }
 		public MultDiceContext(OperationContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitMultDice(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitMultDice(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1321,7 +1321,7 @@ public class LinguaxeParser extends Parser {
 		public NegativeContext(OperationContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitNegative(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitNegative(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1332,7 +1332,7 @@ public class LinguaxeParser extends Parser {
 		public FunctionOpContext(OperationContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitFunctionOp(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitFunctionOp(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1344,12 +1344,12 @@ public class LinguaxeParser extends Parser {
 		public OperationContext operation(int i) {
 			return getRuleContext(OperationContext.class,i);
 		}
-		public TerminalNode OR() { return getToken(LinguaxeParser.OR, 0); }
-		public TerminalNode AND() { return getToken(LinguaxeParser.AND, 0); }
+		public TerminalNode OR() { return getToken(COEParser.OR, 0); }
+		public TerminalNode AND() { return getToken(COEParser.AND, 0); }
 		public LogicContext(OperationContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitLogic(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitLogic(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1357,14 +1357,14 @@ public class LinguaxeParser extends Parser {
 		public VariableContext variable() {
 			return getRuleContext(VariableContext.class,0);
 		}
-		public TerminalNode ASSIGN() { return getToken(LinguaxeParser.ASSIGN, 0); }
+		public TerminalNode ASSIGN() { return getToken(COEParser.ASSIGN, 0); }
 		public OperationContext operation() {
 			return getRuleContext(OperationContext.class,0);
 		}
 		public AssignContext(OperationContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitAssign(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitAssign(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1720,7 +1720,7 @@ public class LinguaxeParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_parens; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitParens(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitParens(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1751,7 +1751,7 @@ public class LinguaxeParser extends Parser {
 	}
 
 	public static class New_objContext extends ParserRuleContext {
-		public TerminalNode SYMBOL() { return getToken(LinguaxeParser.SYMBOL, 0); }
+		public TerminalNode SYMBOL() { return getToken(COEParser.SYMBOL, 0); }
 		public List<OperationContext> operation() {
 			return getRuleContexts(OperationContext.class);
 		}
@@ -1764,7 +1764,7 @@ public class LinguaxeParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_new_obj; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitNew_obj(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitNew_obj(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1823,14 +1823,14 @@ public class LinguaxeParser extends Parser {
 	}
 
 	public static class Sharp_identifierContext extends ParserRuleContext {
-		public TerminalNode INT_NUMBER() { return getToken(LinguaxeParser.INT_NUMBER, 0); }
+		public TerminalNode INT_NUMBER() { return getToken(COEParser.INT_NUMBER, 0); }
 		public Sharp_identifierContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_sharp_identifier; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitSharp_identifier(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitSharp_identifier(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1859,7 +1859,7 @@ public class LinguaxeParser extends Parser {
 	}
 
 	public static class RoomContext extends ParserRuleContext {
-		public TerminalNode ROOM() { return getToken(LinguaxeParser.ROOM, 0); }
+		public TerminalNode ROOM() { return getToken(COEParser.ROOM, 0); }
 		public Room_pathContext room_path() {
 			return getRuleContext(Room_pathContext.class,0);
 		}
@@ -1869,7 +1869,7 @@ public class LinguaxeParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_room; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitRoom(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitRoom(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1912,7 +1912,7 @@ public class LinguaxeParser extends Parser {
 		public RootRoomContext(Room_pathContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitRootRoom(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitRootRoom(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1920,20 +1920,20 @@ public class LinguaxeParser extends Parser {
 		public Room_pathContext room_path() {
 			return getRuleContext(Room_pathContext.class,0);
 		}
-		public TerminalNode SYMBOL() { return getToken(LinguaxeParser.SYMBOL, 0); }
+		public TerminalNode SYMBOL() { return getToken(COEParser.SYMBOL, 0); }
 		public LeafRoomContext(Room_pathContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitLeafRoom(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitLeafRoom(this);
 			else return visitor.visitChildren(this);
 		}
 	}
 	public static class RelativeRoomContext extends Room_pathContext {
-		public TerminalNode SYMBOL() { return getToken(LinguaxeParser.SYMBOL, 0); }
+		public TerminalNode SYMBOL() { return getToken(COEParser.SYMBOL, 0); }
 		public RelativeRoomContext(Room_pathContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitRelativeRoom(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitRelativeRoom(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -2012,7 +2012,7 @@ public class LinguaxeParser extends Parser {
 	}
 
 	public static class Exp_ifContext extends ParserRuleContext {
-		public TerminalNode IF() { return getToken(LinguaxeParser.IF, 0); }
+		public TerminalNode IF() { return getToken(COEParser.IF, 0); }
 		public OperationContext operation() {
 			return getRuleContext(OperationContext.class,0);
 		}
@@ -2037,7 +2037,7 @@ public class LinguaxeParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_exp_if; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitExp_if(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitExp_if(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -2183,7 +2183,7 @@ public class LinguaxeParser extends Parser {
 	}
 
 	public static class Exp_elseContext extends ParserRuleContext {
-		public TerminalNode ELSE() { return getToken(LinguaxeParser.ELSE, 0); }
+		public TerminalNode ELSE() { return getToken(COEParser.ELSE, 0); }
 		public List<NlContext> nl() {
 			return getRuleContexts(NlContext.class);
 		}
@@ -2202,7 +2202,7 @@ public class LinguaxeParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_exp_else; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitExp_else(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitExp_else(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -2336,8 +2336,8 @@ public class LinguaxeParser extends Parser {
 	}
 
 	public static class Exp_forContext extends ParserRuleContext {
-		public TerminalNode FOR() { return getToken(LinguaxeParser.FOR, 0); }
-		public TerminalNode SYMBOL() { return getToken(LinguaxeParser.SYMBOL, 0); }
+		public TerminalNode FOR() { return getToken(COEParser.FOR, 0); }
+		public TerminalNode SYMBOL() { return getToken(COEParser.SYMBOL, 0); }
 		public OperationContext operation() {
 			return getRuleContext(OperationContext.class,0);
 		}
@@ -2359,7 +2359,7 @@ public class LinguaxeParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_exp_for; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitExp_for(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitExp_for(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -2488,8 +2488,8 @@ public class LinguaxeParser extends Parser {
 	}
 
 	public static class Exp_userContext extends ParserRuleContext {
-		public TerminalNode USERNAME() { return getToken(LinguaxeParser.USERNAME, 0); }
-		public TerminalNode USEROBJ() { return getToken(LinguaxeParser.USEROBJ, 0); }
+		public TerminalNode USERNAME() { return getToken(COEParser.USERNAME, 0); }
+		public TerminalNode USEROBJ() { return getToken(COEParser.USEROBJ, 0); }
 		public OperationContext operation() {
 			return getRuleContext(OperationContext.class,0);
 		}
@@ -2499,7 +2499,7 @@ public class LinguaxeParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_exp_user; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitExp_user(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitExp_user(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -2530,7 +2530,7 @@ public class LinguaxeParser extends Parser {
 	}
 
 	public static class EchoContext extends ParserRuleContext {
-		public TerminalNode ECHO() { return getToken(LinguaxeParser.ECHO, 0); }
+		public TerminalNode ECHO() { return getToken(COEParser.ECHO, 0); }
 		public OperationContext operation() {
 			return getRuleContext(OperationContext.class,0);
 		}
@@ -2540,7 +2540,7 @@ public class LinguaxeParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_echo; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitEcho(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitEcho(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -2580,29 +2580,29 @@ public class LinguaxeParser extends Parser {
 		}
 	}
 	public static class FloatTypeContext extends Data_typeContext {
-		public TerminalNode FLOAT_TYPE() { return getToken(LinguaxeParser.FLOAT_TYPE, 0); }
+		public TerminalNode FLOAT_TYPE() { return getToken(COEParser.FLOAT_TYPE, 0); }
 		public FloatTypeContext(Data_typeContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitFloatType(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitFloatType(this);
 			else return visitor.visitChildren(this);
 		}
 	}
 	public static class IntTypeContext extends Data_typeContext {
-		public TerminalNode INT_TYPE() { return getToken(LinguaxeParser.INT_TYPE, 0); }
+		public TerminalNode INT_TYPE() { return getToken(COEParser.INT_TYPE, 0); }
 		public IntTypeContext(Data_typeContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitIntType(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitIntType(this);
 			else return visitor.visitChildren(this);
 		}
 	}
 	public static class StringTypeContext extends Data_typeContext {
-		public TerminalNode STRING_TYPE() { return getToken(LinguaxeParser.STRING_TYPE, 0); }
+		public TerminalNode STRING_TYPE() { return getToken(COEParser.STRING_TYPE, 0); }
 		public StringTypeContext(Data_typeContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitStringType(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitStringType(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -2613,25 +2613,25 @@ public class LinguaxeParser extends Parser {
 		public ListTypeContext(Data_typeContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitListType(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitListType(this);
 			else return visitor.visitChildren(this);
 		}
 	}
 	public static class SymbolTypeContext extends Data_typeContext {
-		public TerminalNode SYMBOL() { return getToken(LinguaxeParser.SYMBOL, 0); }
+		public TerminalNode SYMBOL() { return getToken(COEParser.SYMBOL, 0); }
 		public SymbolTypeContext(Data_typeContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitSymbolType(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitSymbolType(this);
 			else return visitor.visitChildren(this);
 		}
 	}
 	public static class RoomTypeContext extends Data_typeContext {
-		public TerminalNode ROOM() { return getToken(LinguaxeParser.ROOM, 0); }
+		public TerminalNode ROOM() { return getToken(COEParser.ROOM, 0); }
 		public RoomTypeContext(Data_typeContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitRoomType(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitRoomType(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -2745,7 +2745,7 @@ public class LinguaxeParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_nl; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof LinguaxeVisitor ) return ((LinguaxeVisitor<? extends T>)visitor).visitNl(this);
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitNl(this);
 			else return visitor.visitChildren(this);
 		}
 	}
