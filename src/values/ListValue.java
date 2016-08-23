@@ -6,7 +6,7 @@ import java.util.List;
 import exceptions.IllegalOperationException;
 import exceptions.SizeMismatchException;
 import exceptions.ValueCastException;
-import serializable.ReturnValueTypes;
+import gal.republica.coego.demiurgo.lib.ReturnValueTypes;
 import universe.UserDefinedClass;
 import universe.World;
 

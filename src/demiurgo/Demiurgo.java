@@ -5,10 +5,12 @@ import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.rmi.Naming;
+import java.rmi.AlreadyBoundException;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +23,7 @@ import coe.COELexer;
 import coe.COEParser;
 import database.DatabaseInterface;
 import database.MariaDBDatabase;
+import gal.republica.coego.demiurgo.lib.ServerInterface;
 import serializable.ServerInterfaceImpl;
 import universe.User;
 import universe.UserDefinedClass;
@@ -66,26 +69,35 @@ public class Demiurgo {
 			}
 		}
 
+
+		//int portNum = 5555; //TODO: use this port
+		
+		/*if (System.getSecurityManager() == null)
+            System.setSecurityManager ( new SecurityManager() );*/
+		
+		try {
+			ServerInterfaceImpl remote = new ServerInterfaceImpl();
+			//registryURL = "rmi://" + hostName + ":" + portNum + "/" + registryURL;
+			
+			ServerInterface stub = (ServerInterface) UnicastRemoteObject.toStub(remote);
+
+            // Bind the remote object's stub in the registry
+			Registry registry = LocateRegistry.getRegistry();
+            registry.bind("Demiurgo", stub);
+			
+			System.out.println("RMI READY");
+		} catch (RemoteException e) {
+			System.err.println(e.getLocalizedMessage());
+			System.exit(-1);
+		} catch (AlreadyBoundException e) {
+			System.err.println(e.getLocalizedMessage());
+			System.exit(-1);
+		}
+		
 		/*
 		 * for(String w : worlds.keySet()) { loadFromDatabase(worlds.get(w)); }
 		 */
 		loadFromDatabase(worlds.get("mundo1")); // TODO: Example
-
-		int portNum = 5555;
-		String registryURL = "plataformarol", hostName = "localhost";
-		try {
-			startRegistry(portNum);
-			ServerInterfaceImpl objetoServidor = new ServerInterfaceImpl();
-			registryURL = "rmi://" + hostName + ":" + portNum + "/" + registryURL;
-			Naming.rebind(registryURL, objetoServidor);
-			System.out.println("RMI READY");
-		} catch (RemoteException re) {
-			System.out.println("RemoteException in PlataformaRol.main: " + re);
-			System.out.println(re.getCause() + ":::" + re.getLocalizedMessage());
-		} catch (IOException re) {
-			System.out.println("IOException in PlataformaRol.main: " + re);
-			System.out.println(re.getCause() + ":::" + re.getLocalizedMessage());
-		}
 
 		// TODO: Check
 		for (String wn : worlds.keySet()) {
@@ -119,6 +131,11 @@ public class Demiurgo {
 			@Override
 			public void run() {
 				System.out.println("Saving changes...");
+				try {
+					LocateRegistry.getRegistry().unbind("Demiurgo");
+				} catch (RemoteException | NotBoundException e) {
+					System.err.println(e.getLocalizedMessage());
+				}
 				saveAllInDatabase();
 				System.out.println("Changes saved correctly");
 			}
@@ -245,17 +262,6 @@ public class Demiurgo {
 		parser.addErrorListener(new ErrorListener(errors));
 		ParseTree tree = parser.s(); // parse; start at s
 		return tree;
-	}
-
-	private static void startRegistry(int RMIPortNum) throws RemoteException {
-		try {
-			Registry registry = LocateRegistry.getRegistry(RMIPortNum);
-			registry.list();
-
-		} catch (RemoteException e) {
-			// No valid registry at that port.
-			/* Registry registry = */LocateRegistry.createRegistry(RMIPortNum);
-		}
 	}
 
 	public static World getWorld(String name) {

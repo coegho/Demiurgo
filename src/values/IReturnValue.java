@@ -2,8 +2,8 @@ package values;
 
 import exceptions.IllegalOperationException;
 import exceptions.ValueCastException;
-import serializable.ReturnValueTypes;
-import serializable.SerializableValue;
+import gal.republica.coego.demiurgo.lib.ReturnValueTypes;
+import gal.republica.coego.demiurgo.lib.SerializableValue;
 import universe.World;
 
 /**

@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import serializable.SerializableWorldObject;
+import gal.republica.coego.demiurgo.lib.SerializableWorldObject;
 import values.IReturnValue;
 import values.ObjectValue;
 

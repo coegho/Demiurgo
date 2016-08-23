@@ -1,6 +1,6 @@
 package values;
 
-import serializable.ReturnValueTypes;
+import gal.republica.coego.demiurgo.lib.ReturnValueTypes;
 import universe.World;
 import universe.WorldLocation;
 

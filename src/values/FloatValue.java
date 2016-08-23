@@ -2,7 +2,7 @@ package values;
 
 import exceptions.IllegalOperationException;
 import exceptions.ValueCastException;
-import serializable.ReturnValueTypes;
+import gal.republica.coego.demiurgo.lib.ReturnValueTypes;
 
 public class FloatValue extends AbstractValue {
 

@@ -4,7 +4,7 @@ import java.util.Random;
 
 import exceptions.IllegalOperationException;
 import exceptions.ValueCastException;
-import serializable.ReturnValueTypes;
+import gal.republica.coego.demiurgo.lib.ReturnValueTypes;
 
 public class IntegerValue extends AbstractValue {
 

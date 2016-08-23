@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import serializable.SerializableDecision;
+import gal.republica.coego.demiurgo.lib.SerializableDecision;
 
 /**
  * Represents a world into the system.

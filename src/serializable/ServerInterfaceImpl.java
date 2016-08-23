@@ -13,8 +13,11 @@ import org.antlr.v4.runtime.tree.ParseTree;
 
 import demiurgo.ClassVisitor;
 import demiurgo.CodeVisitor;
-import demiurgo.ErrorHandler;
 import demiurgo.Demiurgo;
+import demiurgo.ErrorHandler;
+import gal.republica.coego.demiurgo.lib.SerializableDecision;
+import gal.republica.coego.demiurgo.lib.SerializableWorldObject;
+import gal.republica.coego.demiurgo.lib.ServerInterface;
 import universe.UserDefinedClass;
 import universe.World;
 import universe.WorldObject;
@@ -22,14 +25,14 @@ import universe.WorldRoom;
 
 public class ServerInterfaceImpl extends UnicastRemoteObject implements ServerInterface {
 
-	public ServerInterfaceImpl() throws RemoteException {
-		super();
-	}
-
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+
+	public ServerInterfaceImpl() throws RemoteException {
+		super();
+	}
 
 	@Override
 	public List<SerializableWorldObject> checkRoom(String world, String path) throws RemoteException {

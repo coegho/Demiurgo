@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import serializable.SerializableDecision;
-import serializable.SerializableWorldRoom;
+import gal.republica.coego.demiurgo.lib.SerializableDecision;
+import gal.republica.coego.demiurgo.lib.SerializableWorldRoom;
 import values.IReturnValue;
 
 public class WorldRoom extends WorldLocation implements SerializableWorldRoom {

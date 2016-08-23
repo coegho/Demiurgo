@@ -2,7 +2,7 @@ package universe;
 
 import java.io.IOException;
 
-import serializable.SerializableUser;
+import gal.republica.coego.demiurgo.lib.SerializableUser;
 
 public class User implements SerializableUser {
 	/**
