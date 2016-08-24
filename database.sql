@@ -1,6 +1,7 @@
 CREATE TABLE users (
   username varchar(128) NOT NULL PRIMARY KEY,
   passwd varchar(32) NOT NULL DEFAULT '',
+  admin tinyint NOT NULL default 0,
   obj_id bigint NULL
 );
 
