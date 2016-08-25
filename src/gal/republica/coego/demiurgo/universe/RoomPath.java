@@ -4,15 +4,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
-public class RoomGroup {
-	protected String name;
-	protected RoomGroup parent;
-	protected Map<String, RoomGroup> children;
+import gal.republica.coego.demiurgo.lib.RoomPathData;
+
+public class RoomPath {
+	protected String path;
+	protected RoomPath parent;
+	protected Map<String, RoomPath> children;
 	protected WorldRoom ownRoom;
 	
-	public RoomGroup(String name, RoomGroup parent) {
-		this.name = name;
+	public RoomPath(String path, RoomPath parent) {
+		this.path = path;
 		this.parent = parent;
 		children = new HashMap<>();
 		children.put(".", this);
@@ -27,22 +30,19 @@ public class RoomGroup {
 		return ownRoom;
 	}
 	
-	public void setName(String name) {
-		this.name = name;
+	public void setPath(String path) {
+		this.path = path;
 	}
 	
-	public String getName() {
-		return name;
+	public String getPath() {
+		return path;
 	}
 	
-	public String getLongName() {
-		if(parent == null)
-			return getName();
-		else
-			return parent.getLongName() + "/" + getName();
+	public String getShortName() {
+		return path.substring(path.lastIndexOf('/'));
 	}
 	
-	public Map<String, RoomGroup> getChildren() {
+	public Map<String, RoomPath> getChildren() {
 		return children;
 	}
 	
@@ -64,11 +64,21 @@ public class RoomGroup {
 	
 	@Override
 	public String toString() {
-		String ret = "ROOMGROUP \""+ name + "\"={";
+		String ret = "ROOMPATH \""+ path + "\"={";
 		for(String rg : children.keySet()) {
 			ret += children.get(rg).toString();
 		}
 		ret += "}";
 		return ret;
+	}
+	
+	public RoomPathData roomPathData() {
+		List<RoomPathData> l = new ArrayList<>();
+		for(Entry<String, RoomPath> r : children.entrySet()) {
+			if(r.getKey() != "." && r.getKey() != "..") {
+			l.add(r.getValue().roomPathData());
+			}
+		}
+		return new RoomPathData(path, ownRoom != null, l);
 	}
 }

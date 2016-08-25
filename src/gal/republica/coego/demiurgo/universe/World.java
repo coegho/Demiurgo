@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import gal.republica.coego.demiurgo.lib.Decision;
+import gal.republica.coego.demiurgo.lib.RoomPathData;
 
 /**
  * Represents a world into the system.
@@ -24,7 +25,7 @@ public class World {
 	protected Map<Long, WorldLocation> locations;
 	protected Map<String, User> users;
 	protected Map<User, WorldObject> userObjects;
-	protected RoomGroup rooms;
+	protected RoomPath rooms;
 	protected UserDefinedClass rootClass;
 	protected long currentObjId;
 	protected long currentRoomId;
@@ -40,7 +41,7 @@ public class World {
 		locations = new HashMap<>();
 		users = new HashMap<>();
 		userObjects = new HashMap<>();
-		rooms = new RoomGroup("", null);
+		rooms = new RoomPath("/", null);
 		rootClass = new RootObjectClass(this);
 		untraceableDecisions = new HashMap<>();
 		pendingRooms = new ArrayList<>();
@@ -116,15 +117,20 @@ public class World {
 	 *            If true, creates RoomGroup objects when they are not found.
 	 * @return
 	 */
-	protected RoomGroup searchRoomGroup(String loc, boolean constructive) {
-		RoomGroup rg = rooms;
+	protected RoomPath searchRoomGroup(String loc, boolean constructive) {
+		RoomPath rg = rooms;
+		String partialPath = "";
 
-		for (String s : loc.split("/")) {
+		if(loc.equals("/")) {
+			return rg;
+		}
+		for (String s : loc.substring(1).split("/")) {
+			partialPath += "/"+ s;
 			if (rg.getChildren().containsKey(s)) {
 				rg = rg.getChildren().get(s);
 			} else {
 				if (constructive) {
-					RoomGroup ng = new RoomGroup(s, rg);
+					RoomPath ng = new RoomPath(partialPath.length()>0?partialPath:partialPath+"/", rg);
 					rg.getChildren().put(s, ng);
 					rg = ng;
 				} else
@@ -156,7 +162,7 @@ public class World {
 	 * @return
 	 */
 	public WorldRoom newRoom(WorldRoom room) {
-		RoomGroup rg = searchRoomGroup(room.getLongPath(), true);
+		RoomPath rg = searchRoomGroup(room.getLongPath(), true);
 		rg.setOwnRoom(room);
 		locations.put(room.getId(), room);
 		return rg.getOwnRoom();
@@ -171,7 +177,7 @@ public class World {
 	 * @return
 	 */
 	public WorldRoom newRoom(String roomLongName) {
-		RoomGroup rg = searchRoomGroup(roomLongName, true);
+		RoomPath rg = searchRoomGroup(roomLongName, true);
 		if (rg.getOwnRoom() == null) {
 			WorldRoom room = new WorldRoom(roomLongName, this, currentRoomId);
 			currentRoomId++;
@@ -204,7 +210,7 @@ public class World {
 	 * @return
 	 */
 	public WorldRoom getRoom(String roomLongName) {
-		RoomGroup rg = searchRoomGroup(roomLongName, false);
+		RoomPath rg = searchRoomGroup(roomLongName, false);
 		if (rg == null)
 			return null;
 		else
@@ -326,6 +332,10 @@ public class World {
 
 	public Collection<User> getAllUsers() {
 		return users.values();
+	}
+
+	public RoomPathData getRoomPaths() {
+		return rooms.roomPathData();
 	}
 	
 }

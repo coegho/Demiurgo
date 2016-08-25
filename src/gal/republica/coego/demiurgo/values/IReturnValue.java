@@ -1,5 +1,7 @@
 package gal.republica.coego.demiurgo.values;
 
+import java.io.Serializable;
+
 import gal.republica.coego.demiurgo.exceptions.IllegalOperationException;
 import gal.republica.coego.demiurgo.exceptions.ValueCastException;
 import gal.republica.coego.demiurgo.lib.ReturnValueTypes;
@@ -16,7 +18,7 @@ import gal.republica.coego.demiurgo.universe.World;
  * @since 1.0
  *
  */
-public interface IReturnValue {
+public interface IReturnValue extends Serializable {
 	/**
 	 * Returns the result of adding this value to another.
 	 * 

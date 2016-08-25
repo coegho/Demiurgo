@@ -16,6 +16,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import gal.republica.coego.demiurgo.database.DatabaseInterface;
 import gal.republica.coego.demiurgo.database.MariaDBDatabase;
 import gal.republica.coego.demiurgo.lib.Decision;
+import gal.republica.coego.demiurgo.lib.RoomPathData;
 import gal.republica.coego.demiurgo.lib.ServerInterface;
 import gal.republica.coego.demiurgo.lib.UserData;
 import gal.republica.coego.demiurgo.lib.WorldRoomData;
@@ -215,6 +216,23 @@ public class ServerInterfaceImpl extends UnicastRemoteObject implements ServerIn
 			if (w == null)
 				return null;
 			return w.getDecisions();
+			
+		} catch (SignatureException | MissingClaimException | IncorrectClaimException e) {
+			System.err.println(e.getLocalizedMessage());
+			return null;
+		}
+	}
+
+	@Override
+	public RoomPathData getAllRoomPaths(String token) throws RemoteException {
+		try {
+			Jws<Claims> cl = Jwts.parser().require("role", "admin").setSigningKey(Demiurgo.getKey())
+					.parseClaimsJws(token);
+			String world = (String) cl.getBody().get("world");
+			World w = Demiurgo.getWorld(world);
+			if (w == null)
+				return null;
+			return w.getRoomPaths();
 			
 		} catch (SignatureException | MissingClaimException | IncorrectClaimException e) {
 			System.err.println(e.getLocalizedMessage());

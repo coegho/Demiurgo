@@ -4,7 +4,11 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 	<classpathentry kind="lib" path="/usr/local/lib/antlr-4.5-complete.jar"/>
 	<classpathentry kind="lib" path="/home/coegho/workspace/rep/mariadb-java-client-1.5.1-RC.jar"/>
-	<classpathentry kind="lib" path="/home/coegho/workspace/rep/DemiurgoLib.jar"/>
+	<classpathentry kind="lib" path="/home/coegho/workspace/rep/DemiurgoLib.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="file:/home/coegho/workspace/DemiurgoLib/doc/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="lib" path="/home/coegho/workspace/rep/jjwt-0.7.0-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="/home/coegho/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.7.0/jackson-core-2.7.0.jar"/>
 	<classpathentry kind="lib" path="/home/coegho/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.7.0/jackson-databind-2.7.0.jar"/>
