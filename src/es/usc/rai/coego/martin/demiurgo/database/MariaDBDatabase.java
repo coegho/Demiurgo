@@ -26,7 +26,7 @@ public class MariaDBDatabase implements DatabaseInterface {
 	public boolean createConnection(String database, String username, String pass) {
 		if (existsDriver()) {
 			try {
-				con = DriverManager.getConnection("jdbc:mysql://localhost/" + database, username, pass);
+				con = DriverManager.getConnection("jdbc:mariadb://localhost/" + database, username, pass);
 				return true;
 			} catch (SQLException e) {
 				System.err.println(e.getLocalizedMessage());

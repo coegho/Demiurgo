@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -19,6 +20,9 @@ import java.util.Map;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.glassfish.grizzly.http.server.HttpServer;
+import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.glassfish.jersey.server.ResourceConfig;
 
 import es.usc.rai.coego.martin.demiurgo.coe.COELexer;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser;
@@ -45,8 +49,12 @@ import io.jsonwebtoken.impl.crypto.MacProvider;
 public class Demiurgo {
 	protected static Map<String, World> worlds;
 	protected static Key k;
+	// Base URI the Grizzly HTTP server will listen on
+    public static final String BASE_URI = "http://localhost:8080/demiurgo/";
+    private static HttpServer server;
 
 	public static void main(String[] args) {
+		 
 		worlds = new HashMap<>();
 		k = MacProvider.generateKey();
 		
@@ -79,10 +87,13 @@ public class Demiurgo {
 			@Override
 			public void run() {
 				System.out.println("Saving changes...");
-				try {
+				/*try {
 					LocateRegistry.getRegistry().unbind("Demiurgo");
 				} catch (RemoteException | NotBoundException e) {
 					System.err.println(e.getLocalizedMessage());
+				}*/
+				if(server != null) {
+					server.shutdown();
 				}
 				saveAllInDatabase();
 				System.out.println("Changes saved correctly");
@@ -96,7 +107,7 @@ public class Demiurgo {
 		 * new SecurityManager() );
 		 */
 
-		try {
+		/*try {
 			ServerInterfaceImpl remote = new ServerInterfaceImpl();
 			// registryURL = "rmi://" + hostName + ":" + portNum + "/" +
 			// registryURL;
@@ -114,13 +125,15 @@ public class Demiurgo {
 		} catch (AlreadyBoundException e) {
 			System.err.println(e.getLocalizedMessage());
 			System.exit(-1);
-		}
-
+		}*/
+		
 		/*
 		 * for(String w : worlds.keySet()) { loadFromDatabase(worlds.get(w)); }
 		 */
 		loadFromDatabase(worlds.get("mundo1")); // TODO: Example
-
+		
+		server = startServer();
+		
 		// TODO: Check
 		for (String wn : worlds.keySet()) {
 			// Checking world state
@@ -159,6 +172,16 @@ public class Demiurgo {
 		}
 		System.exit(0);
 	}
+	
+	public static HttpServer startServer() {
+        // create a resource config that scans for JAX-RS resources and providers
+        // in com.example.rest package
+        final ResourceConfig rc = new ResourceConfig().packages("es.usc.rai.coego.martin.demiurgo.webservice");
+
+        // create and start a new instance of grizzly http server
+        // exposing the Jersey application at BASE_URI
+        return GrizzlyHttpServerFactory.createHttpServer(URI.create(BASE_URI), rc);
+    }
 
 	public static Key getKey() {
 		return k;
