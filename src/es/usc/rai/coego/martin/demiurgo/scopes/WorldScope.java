@@ -5,7 +5,7 @@ import es.usc.rai.coego.martin.demiurgo.universe.UserDefinedClass;
 import es.usc.rai.coego.martin.demiurgo.universe.World;
 import es.usc.rai.coego.martin.demiurgo.universe.WorldObject;
 import es.usc.rai.coego.martin.demiurgo.universe.WorldRoom;
-import es.usc.rai.coego.martin.demiurgo.values.IReturnValue;
+import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
 public class WorldScope extends Scope {
 	//TODO: Has world its own variables?
@@ -16,13 +16,13 @@ public class WorldScope extends Scope {
 	}
 	
 	@Override
-	public IReturnValue getVariable(String name) {
+	public ValueInterface getVariable(String name) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public void setVariable(String name, IReturnValue value) {
+	public void setVariable(String name, ValueInterface value) {
 		// TODO Auto-generated method stub
 		
 	}

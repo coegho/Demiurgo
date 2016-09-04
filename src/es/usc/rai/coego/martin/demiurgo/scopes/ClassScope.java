@@ -2,7 +2,7 @@ package es.usc.rai.coego.martin.demiurgo.scopes;
 
 import es.usc.rai.coego.martin.demiurgo.universe.ClassMethod;
 import es.usc.rai.coego.martin.demiurgo.universe.UserDefinedClass;
-import es.usc.rai.coego.martin.demiurgo.values.IReturnValue;
+import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
 public class ClassScope extends Scope {
 
@@ -14,12 +14,12 @@ public class ClassScope extends Scope {
 	}
 	
 	@Override
-	public IReturnValue getVariable(String name) {
+	public ValueInterface getVariable(String name) {
 		return currentClass.getField(name);
 	}
 
 	@Override
-	public void setVariable(String name, IReturnValue value) {
+	public void setVariable(String name, ValueInterface value) {
 		currentClass.addField(name, value);
 	}
 

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import es.usc.rai.coego.martin.demiurgo.values.IReturnValue;
+import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 import es.usc.rai.coego.martin.demiurgo.values.ListValue;
 import es.usc.rai.coego.martin.demiurgo.values.StringValue;
 
@@ -17,7 +17,7 @@ import es.usc.rai.coego.martin.demiurgo.values.StringValue;
  */
 public class ForScope extends LoopScope {
 	protected String auxVar;
-	protected List<IReturnValue> originValues;
+	protected List<ValueInterface> originValues;
 
 	
 	public ForScope(String auxVar, ListValue origin, Scope parent) {
@@ -25,7 +25,7 @@ public class ForScope extends LoopScope {
 		variables = new HashMap<>();
 		this.auxVar = auxVar;
 		originValues = new ArrayList<>();
-		for(IReturnValue v : origin.getValue()) {
+		for(ValueInterface v : origin.getValue()) {
 			originValues.add(v);
 		}
 	}
@@ -50,7 +50,7 @@ public class ForScope extends LoopScope {
 		this.auxVar = auxVar;
 	}
 	
-	public List<IReturnValue> getOriginValues() {
+	public List<ValueInterface> getOriginValues() {
 		return originValues;
 	}
 }

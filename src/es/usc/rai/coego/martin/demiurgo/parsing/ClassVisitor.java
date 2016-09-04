@@ -5,7 +5,7 @@ import es.usc.rai.coego.martin.demiurgo.coe.COEParser.CodeContext;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ClassFilenameMismatchException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.CodeClassInClassFileException;
 import es.usc.rai.coego.martin.demiurgo.universe.UserDefinedClass;
-import es.usc.rai.coego.martin.demiurgo.values.IReturnValue;
+import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 import es.usc.rai.coego.martin.demiurgo.values.NullValue;
 
 public class ClassVisitor extends ExecVisitor {
@@ -26,7 +26,7 @@ public class ClassVisitor extends ExecVisitor {
 	 * methods? '}' ;
 	 */
 	@Override
-	public IReturnValue visitClass_def(Class_defContext ctx) {
+	public ValueInterface visitClass_def(Class_defContext ctx) {
 		String className = ctx.SYMBOL(0).getText().toLowerCase();
 		if (!className.equals(cl.getClassName())) {
 			errors.notifyError(new ClassFilenameMismatchException(cl.getClassName(), className));
@@ -58,7 +58,7 @@ public class ClassVisitor extends ExecVisitor {
 	 * Returns an error because a class visitor cannot process a code input.
 	 */
 	@Override
-	public IReturnValue visitCode(CodeContext ctx) {
+	public ValueInterface visitCode(CodeContext ctx) {
 		errors.notifyError(new CodeClassInClassFileException());
 		return null;
 	}

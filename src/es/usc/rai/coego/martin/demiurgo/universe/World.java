@@ -5,10 +5,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
-import gal.republica.coego.demiurgo.lib.Decision;
-import gal.republica.coego.demiurgo.lib.RoomPathData;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Represents a world into the system.
@@ -318,10 +320,23 @@ public class World {
 		}
 	}
 
-	public List<Decision> getDecisions() {
+	/*public List<Decision> getDecisions() {
 		List<Decision> l = new ArrayList<>();
 		for(User u : untraceableDecisions.keySet()) {
 			l.add(new Decision(u.getUsername(), null, untraceableDecisions.get(u)));
+		}
+		return l;
+	}*/
+	
+	public ArrayNode getDecisions() {
+		ObjectMapper om = new ObjectMapper();
+		ArrayNode l = om.createArrayNode();
+		for (Entry<User, String> u : untraceableDecisions.entrySet()) {
+			ObjectNode decision = om.createObjectNode();
+			decision.put("username", u.getKey().getUsername());
+			decision.put("room_path", "noroom");
+			decision.put("text", u.getValue());
+			l.add(decision);
 		}
 		return l;
 	}
@@ -329,12 +344,23 @@ public class World {
 	public List<WorldRoom> getPendingRooms() {
 		return pendingRooms;
 	}
+	
+	public ArrayNode getPendingRoomsJSON() {
+		ObjectMapper om = new ObjectMapper();
+		ArrayNode arraydata = om.createArrayNode();
+		
+		for(WorldRoom r : pendingRooms) {
+			arraydata.add(r.getLongPath());
+		}
+		
+		return arraydata;
+	}
 
 	public Collection<User> getAllUsers() {
 		return users.values();
 	}
 
-	public RoomPathData getRoomPaths() {
+	public ObjectNode getRoomPaths() {
 		return rooms.roomPathData();
 	}
 	

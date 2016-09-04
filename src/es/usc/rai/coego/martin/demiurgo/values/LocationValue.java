@@ -1,5 +1,7 @@
 package es.usc.rai.coego.martin.demiurgo.values;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import es.usc.rai.coego.martin.demiurgo.universe.World;
 import es.usc.rai.coego.martin.demiurgo.universe.WorldLocation;
 import gal.republica.coego.demiurgo.lib.ReturnValueTypes;
@@ -31,12 +33,12 @@ public class LocationValue extends AbstractValue {
 	}
 
 	@Override
-	public boolean canAssign(IReturnValue newRValue) {
+	public boolean canAssign(ValueInterface newRValue) {
 		return (newRValue instanceof LocationValue);
 	}
 	
 	@Override
-	public boolean assign(IReturnValue newRValue) {
+	public boolean assign(ValueInterface newRValue) {
 		if(newRValue instanceof LocationValue) {
 			location = ((LocationValue)newRValue).getLocation();
 			loc_id = location.getId();
@@ -46,7 +48,7 @@ public class LocationValue extends AbstractValue {
 	}
 
 	@Override
-	public IReturnValue cloneValue() {
+	public ValueInterface cloneValue() {
 		return new LocationValue(getLocation());
 	}
 	
@@ -56,7 +58,7 @@ public class LocationValue extends AbstractValue {
 	}
 	
 	@Override
-	public IReturnValue rebuild(World world) {
+	public ValueInterface rebuild(World world) {
 		this.location = world.getLocation(loc_id);
 		return this;
 	}
@@ -66,5 +68,12 @@ public class LocationValue extends AbstractValue {
 		String[] r = super.getValueCodes();
 		r[2] = Long.toString(loc_id);
 		return r;
+	}
+	
+	@Override
+	public ObjectNode toJSON() {
+		ObjectNode json = super.toJSON();
+		json.put("value", getLocation().getId());
+		return json;
 	}
 }

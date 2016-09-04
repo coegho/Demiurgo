@@ -2,6 +2,9 @@ package es.usc.rai.coego.martin.demiurgo.universe;
 
 import java.io.IOException;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import gal.republica.coego.demiurgo.lib.UserData;
 
 public class User {
@@ -77,7 +80,13 @@ public class User {
 		}
 	}
 	
-	public UserData userData() {
-		return new UserData(getUsername(), isAdmin(), getObjId());
+	public ObjectNode toJSON() {
+		ObjectNode userdata = new ObjectMapper().createObjectNode();
+        userdata.put("username", getUsername());
+        if(getObjId() != -1)
+        	userdata.put("obj_id", getObjId());
+        userdata.put("admin", isAdmin()?"admin":"player");
+		
+		return userdata;
 	}
 }

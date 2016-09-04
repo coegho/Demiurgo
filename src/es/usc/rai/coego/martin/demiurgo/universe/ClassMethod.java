@@ -10,12 +10,12 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNodeImpl;
 
 import es.usc.rai.coego.martin.demiurgo.coe.COELexer;
-import es.usc.rai.coego.martin.demiurgo.values.IReturnValue;
+import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
 public class ClassMethod {
 	protected ParseTree node;
 	protected List<String> argNames; //arguments ordered by num
-	protected Map<String, IReturnValue> args;
+	protected Map<String, ValueInterface> args;
 	protected String retVarName;
 	
 	public ClassMethod(ParseTree node) {
@@ -39,7 +39,7 @@ public class ClassMethod {
 		return retVarName;
 	}
 
-	public void setReturnArgument(String varName, IReturnValue varValue) {
+	public void setReturnArgument(String varName, ValueInterface varValue) {
 		if(hasReturnArgument()) {
 			args.remove(retVarName);
 		}
@@ -55,16 +55,16 @@ public class ClassMethod {
 		return argNames.get(index);
 	}
 	
-	public IReturnValue getArgumentType(String argName) {
+	public ValueInterface getArgumentType(String argName) {
 		return args.get(argName).cloneValue();
 	}
 	
-	public void addArgument(String argName, IReturnValue type) {
+	public void addArgument(String argName, ValueInterface type) {
 		argNames.add(argName);
 		args.put(argName, type);
 	}
 
-	public boolean checkArgs(List<IReturnValue> argValues) {
+	public boolean checkArgs(List<ValueInterface> argValues) {
 		if(argNames.size() != argValues.size()) {
 			return false;
 		}

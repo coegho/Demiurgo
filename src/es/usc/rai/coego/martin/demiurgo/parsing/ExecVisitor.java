@@ -71,7 +71,7 @@ import es.usc.rai.coego.martin.demiurgo.universe.UserDefinedClass;
 import es.usc.rai.coego.martin.demiurgo.universe.WorldObject;
 import es.usc.rai.coego.martin.demiurgo.universe.WorldRoom;
 import es.usc.rai.coego.martin.demiurgo.values.FloatValue;
-import es.usc.rai.coego.martin.demiurgo.values.IReturnValue;
+import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 import es.usc.rai.coego.martin.demiurgo.values.IntegerValue;
 import es.usc.rai.coego.martin.demiurgo.values.ListValue;
 import es.usc.rai.coego.martin.demiurgo.values.LocationValue;
@@ -92,7 +92,7 @@ import gal.republica.coego.demiurgo.lib.ReturnValueTypes;
  * @version %I%, %G%
  * @since 1.0
  */
-public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
+public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 
 	protected ScopeManager sm;
 	protected ErrorHandler errors;
@@ -114,8 +114,8 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * situation.
 	 */
 	@Override
-	public IReturnValue visitEcho(EchoContext ctx) {
-		IReturnValue v = visit(ctx.operation());
+	public ValueInterface visitEcho(EchoContext ctx) {
+		ValueInterface v = visit(ctx.operation());
 		if (errors.hasErrors())
 			return null;
 
@@ -134,7 +134,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * </p>
 	 */
 	@Override
-	public IReturnValue visitInt(IntContext ctx) {
+	public ValueInterface visitInt(IntContext ctx) {
 		return new IntegerValue(Integer.valueOf(ctx.INT_NUMBER().getText()));
 	}
 
@@ -144,7 +144,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * </p>
 	 */
 	@Override
-	public IReturnValue visitFloat(FloatContext ctx) {
+	public ValueInterface visitFloat(FloatContext ctx) {
 		return new FloatValue(Float.valueOf(ctx.FLOAT_NUMBER().getText()));
 	}
 
@@ -154,7 +154,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * </p>
 	 */
 	@Override
-	public IReturnValue visitString(StringContext ctx) {
+	public ValueInterface visitString(StringContext ctx) {
 		String str = ctx.TEXT_STRING().getText();
 		return new StringValue(str.substring(1, str.length() - 1));
 	}
@@ -165,7 +165,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * </p>
 	 */
 	@Override
-	public IReturnValue visitBool(BoolContext ctx) {
+	public ValueInterface visitBool(BoolContext ctx) {
 		switch (ctx.BOOLEAN().getSymbol().getType()) {
 		case COEParser.TRUE:
 			return new IntegerValue(1);
@@ -181,13 +181,13 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * </p>
 	 */
 	@Override
-	public IReturnValue visitList(ListContext ctx) {
+	public ValueInterface visitList(ListContext ctx) {
 		try {
 			ReturnValueTypes type = null;
 			int depth = -1;
-			List<IReturnValue> l = new ArrayList<>();
+			List<ValueInterface> l = new ArrayList<>();
 			for (OperationContext op : ctx.operation()) {
-				IReturnValue v = visit(op);
+				ValueInterface v = visit(op);
 				if (errors.hasErrors())
 					return null;
 				if ((depth == -1 || depth == v.getDepth()) && (type == null || type == v.getType())) {
@@ -214,7 +214,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * Returns a default FLOAT value (it counts as a type).
 	 */
 	@Override
-	public IReturnValue visitFloatType(FloatTypeContext ctx) {
+	public ValueInterface visitFloatType(FloatTypeContext ctx) {
 		return FloatValue.defaultValue();
 	}
 
@@ -222,7 +222,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * Returns a default INT value (it counts as a type).
 	 */
 	@Override
-	public IReturnValue visitIntType(IntTypeContext ctx) {
+	public ValueInterface visitIntType(IntTypeContext ctx) {
 		return IntegerValue.defaultValue();
 	}
 
@@ -230,7 +230,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * Returns a default STRING value (it counts as a type).
 	 */
 	@Override
-	public IReturnValue visitStringType(StringTypeContext ctx) {
+	public ValueInterface visitStringType(StringTypeContext ctx) {
 		return StringValue.defaultValue();
 	}
 
@@ -240,8 +240,8 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * data_type: data_type '[]'
 	 */
 	@Override
-	public IReturnValue visitListType(ListTypeContext ctx) {
-		IReturnValue innerType = visit(ctx.data_type());
+	public ValueInterface visitListType(ListTypeContext ctx) {
+		ValueInterface innerType = visit(ctx.data_type());
 		if (errors.hasErrors())
 			return null;
 		if (innerType instanceof ListValue) {
@@ -260,7 +260,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * data_type: SYMBOL
 	 */
 	@Override
-	public IReturnValue visitSymbolType(SymbolTypeContext ctx) {
+	public ValueInterface visitSymbolType(SymbolTypeContext ctx) {
 		try {
 			// First we get the type, in this case, a class
 			String className = ctx.SYMBOL().getText().toLowerCase();
@@ -279,7 +279,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * Returns a default LOCATION value (it counts as a type).
 	 */
 	@Override
-	public IReturnValue visitRoomType(RoomTypeContext ctx) {
+	public ValueInterface visitRoomType(RoomTypeContext ctx) {
 		return LocationValue.defaultValue(getSM().getCurrentWorld());
 	}
 
@@ -300,10 +300,10 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * </ul>
 	 */
 	@Override
-	public IReturnValue visitCompare(CompareContext ctx) {
+	public ValueInterface visitCompare(CompareContext ctx) {
 		try {
-			IReturnValue left = visit(ctx.operation(0));
-			IReturnValue right = visit(ctx.operation(1));
+			ValueInterface left = visit(ctx.operation(0));
+			ValueInterface right = visit(ctx.operation(1));
 			if (errors.hasErrors())
 				return null;
 			switch (ctx.op.getType()) {
@@ -337,11 +337,11 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * </ul>
 	 */
 	@Override
-	public IReturnValue visitAddSub(AddSubContext ctx) {
+	public ValueInterface visitAddSub(AddSubContext ctx) {
 
 		try {
-			IReturnValue left = visit(ctx.operation(0));
-			IReturnValue right = visit(ctx.operation(1));
+			ValueInterface left = visit(ctx.operation(0));
+			ValueInterface right = visit(ctx.operation(1));
 			if (errors.hasErrors())
 				return null;
 			switch (ctx.op.getType()) {
@@ -368,10 +368,10 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * </ul>
 	 */
 	@Override
-	public IReturnValue visitMulDiv(MulDivContext ctx) {
+	public ValueInterface visitMulDiv(MulDivContext ctx) {
 		try {
-			IReturnValue left = visit(ctx.operation(0));
-			IReturnValue right = visit(ctx.operation(1));
+			ValueInterface left = visit(ctx.operation(0));
+			ValueInterface right = visit(ctx.operation(1));
 			if (errors.hasErrors())
 				return null;
 			switch (ctx.op.getType()) {
@@ -394,7 +394,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * </p>
 	 */
 	@Override
-	public IReturnValue visitParens(ParensContext ctx) {
+	public ValueInterface visitParens(ParensContext ctx) {
 		return visit(ctx.operation());
 	}
 
@@ -404,9 +404,9 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * </p>
 	 */
 	@Override
-	public IReturnValue visitDice(DiceContext ctx) {
+	public ValueInterface visitDice(DiceContext ctx) {
 		try {
-			IReturnValue v = visit(ctx.operation());
+			ValueInterface v = visit(ctx.operation());
 			if (errors.hasErrors())
 				return null;
 			return v.dice();
@@ -423,10 +423,10 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * </p>
 	 */
 	@Override
-	public IReturnValue visitMultDice(MultDiceContext ctx) {
+	public ValueInterface visitMultDice(MultDiceContext ctx) {
 		try {
-			IReturnValue left = visit(ctx.operation(0));
-			IReturnValue right = visit(ctx.operation(1));
+			ValueInterface left = visit(ctx.operation(0));
+			ValueInterface right = visit(ctx.operation(1));
 			if (errors.hasErrors())
 				return null;
 			return left.multDice(right);
@@ -443,10 +443,10 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * </p>
 	 */
 	@Override
-	public IReturnValue visitIndex(IndexContext ctx) {
+	public ValueInterface visitIndex(IndexContext ctx) {
 		try {
-			IReturnValue left = visit(ctx.operation(0));
-			IReturnValue right = visit(ctx.operation(1));
+			ValueInterface left = visit(ctx.operation(0));
+			ValueInterface right = visit(ctx.operation(1));
 			int index = right.castToInteger();
 			if (errors.hasErrors())
 				return null;
@@ -465,9 +465,9 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * </p>
 	 */
 	@Override
-	public IReturnValue visitNegative(NegativeContext ctx) {
+	public ValueInterface visitNegative(NegativeContext ctx) {
 		try {
-			IReturnValue v = visit(ctx.operation());
+			ValueInterface v = visit(ctx.operation());
 			if (errors.hasErrors())
 				return null;
 			return v.negative();
@@ -491,10 +491,10 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * </ul>
 	 */
 	@Override
-	public IReturnValue visitLogic(LogicContext ctx) {
+	public ValueInterface visitLogic(LogicContext ctx) {
 		try {
-			IReturnValue left = visit(ctx.operation(0));
-			IReturnValue right = visit(ctx.operation(1));
+			ValueInterface left = visit(ctx.operation(0));
+			ValueInterface right = visit(ctx.operation(1));
 			if (errors.hasErrors())
 				return null;
 			switch (ctx.op.getType()) {
@@ -517,10 +517,10 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * operation: variable ASSIGN operation
 	 */
 	@Override
-	public IReturnValue visitAssign(AssignContext ctx) {
+	public ValueInterface visitAssign(AssignContext ctx) {
 		try {
-			IReturnValue l = visit(ctx.variable());
-			IReturnValue right = visit(ctx.operation());
+			ValueInterface l = visit(ctx.variable());
+			ValueInterface right = visit(ctx.operation());
 			if (errors.hasErrors())
 				return null;
 			ReferenceValue left = (ReferenceValue) l;
@@ -543,15 +543,15 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * operation: variable '[' operation ']' ASSIGN operation
 	 */
 	@Override
-	public IReturnValue visitIndexAssign(IndexAssignContext ctx) {
-		IReturnValue r = visit(ctx.variable());
-		IReturnValue i = visit(ctx.operation(0));
-		IReturnValue value = visit(ctx.operation(1));
+	public ValueInterface visitIndexAssign(IndexAssignContext ctx) {
+		ValueInterface r = visit(ctx.variable());
+		ValueInterface i = visit(ctx.operation(0));
+		ValueInterface value = visit(ctx.operation(1));
 		if (errors.hasErrors())
 			return null;
 		ReferenceValue ref = (ReferenceValue) r;
 		int index;
-		IReturnValue element;
+		ValueInterface element;
 		try {
 			index = i.castToInteger();
 
@@ -580,9 +580,9 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * operation: operation MOVE operation
 	 */
 	@Override
-	public IReturnValue visitMove(MoveContext ctx) {
-		IReturnValue mobile = visit(ctx.operation(0));
-		IReturnValue room = visit(ctx.operation(1));
+	public ValueInterface visitMove(MoveContext ctx) {
+		ValueInterface mobile = visit(ctx.operation(0));
+		ValueInterface room = visit(ctx.operation(1));
 		if (errors.hasErrors())
 			return null;
 		try {
@@ -605,9 +605,9 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * </p>
 	 */
 	@Override
-	public IReturnValue visitRootVariable(RootVariableContext ctx) {
+	public ValueInterface visitRootVariable(RootVariableContext ctx) {
 		try {
-			IReturnValue v = getSM().getVariable(ctx.SYMBOL().getText().toLowerCase());
+			ValueInterface v = getSM().getVariable(ctx.SYMBOL().getText().toLowerCase());
 			if (v == null)
 				throw new UndeclaredVariableException();
 			return new ReferenceValue(v);
@@ -622,7 +622,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * Returns a ReferenceObject with an object identified by its ID.
 	 */
 	@Override
-	public IReturnValue visitRootObject(RootObjectContext ctx) {
+	public ValueInterface visitRootObject(RootObjectContext ctx) {
 		return new ReferenceValue(visit(ctx.sharp_identifier()));
 	}
 
@@ -630,13 +630,13 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * Returns a variable within another variable (a field within an object).
 	 */
 	@Override
-	public IReturnValue visitIntermediateVariable(IntermediateVariableContext ctx) {
-		IReturnValue v = visit(ctx.variable());
+	public ValueInterface visitIntermediateVariable(IntermediateVariableContext ctx) {
+		ValueInterface v = visit(ctx.variable());
 		if (errors.hasErrors())
 			return null;
 		try {
 			ReferenceValue prev = (ReferenceValue) v;
-			IReturnValue value = prev.getReference();
+			ValueInterface value = prev.getReference();
 			String fieldName = ctx.SYMBOL().getText().toLowerCase();
 			if (value instanceof ObjectValue) {
 				WorldObject obj = ((ObjectValue) value).getObj();
@@ -659,8 +659,8 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * @return The value contained into the variable.
 	 */
 	@Override
-	public IReturnValue visitVariableOp(VariableOpContext ctx) {
-		IReturnValue v = visit(ctx.variable());
+	public ValueInterface visitVariableOp(VariableOpContext ctx) {
+		ValueInterface v = visit(ctx.variable());
 		if (errors.hasErrors())
 			return null;
 		ReferenceValue var = (ReferenceValue) v;
@@ -674,8 +674,8 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * ')' ;
 	 */
 	@Override
-	public IReturnValue visitFunction_call(Function_callContext ctx) {
-		IReturnValue v = visit(ctx.variable());
+	public ValueInterface visitFunction_call(Function_callContext ctx) {
+		ValueInterface v = visit(ctx.variable());
 		try {
 			String methodName = ctx.SYMBOL().getText().toLowerCase();
 			if (ctx.variable() != null) {
@@ -687,9 +687,9 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 						throw new IllegalOperationException();
 					}
 					// arguments
-					List<IReturnValue> args = new ArrayList<>();
+					List<ValueInterface> args = new ArrayList<>();
 					for (OperationContext x : ctx.operation()) {
-						IReturnValue a = visit(x);
+						ValueInterface a = visit(x);
 						if (errors.hasErrors())
 							return null;
 						args.add(a);
@@ -731,13 +731,13 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * new_obj : 'new' SYMBOL '(' (operation (',' operation)*)? ')' ;
 	 */
 	@Override
-	public IReturnValue visitNew_obj(New_objContext ctx) {
+	public ValueInterface visitNew_obj(New_objContext ctx) {
 		try {
 			UserDefinedClass objClass = getSM().getClassFromName(ctx.SYMBOL().getText().toLowerCase());
 
-			List<IReturnValue> args = new ArrayList<>();
+			List<ValueInterface> args = new ArrayList<>();
 			for (OperationContext x : ctx.operation()) {
-				IReturnValue a = visit(x);
+				ValueInterface a = visit(x);
 				if (errors.hasErrors())
 					return null;
 				args.add(a);
@@ -778,8 +778,8 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * | IF '(' operation ')' nl? nl? line? nl? exp_else? ;
 	 */
 	@Override
-	public IReturnValue visitExp_if(Exp_ifContext ctx) {
-		IReturnValue condition = visit(ctx.operation());
+	public ValueInterface visitExp_if(Exp_ifContext ctx) {
+		ValueInterface condition = visit(ctx.operation());
 		if (errors.hasErrors())
 			return null;
 
@@ -814,7 +814,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * | nl? ELSE nl? nl? line? nl? ;
 	 */
 	@Override
-	public IReturnValue visitExp_else(Exp_elseContext ctx) {
+	public ValueInterface visitExp_else(Exp_elseContext ctx) {
 
 		// SCOPE
 		Scope prevScope = getSM().getScope();
@@ -838,10 +838,10 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * | FOR '(' SYMBOL ':' operation ')' nl? nl? line nl? ;
 	 */
 	@Override
-	public IReturnValue visitExp_for(Exp_forContext ctx) {
+	public ValueInterface visitExp_for(Exp_forContext ctx) {
 		try {
 			String auxVar = ctx.SYMBOL().getText().toLowerCase();
-			IReturnValue origin = visit(ctx.operation());
+			ValueInterface origin = visit(ctx.operation());
 			if (errors.hasErrors())
 				return null;
 
@@ -858,8 +858,8 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 
 			getSM().pushScope(newScope);
 
-			for (IReturnValue v : newScope.getOriginValues()) {
-				IReturnValue vv = v.cloneValue();
+			for (ValueInterface v : newScope.getOriginValues()) {
+				ValueInterface vv = v.cloneValue();
 				v.setWritable(false);
 				getSM().setVariable(auxVar, vv);
 				if (ctx.code() != null) {
@@ -886,12 +886,12 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * var_decl : data_type SYMBOL (ASSIGN operation)? ;
 	 */
 	@Override
-	public IReturnValue visitVar_decl(Var_declContext ctx) {
-		IReturnValue type = visit(ctx.data_type());
+	public ValueInterface visitVar_decl(Var_declContext ctx) {
+		ValueInterface type = visit(ctx.data_type());
 
 		String varName = ctx.SYMBOL().getText().toLowerCase();
 		if (ctx.operation() != null) {
-			IReturnValue v = visit(ctx.operation());
+			ValueInterface v = visit(ctx.operation());
 			if (errors.hasErrors())
 				return null;
 			type.assign(v);
@@ -913,7 +913,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * '{' code? '}' ;
 	 */
 	@Override
-	public IReturnValue visitMethod(MethodContext ctx) {
+	public ValueInterface visitMethod(MethodContext ctx) {
 		try {
 			// TODO: non-class methods?
 			UserDefinedClass curClass = ((ClassScope) getSM().getScope()).getCurrentClass();
@@ -930,7 +930,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 				// Return value
 				if (ctx.ASSIGN() != null) {
 					String returnName = ctx.SYMBOL(0).getText().toLowerCase();
-					IReturnValue t = visit(ctx.data_type());
+					ValueInterface t = visit(ctx.data_type());
 					if (errors.hasErrors())
 						return null;
 					cm.setReturnArgument(returnName, t);
@@ -958,10 +958,10 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * args : data_type SYMBOL ( ',' data_type SYMBOL )* ;
 	 */
 	@Override
-	public IReturnValue visitArgs(ArgsContext ctx) {
+	public ValueInterface visitArgs(ArgsContext ctx) {
 		for (int i = 0; i < ctx.SYMBOL().size(); i++) {
 			String argName = ctx.SYMBOL(i).getText().toLowerCase();
-			IReturnValue typeV = visit(ctx.data_type(i));
+			ValueInterface typeV = visit(ctx.data_type(i));
 			if (errors.hasErrors())
 				return null;
 
@@ -976,7 +976,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * sharp_identifier : '#' INT_NUMBER ;
 	 */
 	@Override
-	public IReturnValue visitSharp_identifier(Sharp_identifierContext ctx) {
+	public ValueInterface visitSharp_identifier(Sharp_identifierContext ctx) {
 		long id = Long.valueOf(ctx.INT_NUMBER().getText());
 		return new ObjectValue(getSM().getObject(id));
 	}
@@ -987,7 +987,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * room : '@' room_path ;
 	 */
 	@Override
-	public IReturnValue visitRoom(RoomContext ctx) {
+	public ValueInterface visitRoom(RoomContext ctx) {
 		try {
 			String path = ctx.room_path().getText();
 			WorldRoom room;
@@ -1014,11 +1014,11 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	 * exp_user : USERNAME '->' operation ;
 	 */
 	@Override
-	public IReturnValue visitExp_user(Exp_userContext ctx) {
+	public ValueInterface visitExp_user(Exp_userContext ctx) {
 		try {
 			// We get the user name without the '$' symbol
 			String username = ctx.USERNAME().getText().toLowerCase().substring(1);
-			IReturnValue objref = visit(ctx.operation());
+			ValueInterface objref = visit(ctx.operation());
 			if (errors.hasErrors())
 				return null;
 			if (objref instanceof ObjectValue) {
@@ -1037,7 +1037,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<IReturnValue> {
 	}
 
 	@Override
-	protected boolean shouldVisitNextChild(RuleNode node, IReturnValue currentResult) {
+	protected boolean shouldVisitNextChild(RuleNode node, ValueInterface currentResult) {
 		return !errors.hasErrors();
 	}
 

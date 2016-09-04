@@ -3,7 +3,7 @@ package es.usc.rai.coego.martin.demiurgo.universe;
 import java.util.HashMap;
 import java.util.Map;
 
-import es.usc.rai.coego.martin.demiurgo.values.IReturnValue;
+import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
 /**
  * Represents a class in the world defined by the user. These classes will be used to create
@@ -16,7 +16,7 @@ import es.usc.rai.coego.martin.demiurgo.values.IReturnValue;
 public class UserDefinedClass {
 	protected String className;
 	protected UserDefinedClass parentClass;
-	protected Map<String, IReturnValue> fields;
+	protected Map<String, ValueInterface> fields;
 	protected Map<String, ClassMethod> methods;
 	protected ClassMethod constructor;
 	protected World world;
@@ -36,12 +36,12 @@ public class UserDefinedClass {
 		return world;
 	}
 	
-	public Map<String, IReturnValue> getRealFields() {
+	public Map<String, ValueInterface> getRealFields() {
 		return fields;
 	}
 	
-	public Map<String, IReturnValue> getFields() {
-		Map<String, IReturnValue> map = new HashMap<>();
+	public Map<String, ValueInterface> getFields() {
+		Map<String, ValueInterface> map = new HashMap<>();
 		map.putAll(parentClass.getFields());
 		map.putAll(fields);
 		return map;
@@ -51,11 +51,11 @@ public class UserDefinedClass {
 		this.className = className;
 	}
 
-	public void addField(String fieldName, IReturnValue defaultValue) {
+	public void addField(String fieldName, ValueInterface defaultValue) {
 		fields.put(fieldName, defaultValue);
 	}
 
-	public IReturnValue getField(String fieldName) {
+	public ValueInterface getField(String fieldName) {
 		if(fields.containsKey(fieldName))
 			return fields.get(fieldName);
 		else

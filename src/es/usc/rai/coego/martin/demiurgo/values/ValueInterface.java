@@ -2,6 +2,8 @@ package es.usc.rai.coego.martin.demiurgo.values;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import es.usc.rai.coego.martin.demiurgo.exceptions.IllegalOperationException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ValueCastException;
 import es.usc.rai.coego.martin.demiurgo.universe.World;
@@ -18,7 +20,7 @@ import gal.republica.coego.demiurgo.lib.ValueData;
  * @since 1.0
  *
  */
-public interface IReturnValue extends Serializable {
+public interface ValueInterface extends Serializable {
 	/**
 	 * Returns the result of adding this value to another.
 	 * 
@@ -26,7 +28,7 @@ public interface IReturnValue extends Serializable {
 	 * @return
 	 * @throws IllegalOperationException
 	 */
-	public IReturnValue add(IReturnValue another) throws IllegalOperationException;
+	public ValueInterface add(ValueInterface another) throws IllegalOperationException;
 
 	/**
 	 * Returns the result of subtracting another value from this one.
@@ -35,7 +37,7 @@ public interface IReturnValue extends Serializable {
 	 * @return
 	 * @throws IllegalOperationException
 	 */
-	public IReturnValue sub(IReturnValue another) throws IllegalOperationException;
+	public ValueInterface sub(ValueInterface another) throws IllegalOperationException;
 
 	/**
 	 * Returns the result of multiply this value to another.
@@ -44,7 +46,7 @@ public interface IReturnValue extends Serializable {
 	 * @return
 	 * @throws IllegalOperationException
 	 */
-	public IReturnValue mul(IReturnValue another) throws IllegalOperationException;
+	public ValueInterface mul(ValueInterface another) throws IllegalOperationException;
 
 	/**
 	 * Returns the result of divide this value by another.
@@ -53,7 +55,7 @@ public interface IReturnValue extends Serializable {
 	 * @return
 	 * @throws IllegalOperationException
 	 */
-	public IReturnValue div(IReturnValue another) throws IllegalOperationException;
+	public ValueInterface div(ValueInterface another) throws IllegalOperationException;
 
 	/**
 	 * Returns an IntegerValue with value 1 if this value is equal to another,
@@ -63,7 +65,7 @@ public interface IReturnValue extends Serializable {
 	 * @return
 	 * @throws IllegalOperationException
 	 */
-	public IReturnValue eq(IReturnValue another) throws IllegalOperationException;
+	public ValueInterface eq(ValueInterface another) throws IllegalOperationException;
 
 	/**
 	 * Returns an IntegerValue with value 1 if this value is different from
@@ -73,7 +75,7 @@ public interface IReturnValue extends Serializable {
 	 * @return
 	 * @throws IllegalOperationException
 	 */
-	public IReturnValue neq(IReturnValue another) throws IllegalOperationException;
+	public ValueInterface neq(ValueInterface another) throws IllegalOperationException;
 
 	/**
 	 * Returns an IntegerValue with value 1 if this value is greater of equal to
@@ -83,7 +85,7 @@ public interface IReturnValue extends Serializable {
 	 * @return
 	 * @throws IllegalOperationException
 	 */
-	public IReturnValue greq(IReturnValue another) throws IllegalOperationException;
+	public ValueInterface greq(ValueInterface another) throws IllegalOperationException;
 
 	/**
 	 * Returns an IntegerValue with value 1 if this value is lesser of equal to
@@ -93,7 +95,7 @@ public interface IReturnValue extends Serializable {
 	 * @return
 	 * @throws IllegalOperationException
 	 */
-	public IReturnValue leseq(IReturnValue another) throws IllegalOperationException;
+	public ValueInterface leseq(ValueInterface another) throws IllegalOperationException;
 
 	/**
 	 * Returns an IntegerValue with value 1 if this value is greater than
@@ -103,7 +105,7 @@ public interface IReturnValue extends Serializable {
 	 * @return
 	 * @throws IllegalOperationException
 	 */
-	public IReturnValue great(IReturnValue another) throws IllegalOperationException;
+	public ValueInterface great(ValueInterface another) throws IllegalOperationException;
 
 	/**
 	 * Returns an IntegerValue with value 1 if this value is lesser than
@@ -113,7 +115,7 @@ public interface IReturnValue extends Serializable {
 	 * @return
 	 * @throws IllegalOperationException
 	 */
-	public IReturnValue less(IReturnValue another) throws IllegalOperationException;
+	public ValueInterface less(ValueInterface another) throws IllegalOperationException;
 
 	/**
 	 * Returns an IntegerValue with value 1 if this value is true and another
@@ -124,7 +126,7 @@ public interface IReturnValue extends Serializable {
 	 * @throws IllegalOperationException
 	 * 
 	 */
-	public IReturnValue and(IReturnValue another) throws IllegalOperationException;
+	public ValueInterface and(ValueInterface another) throws IllegalOperationException;
 
 	/**
 	 * Returns an IntegerValue with value 1 if this value is true or another one
@@ -135,7 +137,7 @@ public interface IReturnValue extends Serializable {
 	 * @throws IllegalOperationException
 	 * 
 	 */
-	public IReturnValue or(IReturnValue another) throws IllegalOperationException;
+	public ValueInterface or(ValueInterface another) throws IllegalOperationException;
 
 	/**
 	 * Returns the negative of this value.
@@ -144,7 +146,7 @@ public interface IReturnValue extends Serializable {
 	 * @throws IllegalOperationException
 	 * 
 	 */
-	public IReturnValue negative() throws IllegalOperationException;
+	public ValueInterface negative() throws IllegalOperationException;
 
 	/**
 	 * Returns an IntegerValue with value 1 if this value is false, or value 0
@@ -154,7 +156,7 @@ public interface IReturnValue extends Serializable {
 	 * @throws IllegalOperationException
 	 * 
 	 */
-	public IReturnValue not() throws IllegalOperationException;
+	public ValueInterface not() throws IllegalOperationException;
 
 	/**
 	 * Returns the result of a dice roll. This value determines the number of
@@ -164,7 +166,7 @@ public interface IReturnValue extends Serializable {
 	 * @throws IllegalOperationException
 	 * 
 	 */
-	public IReturnValue dice() throws IllegalOperationException;
+	public ValueInterface dice() throws IllegalOperationException;
 
 	/**
 	 * Returns the result of some dice rolls. This value determines the number
@@ -175,7 +177,7 @@ public interface IReturnValue extends Serializable {
 	 * @throws IllegalOperationException
 	 * 
 	 */
-	public IReturnValue multDice(IReturnValue another) throws IllegalOperationException;
+	public ValueInterface multDice(ValueInterface another) throws IllegalOperationException;
 
 	/**
 	 * Casts the inner value to an integer value.
@@ -216,7 +218,7 @@ public interface IReturnValue extends Serializable {
 	 * @param value
 	 * @return True if the new value can be assigned, false otherwise.
 	 */
-	public boolean canAssign(IReturnValue newRValue);
+	public boolean canAssign(ValueInterface newRValue);
 
 	/**
 	 * Assigns a new value without changing type, making the pertinent cast
@@ -225,7 +227,7 @@ public interface IReturnValue extends Serializable {
 	 * @param value
 	 * @return False if there is not cast operation.
 	 */
-	public boolean assign(IReturnValue newRValue);
+	public boolean assign(ValueInterface newRValue);
 
 	/**
 	 * Returns the value specified by index from a list.
@@ -235,14 +237,14 @@ public interface IReturnValue extends Serializable {
 	 * @throws IllegalOperationException
 	 * 
 	 */
-	public IReturnValue getFromIndex(int index) throws IllegalOperationException;
+	public ValueInterface getFromIndex(int index) throws IllegalOperationException;
 
 	/**
 	 * Returns an object with the same exact value as this one.
 	 * 
 	 * @return
 	 */
-	public IReturnValue cloneValue();
+	public ValueInterface cloneValue();
 
 	/**
 	 * Returns the type from a enum. Useful to check compatibility of types.
@@ -271,7 +273,7 @@ public interface IReturnValue extends Serializable {
 	 * 
 	 * @return The value itself rebuilded.
 	 */
-	public IReturnValue rebuild(World world);
+	public ValueInterface rebuild(World world);
 
 	/**
 	 * Returns an array of 3 strings that codifies the value of this object.
@@ -284,7 +286,7 @@ public interface IReturnValue extends Serializable {
 	/**
 	 * Creates a new ValueData object with this object's value.
 	 * 
-	 * @return A serializable object ready to be exported.
+	 * @return A JSON value with 3 fields: value as string, type, and class (optional).
 	 */
-	public ValueData valueData();
+	public ObjectNode toJSON();
 }

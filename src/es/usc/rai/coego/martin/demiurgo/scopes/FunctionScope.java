@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import es.usc.rai.coego.martin.demiurgo.universe.ClassMethod;
-import es.usc.rai.coego.martin.demiurgo.values.IReturnValue;
+import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
 /**
  * 
@@ -18,11 +18,11 @@ import es.usc.rai.coego.martin.demiurgo.values.IReturnValue;
 public class FunctionScope extends Scope {
 	protected ClassMethod method;
 	protected ObjectScope parent;
-	protected Map<String, IReturnValue> variables;
+	protected Map<String, ValueInterface> variables;
 	protected String retVarName;
 	
 	public FunctionScope(ClassMethod method,
-			List<IReturnValue> args, String retVarName, ObjectScope parent) {
+			List<ValueInterface> args, String retVarName, ObjectScope parent) {
 		this.method = method;
 		this.parent = parent;
 		this.retVarName = retVarName;
@@ -33,13 +33,13 @@ public class FunctionScope extends Scope {
 		}
 		if(method.hasReturnArgument()) {
 			String retArgName = method.getReturnArgumentName();
-			IReturnValue retArg = method.getArgumentType(retArgName);
+			ValueInterface retArg = method.getArgumentType(retArgName);
 			this.variables.put(retArgName, retArg);
 		}
 	}
 	
 	@Override
-	public IReturnValue getVariable(String name) {
+	public ValueInterface getVariable(String name) {
 		if(variables.containsKey(name))
 			return variables.get(name);
 		else
@@ -47,7 +47,7 @@ public class FunctionScope extends Scope {
 	}
 
 	@Override
-	public void setVariable(String name, IReturnValue value) {
+	public void setVariable(String name, ValueInterface value) {
 		variables.put(name, value);
 		
 	}
@@ -56,7 +56,7 @@ public class FunctionScope extends Scope {
 		return parent;
 	}
 
-	public IReturnValue getReturnVariable() {
+	public ValueInterface getReturnVariable() {
 		return variables.get(retVarName);
 	}
 }

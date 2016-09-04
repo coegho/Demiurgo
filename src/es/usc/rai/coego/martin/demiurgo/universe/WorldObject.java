@@ -5,10 +5,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import es.usc.rai.coego.martin.demiurgo.values.IReturnValue;
+import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 import es.usc.rai.coego.martin.demiurgo.values.ObjectValue;
 
 import java.util.Set;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import gal.republica.coego.demiurgo.lib.ValueData;
 import gal.republica.coego.demiurgo.lib.WorldObjectData;
@@ -17,7 +20,7 @@ public class WorldObject {
 	protected long id;
 	protected transient UserDefinedClass ownClass;
 	protected transient WorldLocation location;
-	protected Map<String, IReturnValue> fields;
+	protected Map<String, ValueInterface> fields;
 	protected transient User user;
 
 	// Serializable fields
@@ -31,7 +34,7 @@ public class WorldObject {
 		this.location = location;
 		this.fields = new HashMap<>();
 		for (String varName : ownClass.getFields().keySet()) {
-			IReturnValue field = ownClass.getField(varName);
+			ValueInterface field = ownClass.getField(varName);
 			fields.put(varName, field.cloneValue());
 		}
 		ObjectValue v = new ObjectValue(this);
@@ -53,7 +56,7 @@ public class WorldObject {
 	 * @param fields
 	 *            Object's fields.
 	 */
-	public WorldObject(long id, String classname, long loc_id, Map<String, IReturnValue> fields) {
+	public WorldObject(long id, String classname, long loc_id, Map<String, ValueInterface> fields) {
 		this.id = id;
 		this.className = classname;
 		this.loc_id = loc_id;
@@ -88,11 +91,11 @@ public class WorldObject {
 		this.location.getWorld().moveTo(this.location, location, this);
 	}
 
-	public IReturnValue getField(String fieldName) {
+	public ValueInterface getField(String fieldName) {
 		return fields.get(fieldName);
 	}
 
-	public void setField(String fieldName, IReturnValue value) {
+	public void setField(String fieldName, ValueInterface value) {
 		fields.put(fieldName, value);
 	}
 
@@ -123,7 +126,7 @@ public class WorldObject {
 		return null;
 	}
 
-	public Map<String, IReturnValue> getFields() {
+	public Map<String, ValueInterface> getFields() {
 		return fields;
 	}
 
@@ -143,7 +146,7 @@ public class WorldObject {
 		className = (String) in.readObject();
 		loc_id = in.readLong();
 		username = (String) in.readObject();
-		fields = ((Map<String, IReturnValue>) in.readObject());
+		fields = ((Map<String, ValueInterface>) in.readObject());
 	}
 
 	public void rebuild(World world) {
@@ -151,16 +154,26 @@ public class WorldObject {
 		location = world.getLocation(loc_id);
 		location.addObject(this);
 		user = world.getUser(username);
-		for (IReturnValue v : fields.values()) {
+		for (ValueInterface v : fields.values()) {
 			v.rebuild(world);
 		}
 	}
 	
-	public WorldObjectData worldObjectData() {
-		Map<String, ValueData> f = new HashMap<>();
-		for(Entry<String, IReturnValue> e : getFields().entrySet()) {
-			f.put(e.getKey(), e.getValue().valueData());
+	public ObjectNode toJSON() {
+		ObjectMapper om = new ObjectMapper();
+		ObjectNode objdata = om.createObjectNode();
+		
+		objdata.put("id", getId());
+		objdata.put("class", getClassName());
+		if(getLocId() != -1)
+			objdata.put("loc_id", getLocId());
+		
+		ObjectNode fields = om.createObjectNode();
+		for(Entry<String, ValueInterface> e : getFields().entrySet()) {
+			fields.set(e.getKey(), e.getValue().toJSON());
 		}
-		return new WorldObjectData(getId(), getClassName(), getLocId(), f);
+		objdata.set("fields", fields);
+		
+		return objdata;
 	}
 }

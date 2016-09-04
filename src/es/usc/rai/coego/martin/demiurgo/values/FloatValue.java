@@ -1,5 +1,7 @@
 package es.usc.rai.coego.martin.demiurgo.values;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import es.usc.rai.coego.martin.demiurgo.exceptions.IllegalOperationException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ValueCastException;
 import gal.republica.coego.demiurgo.lib.ReturnValueTypes;
@@ -34,7 +36,7 @@ public class FloatValue extends AbstractValue {
 	}
 
 	@Override
-	public IReturnValue add(IReturnValue other) throws IllegalOperationException {
+	public ValueInterface add(ValueInterface other) throws IllegalOperationException {
 		if (other instanceof IntegerValue) {
 			return new FloatValue(getValue() + ((IntegerValue) other).getValue());
 		}
@@ -51,7 +53,7 @@ public class FloatValue extends AbstractValue {
 	}
 
 	@Override
-	public IReturnValue sub(IReturnValue other) throws IllegalOperationException {
+	public ValueInterface sub(ValueInterface other) throws IllegalOperationException {
 		if (other instanceof IntegerValue || other instanceof FloatValue || other instanceof ListValue) {
 			return negative().add(other);
 		}
@@ -59,7 +61,7 @@ public class FloatValue extends AbstractValue {
 	}
 
 	@Override
-	public IReturnValue mul(IReturnValue other) throws IllegalOperationException {
+	public ValueInterface mul(ValueInterface other) throws IllegalOperationException {
 		if (other instanceof IntegerValue) {
 			return new FloatValue(getValue() * ((IntegerValue) other).getValue());
 		}
@@ -73,7 +75,7 @@ public class FloatValue extends AbstractValue {
 	}
 
 	@Override
-	public IReturnValue div(IReturnValue other) throws IllegalOperationException {
+	public ValueInterface div(ValueInterface other) throws IllegalOperationException {
 		if (other instanceof IntegerValue) {
 			return new FloatValue(getValue() / ((IntegerValue) other).getValue());
 		}
@@ -91,12 +93,12 @@ public class FloatValue extends AbstractValue {
 	}
 
 	@Override
-	public IReturnValue negative() throws IllegalOperationException {
+	public ValueInterface negative() throws IllegalOperationException {
 		return new FloatValue(-getValue());
 	}
 
 	@Override
-	public IReturnValue eq(IReturnValue other) throws IllegalOperationException {
+	public ValueInterface eq(ValueInterface other) throws IllegalOperationException {
 		if (other instanceof IntegerValue) {
 			return new IntegerValue((getValue() == ((IntegerValue) other).getValue()) ? 1 : 0);
 		}
@@ -110,7 +112,7 @@ public class FloatValue extends AbstractValue {
 	}
 
 	@Override
-	public IReturnValue neq(IReturnValue other) throws IllegalOperationException {
+	public ValueInterface neq(ValueInterface other) throws IllegalOperationException {
 		if (other instanceof IntegerValue) {
 			return new IntegerValue((getValue() != ((IntegerValue) other).getValue()) ? 1 : 0);
 		}
@@ -124,7 +126,7 @@ public class FloatValue extends AbstractValue {
 	}
 
 	@Override
-	public IReturnValue greq(IReturnValue other) throws IllegalOperationException {
+	public ValueInterface greq(ValueInterface other) throws IllegalOperationException {
 		if (other instanceof IntegerValue) {
 			return new IntegerValue((getValue() >= ((IntegerValue) other).getValue()) ? 1 : 0);
 		}
@@ -138,7 +140,7 @@ public class FloatValue extends AbstractValue {
 	}
 
 	@Override
-	public IReturnValue leseq(IReturnValue other) throws IllegalOperationException {
+	public ValueInterface leseq(ValueInterface other) throws IllegalOperationException {
 		if (other instanceof IntegerValue) {
 			return new IntegerValue((getValue() <= ((IntegerValue) other).getValue()) ? 1 : 0);
 		}
@@ -152,7 +154,7 @@ public class FloatValue extends AbstractValue {
 	}
 
 	@Override
-	public IReturnValue great(IReturnValue other) throws IllegalOperationException {
+	public ValueInterface great(ValueInterface other) throws IllegalOperationException {
 		if (other instanceof IntegerValue) {
 			return new IntegerValue((getValue() > ((IntegerValue) other).getValue()) ? 1 : 0);
 		}
@@ -166,7 +168,7 @@ public class FloatValue extends AbstractValue {
 	}
 
 	@Override
-	public IReturnValue less(IReturnValue other) throws IllegalOperationException {
+	public ValueInterface less(ValueInterface other) throws IllegalOperationException {
 		if (other instanceof IntegerValue) {
 			return new IntegerValue((getValue() < ((IntegerValue) other).getValue()) ? 1 : 0);
 		}
@@ -196,7 +198,7 @@ public class FloatValue extends AbstractValue {
 	}
 	
 	@Override
-	public boolean canAssign(IReturnValue newRValue) {
+	public boolean canAssign(ValueInterface newRValue) {
 		if(!writable) return false;
 		try {
 			newRValue.castToFloat();
@@ -207,7 +209,7 @@ public class FloatValue extends AbstractValue {
 	}
 	
 	@Override
-	public boolean assign(IReturnValue newRValue) {
+	public boolean assign(ValueInterface newRValue) {
 		if(!writable) return false;
 		try {
 			value = newRValue.castToFloat();
@@ -219,7 +221,7 @@ public class FloatValue extends AbstractValue {
 
 
 	@Override
-	public IReturnValue not() {
+	public ValueInterface not() {
 		return new IntegerValue(isTrue() ? 0 : 1);
 	}
 
@@ -229,7 +231,7 @@ public class FloatValue extends AbstractValue {
 	}
 
 	@Override
-	public IReturnValue cloneValue() {
+	public ValueInterface cloneValue() {
 		return new FloatValue(this.getValue());
 	}
 	
@@ -243,5 +245,12 @@ public class FloatValue extends AbstractValue {
 		String[] r = super.getValueCodes();
 		r[2] = Float.toString(value);
 		return r;
+	}
+
+	@Override
+	public ObjectNode toJSON() {
+		ObjectNode json = super.toJSON();
+		json.put("value", getValue());
+		return json;
 	}
 }

@@ -71,29 +71,29 @@ public class ServerInterfaceImpl extends UnicastRemoteObject implements ServerIn
 	
 	@Override
 	public UserData me(String token) throws RemoteException {
-		try {
+		/*try {
 			Jws<Claims> cl = Jwts.parser().setSigningKey(Demiurgo.getKey())
 					.parseClaimsJws(token);
 			String world = (String) cl.getBody().get("world");
-			return Demiurgo.getWorld(world).getUser(cl.getBody().getSubject()).userData();
+			return Demiurgo.getWorld(world).getUser(cl.getBody().getSubject()).toJSON();
 		} catch (SignatureException | MissingClaimException | IncorrectClaimException e) {
 			System.err.println(e.getLocalizedMessage());
 			return null;
-		}
+		}*/return null;
 	}
 
 	@Override
 	public WorldRoomData checkRoom(String token, String path) throws RemoteException {
-		try {
+		/*try {
 			Jws<Claims> cl = Jwts.parser().require("role", "admin").setSigningKey(Demiurgo.getKey())
 					.parseClaimsJws(token);
 			String world = (String) cl.getBody().get("world");
 			WorldRoom room = Demiurgo.getWorld(world).getRoom(path);
-			return room.roomData();
+			return room.toJSON();
 		} catch (SignatureException | MissingClaimException | IncorrectClaimException e) {
 			System.err.println(e.getLocalizedMessage());
 			return null;
-		}
+		}*/return null;
 	}
 
 	@Override
@@ -208,7 +208,7 @@ public class ServerInterfaceImpl extends UnicastRemoteObject implements ServerIn
 
 	@Override
 	public List<Decision> getNoRoomDecisions(String token) throws RemoteException {
-		try {
+		/*try {
 			Jws<Claims> cl = Jwts.parser().require("role", "admin").setSigningKey(Demiurgo.getKey())
 					.parseClaimsJws(token);
 			String world = (String) cl.getBody().get("world");
@@ -220,12 +220,12 @@ public class ServerInterfaceImpl extends UnicastRemoteObject implements ServerIn
 		} catch (SignatureException | MissingClaimException | IncorrectClaimException e) {
 			System.err.println(e.getLocalizedMessage());
 			return null;
-		}
+		}*/return null;
 	}
 
 	@Override
 	public RoomPathData getAllRoomPaths(String token) throws RemoteException {
-		try {
+		/*try {
 			Jws<Claims> cl = Jwts.parser().require("role", "admin").setSigningKey(Demiurgo.getKey())
 					.parseClaimsJws(token);
 			String world = (String) cl.getBody().get("world");
@@ -236,7 +236,7 @@ public class ServerInterfaceImpl extends UnicastRemoteObject implements ServerIn
 			
 		} catch (SignatureException | MissingClaimException | IncorrectClaimException e) {
 			System.err.println(e.getLocalizedMessage());
-			return null;
-		}
+			*/return null;
+		//}
 	}
 }

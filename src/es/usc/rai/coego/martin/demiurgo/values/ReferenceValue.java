@@ -7,32 +7,32 @@ public class ReferenceValue extends AbstractValue {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	protected transient IReturnValue reference;
+	protected transient ValueInterface reference;
 
 	@Override
 	public ReturnValueTypes getType() {
 		return ReturnValueTypes.REFERENCE;
 	}
 	
-	public ReferenceValue(IReturnValue reference) {
+	public ReferenceValue(ValueInterface reference) {
 		this.reference = reference;
 	}
 
-	public IReturnValue getReference() {
+	public ValueInterface getReference() {
 		return reference;
 	}
 
-	public void setReference(IReturnValue reference) {
+	public void setReference(ValueInterface reference) {
 		this.reference = reference;
 	}
 
 	@Override
-	public boolean canAssign(IReturnValue newRValue) {
+	public boolean canAssign(ValueInterface newRValue) {
 		return (newRValue instanceof ReferenceValue);
 	}
 	
 	@Override
-	public boolean assign(IReturnValue newRValue) {
+	public boolean assign(ValueInterface newRValue) {
 		if(newRValue instanceof ReferenceValue) {
 			reference = ((ReferenceValue)newRValue).getReference();
 			return true;
@@ -42,7 +42,7 @@ public class ReferenceValue extends AbstractValue {
 	
 
 	@Override
-	public IReturnValue cloneValue() {
+	public ValueInterface cloneValue() {
 		return new ReferenceValue(getReference());
 	}
 }

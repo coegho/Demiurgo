@@ -3,7 +3,7 @@ package es.usc.rai.coego.martin.demiurgo.scopes;
 import java.util.HashMap;
 import java.util.Map;
 
-import es.usc.rai.coego.martin.demiurgo.values.IReturnValue;
+import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
 /**
  * 
@@ -15,7 +15,7 @@ import es.usc.rai.coego.martin.demiurgo.values.IReturnValue;
 public class LoopScope extends Scope {
 
 	protected Scope parent;
-	protected Map<String, IReturnValue> variables;
+	protected Map<String, ValueInterface> variables;
 	
 	public LoopScope(Scope parent) {
 		this.parent = parent;
@@ -23,7 +23,7 @@ public class LoopScope extends Scope {
 	}
 	
 	@Override
-	public IReturnValue getVariable(String name) {
+	public ValueInterface getVariable(String name) {
 		if(variables.containsKey(name)) {
 			return variables.get(name);
 		}
@@ -33,7 +33,7 @@ public class LoopScope extends Scope {
 	}
 
 	@Override
-	public void setVariable(String name, IReturnValue value) {
+	public void setVariable(String name, ValueInterface value) {
 		variables.put(name, value);
 	}
 

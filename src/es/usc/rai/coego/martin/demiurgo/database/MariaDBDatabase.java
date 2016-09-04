@@ -15,7 +15,7 @@ import java.util.Map;
 import es.usc.rai.coego.martin.demiurgo.universe.User;
 import es.usc.rai.coego.martin.demiurgo.universe.WorldObject;
 import es.usc.rai.coego.martin.demiurgo.universe.WorldRoom;
-import es.usc.rai.coego.martin.demiurgo.values.IReturnValue;
+import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
 public class MariaDBDatabase implements DatabaseInterface {
 
@@ -154,7 +154,7 @@ public class MariaDBDatabase implements DatabaseInterface {
 				if (buf != null)
 					objectIn = new ObjectInputStream(new ByteArrayInputStream(buf));
 				
-				Map<String, IReturnValue> variables = (Map<String, IReturnValue>)objectIn.readObject();
+				Map<String, ValueInterface> variables = (Map<String, ValueInterface>)objectIn.readObject();
 				WorldObject obj = new WorldObject(id, classname, loc_id, variables);
 				objs.add(obj);
 			}
@@ -181,7 +181,7 @@ public class MariaDBDatabase implements DatabaseInterface {
 				if (buf != null)
 					objectIn = new ObjectInputStream(new ByteArrayInputStream(buf));
 
-				Map<String, IReturnValue> variables = (Map<String, IReturnValue>)objectIn.readObject();
+				Map<String, ValueInterface> variables = (Map<String, ValueInterface>)objectIn.readObject();
 				rooms.add(new WorldRoom(id, path, variables));
 			}
 

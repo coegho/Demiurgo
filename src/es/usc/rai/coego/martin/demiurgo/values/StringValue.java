@@ -1,5 +1,7 @@
 package es.usc.rai.coego.martin.demiurgo.values;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import es.usc.rai.coego.martin.demiurgo.exceptions.IllegalOperationException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ValueCastException;
 import gal.republica.coego.demiurgo.lib.ReturnValueTypes;
@@ -33,7 +35,7 @@ public class StringValue extends AbstractValue {
 	}
 
 	@Override
-	public IReturnValue add(IReturnValue other) throws IllegalOperationException {
+	public ValueInterface add(ValueInterface other) throws IllegalOperationException {
 		if (other instanceof IntegerValue) {
 			return new StringValue(getValue() + Integer.toString(((IntegerValue) other).getValue()));
 		}
@@ -54,7 +56,7 @@ public class StringValue extends AbstractValue {
 	}
 
 	@Override
-	public IReturnValue eq(IReturnValue other) throws IllegalOperationException {
+	public ValueInterface eq(ValueInterface other) throws IllegalOperationException {
 		if (other instanceof StringValue) {
 			return new IntegerValue((getValue() == ((StringValue) other).getValue()) ? 1 : 0);
 		}
@@ -65,7 +67,7 @@ public class StringValue extends AbstractValue {
 	}
 
 	@Override
-	public IReturnValue neq(IReturnValue other) throws IllegalOperationException {
+	public ValueInterface neq(ValueInterface other) throws IllegalOperationException {
 		if (other instanceof StringValue) {
 			return new IntegerValue((getValue() != ((StringValue) other).getValue()) ? 1 : 0);
 		}
@@ -76,12 +78,12 @@ public class StringValue extends AbstractValue {
 	}
 
 	@Override
-	public IReturnValue dice() throws IllegalOperationException {
+	public ValueInterface dice() throws IllegalOperationException {
 		throw new IllegalOperationException();
 	}
 
 	@Override
-	public IReturnValue multDice(IReturnValue another) throws IllegalOperationException {
+	public ValueInterface multDice(ValueInterface another) throws IllegalOperationException {
 		throw new IllegalOperationException();
 	}
 	
@@ -109,7 +111,7 @@ public class StringValue extends AbstractValue {
 	}
 
 	@Override
-	public boolean canAssign(IReturnValue newRValue) {
+	public boolean canAssign(ValueInterface newRValue) {
 		try {
 			newRValue.castToString();
 			return true;
@@ -119,7 +121,7 @@ public class StringValue extends AbstractValue {
 	}
 	
 	@Override
-	public boolean assign(IReturnValue newRValue) {
+	public boolean assign(ValueInterface newRValue) {
 		try {
 			value = newRValue.castToString();
 			return true;
@@ -134,7 +136,7 @@ public class StringValue extends AbstractValue {
 	}
 
 	@Override
-	public IReturnValue cloneValue() {
+	public ValueInterface cloneValue() {
 		return new StringValue(this.getValue());
 	}
 
@@ -148,5 +150,12 @@ public class StringValue extends AbstractValue {
 		String[] r = super.getValueCodes();
 		r[2] = value;
 		return r;
+	}
+	
+	@Override
+	public ObjectNode toJSON() {
+		ObjectNode json = super.toJSON();
+		json.put("value", getValue());
+		return json;
 	}
 }

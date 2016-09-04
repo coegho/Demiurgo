@@ -6,7 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import gal.republica.coego.demiurgo.lib.RoomPathData;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class RoomPath {
 	protected String path;
@@ -72,13 +73,19 @@ public class RoomPath {
 		return ret;
 	}
 	
-	public RoomPathData roomPathData() {
-		List<RoomPathData> l = new ArrayList<>();
+	public ObjectNode roomPathData() {
+		ObjectMapper om = new ObjectMapper();
+		
+		ObjectNode o = om.createObjectNode();
+		o.put("path", path);
+		o.put("hasroom", ownRoom != null);
+		ObjectNode oc = om.createObjectNode();
 		for(Entry<String, RoomPath> r : children.entrySet()) {
 			if(r.getKey() != "." && r.getKey() != "..") {
-			l.add(r.getValue().roomPathData());
+			oc.set(r.getKey(), r.getValue().roomPathData());
 			}
 		}
-		return new RoomPathData(path, ownRoom != null, l);
+		o.set("children", oc);
+		return o;
 	}
 }

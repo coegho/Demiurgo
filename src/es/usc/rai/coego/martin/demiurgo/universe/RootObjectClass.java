@@ -2,7 +2,7 @@ package es.usc.rai.coego.martin.demiurgo.universe;
 
 import java.util.Map;
 
-import es.usc.rai.coego.martin.demiurgo.values.IReturnValue;
+import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
 /**
  * RootObjectClass represents the special "OBJECT" class, which is the parent of all other
@@ -21,12 +21,12 @@ public class RootObjectClass extends UserDefinedClass {
 	}
 
 	@Override
-	public Map<String, IReturnValue> getFields() {
+	public Map<String, ValueInterface> getFields() {
 		return fields; //Doesn't look in parent class
 	}
 	
 	@Override
-	public IReturnValue getField(String fieldName) {
+	public ValueInterface getField(String fieldName) {
 		return fields.get(fieldName); //Doesn't look in parent class
 	}
 

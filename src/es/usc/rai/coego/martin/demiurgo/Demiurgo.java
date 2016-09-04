@@ -133,6 +133,7 @@ public class Demiurgo {
 		loadFromDatabase(worlds.get("mundo1")); // TODO: Example
 		
 		server = startServer();
+		server.getHttpHandler().setAllowEncodedSlash(true);
 		
 		// TODO: Check
 		for (String wn : worlds.keySet()) {

@@ -14,7 +14,7 @@ import es.usc.rai.coego.martin.demiurgo.universe.UserDefinedClass;
 import es.usc.rai.coego.martin.demiurgo.universe.World;
 import es.usc.rai.coego.martin.demiurgo.universe.WorldObject;
 import es.usc.rai.coego.martin.demiurgo.universe.WorldRoom;
-import es.usc.rai.coego.martin.demiurgo.values.IReturnValue;
+import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
 /**
  * This class manages all the symbols found on the input. It manage code scopes
@@ -27,7 +27,7 @@ import es.usc.rai.coego.martin.demiurgo.values.IReturnValue;
  *
  */
 public class ScopeManager {
-	protected Map<String, IReturnValue> variables;
+	protected Map<String, ValueInterface> variables;
 	protected WorldScope globals;
 	protected List<Scope> scopes;
 	protected Scope currentScope;
@@ -67,11 +67,11 @@ public class ScopeManager {
 		scopes.add(currentScope);
 	}
 
-	public IReturnValue getVariable(String name) {
+	public ValueInterface getVariable(String name) {
 		return currentScope.getVariable(name);
 	}
 
-	public void setVariable(String name, IReturnValue value) {
+	public void setVariable(String name, ValueInterface value) {
 		currentScope.setVariable(name, value);
 	}
 

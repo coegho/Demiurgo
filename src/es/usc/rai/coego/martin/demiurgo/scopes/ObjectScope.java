@@ -1,7 +1,7 @@
 package es.usc.rai.coego.martin.demiurgo.scopes;
 
 import es.usc.rai.coego.martin.demiurgo.universe.WorldObject;
-import es.usc.rai.coego.martin.demiurgo.values.IReturnValue;
+import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
 public class ObjectScope extends Scope {
 	protected WorldObject obj;
@@ -11,12 +11,12 @@ public class ObjectScope extends Scope {
 	}
 
 	@Override
-	public IReturnValue getVariable(String name) {
+	public ValueInterface getVariable(String name) {
 		return obj.getField(name);
 	}
 
 	@Override
-	public void setVariable(String name, IReturnValue value) {
+	public void setVariable(String name, ValueInterface value) {
 		obj.setField(name, value);
 		
 	}

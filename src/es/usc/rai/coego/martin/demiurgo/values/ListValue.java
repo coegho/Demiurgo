@@ -3,6 +3,10 @@ package es.usc.rai.coego.martin.demiurgo.values;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import es.usc.rai.coego.martin.demiurgo.exceptions.IllegalOperationException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.SizeMismatchException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ValueCastException;
@@ -11,13 +15,13 @@ import es.usc.rai.coego.martin.demiurgo.universe.World;
 import gal.republica.coego.demiurgo.lib.ReturnValueTypes;
 
 public class ListValue extends AbstractValue {
-	protected List<IReturnValue> value;
+	protected List<ValueInterface> value;
 	protected ReturnValueTypes innerType;
 	protected transient UserDefinedClass classType;
 	protected String className;
 	protected int listDepth;
 
-	public ListValue(List<IReturnValue> value) {
+	public ListValue(List<ValueInterface> value) {
 		this.value = value;
 	}
 	
@@ -63,19 +67,19 @@ public class ListValue extends AbstractValue {
 		this.listDepth = depth;
 	}
 
-	public List<IReturnValue> getValue() {
+	public List<ValueInterface> getValue() {
 		return value;
 	}
 
-	public void setValue(List<IReturnValue> value) {
+	public void setValue(List<ValueInterface> value) {
 		this.value = value;
 	}
 
 	@Override
-	public IReturnValue add(IReturnValue other) throws IllegalOperationException {
+	public ValueInterface add(ValueInterface other) throws IllegalOperationException {
 		if (other instanceof IntegerValue || other instanceof FloatValue || other instanceof StringValue) {
 			ListValue av = new ListValue();
-			for (IReturnValue x : getValue()) {
+			for (ValueInterface x : getValue()) {
 				av.getValue().add(x.add(other));
 			}
 			return av;
@@ -84,7 +88,7 @@ public class ListValue extends AbstractValue {
 
 			if (getValue().size() == ((ListValue) other).getValue().size()) {
 				ListValue av = new ListValue();
-				List<IReturnValue> a, b, out;
+				List<ValueInterface> a, b, out;
 				a = this.getValue();
 				b = ((ListValue) other).getValue();
 				out = av.getValue();
@@ -101,15 +105,15 @@ public class ListValue extends AbstractValue {
 	}
 
 	@Override
-	public IReturnValue sub(IReturnValue other) throws IllegalOperationException {
+	public ValueInterface sub(ValueInterface other) throws IllegalOperationException {
 		return add(other.negative());
 	}
 
 	@Override
-	public IReturnValue mul(IReturnValue other) throws IllegalOperationException {
+	public ValueInterface mul(ValueInterface other) throws IllegalOperationException {
 		if (other instanceof IntegerValue || other instanceof FloatValue || other instanceof StringValue) {
 			ListValue av = new ListValue();
-			for (IReturnValue x : getValue()) {
+			for (ValueInterface x : getValue()) {
 				av.getValue().add(x.mul(other));
 			}
 			return av;
@@ -118,7 +122,7 @@ public class ListValue extends AbstractValue {
 
 			if (getValue().size() == ((ListValue) other).getValue().size()) {
 				ListValue av = new ListValue();
-				List<IReturnValue> a, b, out;
+				List<ValueInterface> a, b, out;
 				a = this.getValue();
 				b = ((ListValue) other).getValue();
 				out = av.getValue();
@@ -135,10 +139,10 @@ public class ListValue extends AbstractValue {
 	}
 
 	@Override
-	public IReturnValue div(IReturnValue other) throws IllegalOperationException {
+	public ValueInterface div(ValueInterface other) throws IllegalOperationException {
 		if (other instanceof IntegerValue || other instanceof FloatValue || other instanceof StringValue) {
 			ListValue av = new ListValue();
-			for (IReturnValue x : getValue()) {
+			for (ValueInterface x : getValue()) {
 				av.getValue().add(x.div(other));
 			}
 			return av;
@@ -147,7 +151,7 @@ public class ListValue extends AbstractValue {
 
 			if (getValue().size() == ((ListValue) other).getValue().size()) {
 				ListValue av = new ListValue();
-				List<IReturnValue> a, b, out;
+				List<ValueInterface> a, b, out;
 				a = this.getValue();
 				b = ((ListValue) other).getValue();
 				out = av.getValue();
@@ -164,19 +168,19 @@ public class ListValue extends AbstractValue {
 	}
 
 	@Override
-	public IReturnValue negative() throws IllegalOperationException {
+	public ValueInterface negative() throws IllegalOperationException {
 		ListValue lv = new ListValue();
-		for (IReturnValue x : getValue()) {
+		for (ValueInterface x : getValue()) {
 			lv.getValue().add(x.negative());
 		}
 		return lv;
 	}
 
 	@Override
-	public IReturnValue eq(IReturnValue other) throws IllegalOperationException {
+	public ValueInterface eq(ValueInterface other) throws IllegalOperationException {
 		if (other instanceof IntegerValue || other instanceof FloatValue || other instanceof StringValue) {
 			ListValue av = new ListValue();
-			for (IReturnValue x : getValue()) {
+			for (ValueInterface x : getValue()) {
 				av.getValue().add(x.eq(other));
 			}
 			return av;
@@ -185,7 +189,7 @@ public class ListValue extends AbstractValue {
 
 			if (getValue().size() == ((ListValue) other).getValue().size()) {
 				ListValue av = new ListValue();
-				List<IReturnValue> a, b, out;
+				List<ValueInterface> a, b, out;
 				a = this.getValue();
 				b = ((ListValue) other).getValue();
 				out = av.getValue();
@@ -202,10 +206,10 @@ public class ListValue extends AbstractValue {
 	}
 
 	@Override
-	public IReturnValue neq(IReturnValue other) throws IllegalOperationException {
+	public ValueInterface neq(ValueInterface other) throws IllegalOperationException {
 		if (other instanceof IntegerValue || other instanceof FloatValue || other instanceof StringValue) {
 			ListValue av = new ListValue();
-			for (IReturnValue x : getValue()) {
+			for (ValueInterface x : getValue()) {
 				av.getValue().add(x.neq(other));
 			}
 			return av;
@@ -214,7 +218,7 @@ public class ListValue extends AbstractValue {
 
 			if (getValue().size() == ((ListValue) other).getValue().size()) {
 				ListValue av = new ListValue();
-				List<IReturnValue> a, b, out;
+				List<ValueInterface> a, b, out;
 				a = this.getValue();
 				b = ((ListValue) other).getValue();
 				out = av.getValue();
@@ -231,10 +235,10 @@ public class ListValue extends AbstractValue {
 	}
 
 	@Override
-	public IReturnValue greq(IReturnValue other) throws IllegalOperationException {
+	public ValueInterface greq(ValueInterface other) throws IllegalOperationException {
 		if (other instanceof IntegerValue || other instanceof FloatValue || other instanceof StringValue) {
 			ListValue av = new ListValue();
-			for (IReturnValue x : getValue()) {
+			for (ValueInterface x : getValue()) {
 				av.getValue().add(x.greq(other));
 			}
 			return av;
@@ -243,7 +247,7 @@ public class ListValue extends AbstractValue {
 
 			if (getValue().size() == ((ListValue) other).getValue().size()) {
 				ListValue av = new ListValue();
-				List<IReturnValue> a, b, out;
+				List<ValueInterface> a, b, out;
 				a = this.getValue();
 				b = ((ListValue) other).getValue();
 				out = av.getValue();
@@ -260,10 +264,10 @@ public class ListValue extends AbstractValue {
 	}
 
 	@Override
-	public IReturnValue leseq(IReturnValue other) throws IllegalOperationException {
+	public ValueInterface leseq(ValueInterface other) throws IllegalOperationException {
 		if (other instanceof IntegerValue || other instanceof FloatValue || other instanceof StringValue) {
 			ListValue av = new ListValue();
-			for (IReturnValue x : getValue()) {
+			for (ValueInterface x : getValue()) {
 				av.getValue().add(x.leseq(other));
 			}
 			return av;
@@ -272,7 +276,7 @@ public class ListValue extends AbstractValue {
 
 			if (getValue().size() == ((ListValue) other).getValue().size()) {
 				ListValue av = new ListValue();
-				List<IReturnValue> a, b, out;
+				List<ValueInterface> a, b, out;
 				a = this.getValue();
 				b = ((ListValue) other).getValue();
 				out = av.getValue();
@@ -289,10 +293,10 @@ public class ListValue extends AbstractValue {
 	}
 
 	@Override
-	public IReturnValue great(IReturnValue other) throws IllegalOperationException {
+	public ValueInterface great(ValueInterface other) throws IllegalOperationException {
 		if (other instanceof IntegerValue || other instanceof FloatValue || other instanceof StringValue) {
 			ListValue av = new ListValue();
-			for (IReturnValue x : getValue()) {
+			for (ValueInterface x : getValue()) {
 				av.getValue().add(x.great(other));
 			}
 			return av;
@@ -301,7 +305,7 @@ public class ListValue extends AbstractValue {
 
 			if (getValue().size() == ((ListValue) other).getValue().size()) {
 				ListValue av = new ListValue();
-				List<IReturnValue> a, b, out;
+				List<ValueInterface> a, b, out;
 				a = this.getValue();
 				b = ((ListValue) other).getValue();
 				out = av.getValue();
@@ -318,10 +322,10 @@ public class ListValue extends AbstractValue {
 	}
 
 	@Override
-	public IReturnValue less(IReturnValue other) throws IllegalOperationException {
+	public ValueInterface less(ValueInterface other) throws IllegalOperationException {
 		if (other instanceof IntegerValue || other instanceof FloatValue || other instanceof StringValue) {
 			ListValue av = new ListValue();
-			for (IReturnValue x : getValue()) {
+			for (ValueInterface x : getValue()) {
 				av.getValue().add(x.less(other));
 			}
 			return av;
@@ -330,7 +334,7 @@ public class ListValue extends AbstractValue {
 
 			if (getValue().size() == ((ListValue) other).getValue().size()) {
 				ListValue av = new ListValue();
-				List<IReturnValue> a, b, out;
+				List<ValueInterface> a, b, out;
 				a = this.getValue();
 				b = ((ListValue) other).getValue();
 				out = av.getValue();
@@ -347,11 +351,11 @@ public class ListValue extends AbstractValue {
 	}
 
 	@Override
-	public IReturnValue and(IReturnValue other) throws IllegalOperationException {
+	public ValueInterface and(ValueInterface other) throws IllegalOperationException {
 		if (other instanceof ListValue) {
 			if (getValue().size() == ((ListValue) other).getValue().size()) {
 				ListValue av = new ListValue();
-				List<IReturnValue> a, b, out;
+				List<ValueInterface> a, b, out;
 				a = this.getValue();
 				b = ((ListValue) other).getValue();
 				out = av.getValue();
@@ -366,7 +370,7 @@ public class ListValue extends AbstractValue {
 		}
 		else {
 			ListValue av = new ListValue();
-			for (IReturnValue x : getValue()) {
+			for (ValueInterface x : getValue()) {
 				av.getValue().add(x.and(other));
 			}
 			return av;
@@ -374,11 +378,11 @@ public class ListValue extends AbstractValue {
 	}
 
 	@Override
-	public IReturnValue or(IReturnValue other) throws IllegalOperationException {
+	public ValueInterface or(ValueInterface other) throws IllegalOperationException {
 		if (other instanceof ListValue) {
 			if (getValue().size() == ((ListValue) other).getValue().size()) {
 				ListValue av = new ListValue();
-				List<IReturnValue> a, b, out;
+				List<ValueInterface> a, b, out;
 				a = this.getValue();
 				b = ((ListValue) other).getValue();
 				out = av.getValue();
@@ -393,7 +397,7 @@ public class ListValue extends AbstractValue {
 		}
 		else {
 			ListValue av = new ListValue();
-			for (IReturnValue x : getValue()) {
+			for (ValueInterface x : getValue()) {
 				av.getValue().add(x.or(other));
 			}
 			return av;
@@ -401,17 +405,17 @@ public class ListValue extends AbstractValue {
 	}
 
 	@Override
-	public IReturnValue dice() throws IllegalOperationException {
+	public ValueInterface dice() throws IllegalOperationException {
 		ListValue lv = new ListValue();
 
-		for (IReturnValue x : getValue()) {
+		for (ValueInterface x : getValue()) {
 			lv.getValue().add(x.dice());
 		}
 		return lv;
 	}
 
 	@Override
-	public IReturnValue multDice(IReturnValue other) throws IllegalOperationException {
+	public ValueInterface multDice(ValueInterface other) throws IllegalOperationException {
 		ListValue lv = new ListValue();
 
 		if (other instanceof FloatValue || other instanceof StringValue) {
@@ -419,14 +423,14 @@ public class ListValue extends AbstractValue {
 		}
 
 		if (other instanceof IntegerValue) {
-			for (IReturnValue x : getValue()) {
+			for (ValueInterface x : getValue()) {
 				lv.getValue().add(x.multDice(other));
 			}
 			return lv;
 		}
 		if (other instanceof ListValue) {
 			if (getValue().size() == ((ListValue) other).getValue().size()) {
-				List<IReturnValue> a, b, out;
+				List<ValueInterface> a, b, out;
 				a = this.getValue();
 				b = ((ListValue) other).getValue();
 				out = lv.getValue();
@@ -458,7 +462,7 @@ public class ListValue extends AbstractValue {
 	}
 
 	@Override
-	public boolean canAssign(IReturnValue newRValue) {
+	public boolean canAssign(ValueInterface newRValue) {
 		if(newRValue instanceof ListValue) {
 			ListValue lv = (ListValue)newRValue;
 			if(getInnerType() == ReturnValueTypes.OBJECT && !lv.classType.inheritFrom(classType))
@@ -469,7 +473,7 @@ public class ListValue extends AbstractValue {
 	}
 	
 	@Override
-	public boolean assign(IReturnValue newRValue) {
+	public boolean assign(ValueInterface newRValue) {
 		if(newRValue instanceof ListValue) {
 			value = ((ListValue)newRValue).getValue();
 			return true;
@@ -478,16 +482,16 @@ public class ListValue extends AbstractValue {
 	}
 
 	@Override
-	public IReturnValue getFromIndex(int index) throws IllegalOperationException {
+	public ValueInterface getFromIndex(int index) throws IllegalOperationException {
 		return getValue().get(index);
 	}
 	
-	public boolean set(int index, IReturnValue newRValue) {
+	public boolean set(int index, ValueInterface newRValue) {
 		return getValue().get(index).assign(newRValue);
 	}
 
 	@Override
-	public IReturnValue not() {
+	public ValueInterface not() {
 		return new IntegerValue(isTrue() ? 0 : 1);
 	}
 
@@ -497,9 +501,9 @@ public class ListValue extends AbstractValue {
 	}
 
 	@Override
-	public IReturnValue cloneValue() {
-		List<IReturnValue> list = new ArrayList<>();
-		for (IReturnValue x : getValue()) {
+	public ValueInterface cloneValue() {
+		List<ValueInterface> list = new ArrayList<>();
+		for (ValueInterface x : getValue()) {
 			list.add(x.cloneValue());
 		}
 		return new ListValue(list);
@@ -508,16 +512,16 @@ public class ListValue extends AbstractValue {
 	@Override
 	public String toString() {
 		String content = "";
-		for (IReturnValue x : getValue()) {
+		for (ValueInterface x : getValue()) {
 			content += " " + x.toString() + " ";
 		}
 		return "LIST/[" + content + "]";
 	}
 	
 	@Override
-	public IReturnValue rebuild(World world) {
+	public ValueInterface rebuild(World world) {
 		this.classType = world.getClassFromName(className);
-		for(IReturnValue v : value) {
+		for(ValueInterface v : value) {
 			v.rebuild(world);
 		}
 		return this;
@@ -528,10 +532,21 @@ public class ListValue extends AbstractValue {
 		String[] r = super.getValueCodes();
 		r[1] = getInnerType().name();
 		r[2] = "{";
-		for(IReturnValue v : value) {
+		for(ValueInterface v : value) {
 			r[2] += v.getValueCodes();
 		}
 		r[2] += "}";
 		return r;
+	}
+	
+	@Override
+	public ObjectNode toJSON() {
+		ObjectNode json = super.toJSON();
+		ArrayNode values = new ObjectMapper().createArrayNode();
+		for(ValueInterface v : getValue()) {
+			values.add(v.toJSON());
+		}
+		json.set("value", values);
+		return json;
 	}
 }

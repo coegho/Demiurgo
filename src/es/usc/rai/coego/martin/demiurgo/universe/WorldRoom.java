@@ -7,7 +7,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import es.usc.rai.coego.martin.demiurgo.values.IReturnValue;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
 import java.util.Set;
 
@@ -18,7 +22,7 @@ import gal.republica.coego.demiurgo.lib.WorldRoomData;
 
 public class WorldRoom extends WorldLocation {
 	protected String longPath;
-	protected Map<String, IReturnValue> variables;
+	protected Map<String, ValueInterface> variables;
 	protected String narratedAction;
 	protected Map<User, String> decisions;
 
@@ -32,7 +36,7 @@ public class WorldRoom extends WorldLocation {
 	/**
 	 * This constructor requires a posterior call to the method 'rebuild'.
 	 */
-	public WorldRoom(long id, String long_path, Map<String, IReturnValue> variables) {
+	public WorldRoom(long id, String long_path, Map<String, ValueInterface> variables) {
 		super(id);
 		this.longPath = long_path;
 		this.variables = variables;
@@ -51,11 +55,11 @@ public class WorldRoom extends WorldLocation {
 		return longPath.substring(longPath.lastIndexOf('/'));
 	}
 
-	public IReturnValue getVariable(String name) {
+	public ValueInterface getVariable(String name) {
 		return variables.get(name);
 	}
 
-	public void setVariable(String name, IReturnValue value) {
+	public void setVariable(String name, ValueInterface value) {
 		this.variables.put(name, value);
 	}
 
@@ -79,22 +83,27 @@ public class WorldRoom extends WorldLocation {
 		return decisions;
 	}
 
-	public List<Decision> getDecisions() {
-		List<Decision> l = new ArrayList<>();
-		for (User u : decisions.keySet()) {
-			l.add(new Decision(u.getUsername(), longPath, decisions.get(u)));
+	protected ArrayNode getDecisions() {
+		ObjectMapper om = new ObjectMapper();
+		ArrayNode l = om.createArrayNode();
+		for (Entry<User, String> u : decisions.entrySet()) {
+			ObjectNode decision = om.createObjectNode();
+			decision.put("username", u.getKey().getUsername());
+			decision.put("room_path", getLongPath());
+			decision.put("text", u.getValue());
+			l.add(decision);
 		}
 		return l;
 	}
 
-	public Map<String, IReturnValue> getVariables() {
+	public Map<String, ValueInterface> getVariables() {
 		return variables;
 	}
 
 	@Override
 	public void rebuild(World world) {
 		super.rebuild(world);
-		for (IReturnValue v : variables.values()) {
+		for (ValueInterface v : variables.values()) {
 			v.rebuild(world);
 		}
 	}
@@ -115,20 +124,34 @@ public class WorldRoom extends WorldLocation {
 		id = in.readLong();
 		longPath = (String) in.readObject();
 		narratedAction = (String) in.readObject();
-		variables = ((Map<String, IReturnValue>) in.readObject());
+		variables = ((Map<String, ValueInterface>) in.readObject());
 		decisions = (Map<User, String>) in.readObject();
 		objects = (List<WorldObject>) in.readObject();
 	}
 
-	public WorldRoomData roomData() {
-		Map<String, ValueData> v = new HashMap<>();
-		for (Entry<String, IReturnValue> e : getVariables().entrySet()) {
-			v.put(e.getKey(), e.getValue().valueData());
+	public String toJSON() {
+		ObjectMapper om = new ObjectMapper();
+		ObjectNode roomdata = om.createObjectNode();
+		roomdata.put("id", getId());
+		roomdata.put("longPath", getLongPath());
+		roomdata.put("narratedAction", getNarratedAction());
+		
+
+		
+		
+		ObjectNode variables = om.createObjectNode();
+		for (Entry<String, ValueInterface> e : getVariables().entrySet()) {
+			variables.set(e.getKey(), e.getValue().toJSON());
 		}
-		List<WorldObjectData> ol = new ArrayList<>();
+		roomdata.set("variables", variables);
+		
+		ArrayNode objects = om.createArrayNode();
 		for(WorldObject o: getObjects()) {
-			ol.add(o.worldObjectData());
+			objects.add(o.toJSON());
 		}
-		return new WorldRoomData(getId(), getLongPath(), v, getNarratedAction(), getDecisions(), ol);
+		roomdata.set("objects", objects);
+		
+		roomdata.set("decisions", getDecisions());
+		return roomdata.toString();
 	}
 }

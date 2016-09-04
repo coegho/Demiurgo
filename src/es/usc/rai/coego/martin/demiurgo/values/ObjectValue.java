@@ -1,5 +1,7 @@
 package es.usc.rai.coego.martin.demiurgo.values;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import es.usc.rai.coego.martin.demiurgo.universe.UserDefinedClass;
 import es.usc.rai.coego.martin.demiurgo.universe.World;
 import es.usc.rai.coego.martin.demiurgo.universe.WorldObject;
@@ -50,7 +52,7 @@ public class ObjectValue extends AbstractValue {
 	}
 	
 	@Override
-	public boolean canAssign(IReturnValue newRValue) {
+	public boolean canAssign(ValueInterface newRValue) {
 		if (newRValue instanceof ObjectValue) {
 			ObjectValue o = (ObjectValue)newRValue;
 			//check polymorphism
@@ -60,7 +62,7 @@ public class ObjectValue extends AbstractValue {
 	}
 
 	@Override
-	public boolean assign(IReturnValue newRValue) {
+	public boolean assign(ValueInterface newRValue) {
 		if(newRValue instanceof ObjectValue) {
 			ObjectValue o = (ObjectValue)newRValue;
 			//check polymorphism
@@ -74,7 +76,7 @@ public class ObjectValue extends AbstractValue {
 	}
 
 	@Override
-	public IReturnValue cloneValue() {
+	public ValueInterface cloneValue() {
 		return new ObjectValue(obj);
 	}
 
@@ -84,7 +86,7 @@ public class ObjectValue extends AbstractValue {
 	}
 	
 	@Override
-	public IReturnValue rebuild(World world) {
+	public ValueInterface rebuild(World world) {
 		this.itsClass = world.getClassFromName(className);
 		this.obj = world.getObject(obj_id);
 		return this;
@@ -96,5 +98,13 @@ public class ObjectValue extends AbstractValue {
 		r[1] = className;
 		r[2] = Long.toString(obj_id);
 		return r;
+	}
+	
+	@Override
+	public ObjectNode toJSON() {
+		ObjectNode json = super.toJSON();
+		json.put("value", getObj().getId());
+		json.put("class", getObj().getClassName());
+		return json;
 	}
 }
