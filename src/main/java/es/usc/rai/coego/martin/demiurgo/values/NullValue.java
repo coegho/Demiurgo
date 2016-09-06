@@ -2,8 +2,6 @@ package es.usc.rai.coego.martin.demiurgo.values;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import gal.republica.coego.demiurgo.lib.ReturnValueTypes;
-
 public class NullValue extends AbstractValue {
 
 	/**

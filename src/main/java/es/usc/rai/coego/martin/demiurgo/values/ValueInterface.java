@@ -7,8 +7,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import es.usc.rai.coego.martin.demiurgo.exceptions.IllegalOperationException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ValueCastException;
 import es.usc.rai.coego.martin.demiurgo.universe.World;
-import gal.republica.coego.demiurgo.lib.ReturnValueTypes;
-import gal.republica.coego.demiurgo.lib.ValueData;
 
 /**
  * This interface provides the methods required to perform operations with any

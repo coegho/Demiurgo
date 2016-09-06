@@ -71,15 +71,15 @@ import es.usc.rai.coego.martin.demiurgo.universe.UserDefinedClass;
 import es.usc.rai.coego.martin.demiurgo.universe.WorldObject;
 import es.usc.rai.coego.martin.demiurgo.universe.WorldRoom;
 import es.usc.rai.coego.martin.demiurgo.values.FloatValue;
-import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 import es.usc.rai.coego.martin.demiurgo.values.IntegerValue;
 import es.usc.rai.coego.martin.demiurgo.values.ListValue;
 import es.usc.rai.coego.martin.demiurgo.values.LocationValue;
 import es.usc.rai.coego.martin.demiurgo.values.NullValue;
 import es.usc.rai.coego.martin.demiurgo.values.ObjectValue;
 import es.usc.rai.coego.martin.demiurgo.values.ReferenceValue;
+import es.usc.rai.coego.martin.demiurgo.values.ReturnValueTypes;
 import es.usc.rai.coego.martin.demiurgo.values.StringValue;
-import gal.republica.coego.demiurgo.lib.ReturnValueTypes;
+import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
 /**
  * <p>

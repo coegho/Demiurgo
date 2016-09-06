@@ -6,9 +6,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import es.usc.rai.coego.martin.demiurgo.exceptions.IllegalOperationException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ValueCastException;
 import es.usc.rai.coego.martin.demiurgo.universe.World;
-import gal.republica.coego.demiurgo.lib.ValueData;
 
 public abstract class AbstractValue implements ValueInterface {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	protected boolean writable = true;
 
 	@Override

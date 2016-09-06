@@ -4,17 +4,13 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
-import es.usc.rai.coego.martin.demiurgo.values.ObjectValue;
-
 import java.util.Set;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import gal.republica.coego.demiurgo.lib.ValueData;
-import gal.republica.coego.demiurgo.lib.WorldObjectData;
+import es.usc.rai.coego.martin.demiurgo.values.ObjectValue;
+import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
 public class WorldObject {
 	protected long id;

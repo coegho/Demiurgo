@@ -1,7 +1,5 @@
 package es.usc.rai.coego.martin.demiurgo.values;
 
-import gal.republica.coego.demiurgo.lib.ReturnValueTypes;
-
 public class ReferenceValue extends AbstractValue {
 	/**
 	 * 

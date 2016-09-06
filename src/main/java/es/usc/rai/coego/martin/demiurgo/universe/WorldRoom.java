@@ -1,24 +1,17 @@
 package es.usc.rai.coego.martin.demiurgo.universe;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
-
-import java.util.Set;
-
-import gal.republica.coego.demiurgo.lib.Decision;
-import gal.republica.coego.demiurgo.lib.ValueData;
-import gal.republica.coego.demiurgo.lib.WorldObjectData;
-import gal.republica.coego.demiurgo.lib.WorldRoomData;
 
 public class WorldRoom extends WorldLocation {
 	protected String longPath;

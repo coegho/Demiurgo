@@ -12,7 +12,6 @@ import es.usc.rai.coego.martin.demiurgo.exceptions.SizeMismatchException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ValueCastException;
 import es.usc.rai.coego.martin.demiurgo.universe.UserDefinedClass;
 import es.usc.rai.coego.martin.demiurgo.universe.World;
-import gal.republica.coego.demiurgo.lib.ReturnValueTypes;
 
 public class ListValue extends AbstractValue {
 	protected List<ValueInterface> value;

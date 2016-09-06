@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import es.usc.rai.coego.martin.demiurgo.universe.World;
 import es.usc.rai.coego.martin.demiurgo.universe.WorldLocation;
-import gal.republica.coego.demiurgo.lib.ReturnValueTypes;
 
 public class LocationValue extends AbstractValue {
 	/**

@@ -6,16 +6,11 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.rmi.AlreadyBoundException;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
 import java.security.Key;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -36,7 +31,6 @@ import es.usc.rai.coego.martin.demiurgo.universe.UserDefinedClass;
 import es.usc.rai.coego.martin.demiurgo.universe.World;
 import es.usc.rai.coego.martin.demiurgo.universe.WorldObject;
 import es.usc.rai.coego.martin.demiurgo.universe.WorldRoom;
-import gal.republica.coego.demiurgo.lib.ServerInterface;
 import io.jsonwebtoken.impl.crypto.MacProvider;
 
 /**
@@ -49,8 +43,22 @@ import io.jsonwebtoken.impl.crypto.MacProvider;
 public class Demiurgo {
 	protected static Map<String, World> worlds;
 	protected static Key k;
+	
 	// Base URI the Grizzly HTTP server will listen on
-    public static final String BASE_URI = "http://localhost:8080/demiurgo/";
+	public static final String BASE_URI;
+    public static final String protocol;
+    public static final Optional<String> host;
+    public static final String path;
+    public static final Optional<String> port;
+    
+    static{
+        protocol = "http://";
+        host = Optional.ofNullable(System.getenv("HOSTNAME"));
+        port = Optional.ofNullable(System.getenv("PORT"));
+        path = "demiurgo";
+        BASE_URI = protocol + host.orElse("localhost") + ":" + port.orElse("8080") + "/" + path + "/";
+      }
+    
     private static HttpServer server;
 
 	public static void main(String[] args) {
