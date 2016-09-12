@@ -53,10 +53,10 @@ public class Demiurgo {
     
     static{
         protocol = "http://";
-        host = Optional.ofNullable(System.getenv("HOSTNAME"));
-        port = Optional.ofNullable(System.getenv("PORT"));
+        host = Optional.ofNullable(System.getenv("DEMIURGO_HOSTNAME"));
+        port = Optional.ofNullable(System.getenv("DEMIURGO_PORT"));
         path = "demiurgo";
-        BASE_URI = protocol + host.orElse("localhost") + ":" + port.orElse("8080") + "/" + path + "/";
+        BASE_URI = protocol + host.orElse("localhost") + ":" + port.orElse("5324") + "/" + path + "/";
       }
     
     private static HttpServer server;

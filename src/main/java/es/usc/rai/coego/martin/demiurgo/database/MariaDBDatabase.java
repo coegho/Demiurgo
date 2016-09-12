@@ -29,7 +29,7 @@ public class MariaDBDatabase implements DatabaseInterface {
 				con = DriverManager.getConnection("jdbc:mariadb://localhost/" + database, username, pass);
 				return true;
 			} catch (SQLException e) {
-				System.err.println(e.getLocalizedMessage());
+				System.err.println(e.getLocalizedMessage());//TODO: send a good error
 			}
 		}
 		return false;

@@ -7,7 +7,9 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -34,17 +36,14 @@ import io.jsonwebtoken.MissingClaimException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
 
-/*
- * TODO: Must change method to POST to receive big amounts of data
- */
 @Path("/webservice")
 public class WebService {
 
+	@POST
 	@Path("/login")
-	@GET
 	@Produces(MediaType.TEXT_PLAIN)
-	public String login(@QueryParam("name") String name, @QueryParam("password") String password,
-			@QueryParam("world") String world) {
+	public String login(@FormParam("name") String name, @FormParam("password") String password,
+			@FormParam("world") String world) {
 		DatabaseInterface db = new MariaDBDatabase();
 		db.createConnection("plataformarol", "mysql", "mysql"); // TODO:
 		if (db.login(name, password)) {
@@ -64,10 +63,10 @@ public class WebService {
 		return "ERROR: BAD CREDENTIALS";
 	}
 
-	@Path("/{token}/me")
 	@GET
+	@Path("/me")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String me(@PathParam("token") String token) {
+	public String me(@QueryParam("token") String token) {
 		try {
 			Jws<Claims> cl = Jwts.parser().setSigningKey(Demiurgo.getKey()).parseClaimsJws(token);
 			String world = (String) cl.getBody().get("world");
@@ -84,10 +83,10 @@ public class WebService {
 		}
 	}
 
-	@Path("/{token}/checkroom/{path}")
 	@GET
+	@Path("/checkroom/{path}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String checkRoom(@PathParam("token") String token, @PathParam("path") String path) {
+	public String checkRoom(@QueryParam("token") String token, @PathParam("path") String path) {
 		try {
 			Jws<Claims> cl = Jwts.parser().require("role", "admin").setSigningKey(Demiurgo.getKey())
 					.parseClaimsJws(token);
@@ -106,12 +105,11 @@ public class WebService {
 		}
 	}
 
-	//TODO: provisional, must be able to receive long strings
-	@Path("/{token}/executecode/{path}/{code}")
-	@GET
+	@POST
+	@Path("/executecode")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String executeCode(@PathParam("token") String token, @PathParam("path") String path,
-			@PathParam("code") String code) {
+	public String executeCode(@FormParam("token") String token, @FormParam("path") String path,
+			@FormParam("code") String code) {
 		try {
 			Jws<Claims> cl = Jwts.parser().require("role", "admin").setSigningKey(Demiurgo.getKey())
 					.parseClaimsJws(token);
@@ -141,12 +139,12 @@ public class WebService {
 			return "ERROR";
 		}
 	}
-	
-	//TODO: provisional, must be able to receive long strings
-	@Path("/{token}/newclass/{name}/{code}")
-	@GET
+
+	@POST
+	@Path("/newclass")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String newClass(@PathParam("token") String token, @PathParam("name") String name,@PathParam("code") String code) {
+	public String newClass(@FormParam("token") String token, @FormParam("name") String name,
+			@FormParam("code") String code) {
 		try {
 			Jws<Claims> cl = Jwts.parser().require("role", "admin").setSigningKey(Demiurgo.getKey())
 					.parseClaimsJws(token);
@@ -176,27 +174,26 @@ public class WebService {
 		}
 	}
 
-	@Path("/{token}/createroom/{path}")
-	@GET
+	@POST
+	@Path("/createroom")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String createRoom(@PathParam("token") String token, @PathParam("path") String path) {
+	public String createRoom(@FormParam("token") String token, @FormParam("path") String path) {
 		try {
 			Jws<Claims> cl = Jwts.parser().require("role", "admin").setSigningKey(Demiurgo.getKey())
 					.parseClaimsJws(token);
 			String world = (String) cl.getBody().get("world");
 			WorldRoom room = Demiurgo.getWorld(world).newRoom(path);
-			return (room != null)?"OK":"ERROR";
+			return (room != null) ? "OK" : "ERROR";
 		} catch (SignatureException | MissingClaimException | IncorrectClaimException e) {
 			System.err.println(e.getLocalizedMessage());
 			return "ERROR";
 		}
 	}
 
-	//TODO: provisional, must be able to receive long strings
-	@Path("/{token}/submitdecision/{text}")
-	@GET
+	@POST
+	@Path("/submitdecision")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String submitDecision(@PathParam("token") String token, @PathParam("text") String text) {
+	public String submitDecision(@FormParam("token") String token, @FormParam("text") String text) {
 		try {
 			Jws<Claims> cl = Jwts.parser().require("role", "player").setSigningKey(Demiurgo.getKey())
 					.parseClaimsJws(token);
@@ -211,10 +208,10 @@ public class WebService {
 		}
 	}
 
-	@Path("/{token}/pendingrooms")
 	@GET
+	@Path("/pendingrooms")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String getPendingRooms(@PathParam("token") String token) {
+	public String getPendingRooms(@QueryParam("token") String token) {
 		try {
 			Jws<Claims> cl = Jwts.parser().require("role", "admin").setSigningKey(Demiurgo.getKey())
 					.parseClaimsJws(token);
@@ -229,10 +226,10 @@ public class WebService {
 		}
 	}
 
-	@Path("/{token}/noroomdecisions")
 	@GET
+	@Path("/noroomdecisions")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String getNoRoomDecisions(@PathParam("token") String token) {
+	public String getNoRoomDecisions(@QueryParam("token") String token) {
 		try {
 			Jws<Claims> cl = Jwts.parser().require("role", "admin").setSigningKey(Demiurgo.getKey())
 					.parseClaimsJws(token);
@@ -241,17 +238,17 @@ public class WebService {
 			if (w == null)
 				return "ERROR";
 			return w.getDecisions().toString();
-			
+
 		} catch (SignatureException | MissingClaimException | IncorrectClaimException e) {
 			System.err.println(e.getLocalizedMessage());
 			return "ERROR";
 		}
 	}
 
-	@Path("/{token}/roompaths")
 	@GET
+	@Path("/roompaths")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String getAllRoomPaths(@PathParam("token") String token) {
+	public String getAllRoomPaths(@QueryParam("token") String token) {
 		try {
 			Jws<Claims> cl = Jwts.parser().require("role", "admin").setSigningKey(Demiurgo.getKey())
 					.parseClaimsJws(token);
@@ -260,7 +257,7 @@ public class WebService {
 			if (w == null)
 				return "ERROR";
 			return w.getRoomPaths().toString();
-			
+
 		} catch (SignatureException | MissingClaimException | IncorrectClaimException e) {
 			System.err.println(e.getLocalizedMessage());
 			return "ERROR";
