@@ -17,6 +17,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import es.usc.rai.coego.martin.demiurgo.coe.COELexer;
@@ -43,29 +44,29 @@ import io.jsonwebtoken.impl.crypto.MacProvider;
 public class Demiurgo {
 	protected static Map<String, World> worlds;
 	protected static Key k;
-	
+
 	// Base URI the Grizzly HTTP server will listen on
 	public static final String BASE_URI;
-    public static final String protocol;
-    public static final Optional<String> host;
-    public static final String path;
-    public static final Optional<String> port;
-    
-    static{
-        protocol = "http://";
-        host = Optional.ofNullable(System.getenv("DEMIURGO_HOSTNAME"));
-        port = Optional.ofNullable(System.getenv("DEMIURGO_PORT"));
-        path = "demiurgo";
-        BASE_URI = protocol + host.orElse("localhost") + ":" + port.orElse("5324") + "/" + path + "/";
-      }
-    
-    private static HttpServer server;
+	public static final String protocol;
+	public static final Optional<String> host;
+	public static final String path;
+	public static final Optional<String> port;
+
+	static {
+		protocol = "http://";
+		host = Optional.ofNullable(System.getenv("DEMIURGO_HOSTNAME"));
+		port = Optional.ofNullable(System.getenv("DEMIURGO_PORT"));
+		path = "demiurgo";
+		BASE_URI = protocol + host.orElse("localhost") + ":" + port.orElse("5324") + "/" + path + "/";
+	}
+
+	private static HttpServer server;
 
 	public static void main(String[] args) {
-		 
+
 		worlds = new HashMap<>();
 		k = MacProvider.generateKey();
-		
+
 		File platRoot = new File("worlds");
 		if (!platRoot.exists()) {
 			System.err.println("ERROR: Cannot find 'worlds' folder");
@@ -95,12 +96,12 @@ public class Demiurgo {
 			@Override
 			public void run() {
 				System.out.println("Saving changes...");
-				/*try {
-					LocateRegistry.getRegistry().unbind("Demiurgo");
-				} catch (RemoteException | NotBoundException e) {
-					System.err.println(e.getLocalizedMessage());
-				}*/
-				if(server != null) {
+				/*
+				 * try { LocateRegistry.getRegistry().unbind("Demiurgo"); }
+				 * catch (RemoteException | NotBoundException e) {
+				 * System.err.println(e.getLocalizedMessage()); }
+				 */
+				if (server != null) {
 					server.shutdown();
 				}
 				saveAllInDatabase();
@@ -115,34 +116,31 @@ public class Demiurgo {
 		 * new SecurityManager() );
 		 */
 
-		/*try {
-			ServerInterfaceImpl remote = new ServerInterfaceImpl();
-			// registryURL = "rmi://" + hostName + ":" + portNum + "/" +
-			// registryURL;
+		/*
+		 * try { ServerInterfaceImpl remote = new ServerInterfaceImpl(); //
+		 * registryURL = "rmi://" + hostName + ":" + portNum + "/" + //
+		 * registryURL;
+		 * 
+		 * ServerInterface stub = (ServerInterface)
+		 * UnicastRemoteObject.toStub(remote);
+		 * 
+		 * // Bind the remote object's stub in the registry Registry registry =
+		 * LocateRegistry.getRegistry(); registry.bind("Demiurgo", stub);
+		 * 
+		 * System.out.println("RMI READY"); } catch (RemoteException e) {
+		 * System.err.println(e.getLocalizedMessage()); System.exit(-1); } catch
+		 * (AlreadyBoundException e) {
+		 * System.err.println(e.getLocalizedMessage()); System.exit(-1); }
+		 */
 
-			ServerInterface stub = (ServerInterface) UnicastRemoteObject.toStub(remote);
-
-			// Bind the remote object's stub in the registry
-			Registry registry = LocateRegistry.getRegistry();
-			registry.bind("Demiurgo", stub);
-
-			System.out.println("RMI READY");
-		} catch (RemoteException e) {
-			System.err.println(e.getLocalizedMessage());
-			System.exit(-1);
-		} catch (AlreadyBoundException e) {
-			System.err.println(e.getLocalizedMessage());
-			System.exit(-1);
-		}*/
-		
 		/*
 		 * for(String w : worlds.keySet()) { loadFromDatabase(worlds.get(w)); }
 		 */
 		loadFromDatabase(worlds.get("mundo1")); // TODO: Example
-		
+
 		server = startServer();
 		server.getHttpHandler().setAllowEncodedSlash(true);
-		
+
 		// TODO: Check
 		for (String wn : worlds.keySet()) {
 			// Checking world state
@@ -181,16 +179,19 @@ public class Demiurgo {
 		}
 		System.exit(0);
 	}
-	
-	public static HttpServer startServer() {
-        // create a resource config that scans for JAX-RS resources and providers
-        // in com.example.rest package
-        final ResourceConfig rc = new ResourceConfig().packages("es.usc.rai.coego.martin.demiurgo.webservice");
 
-        // create and start a new instance of grizzly http server
-        // exposing the Jersey application at BASE_URI
-        return GrizzlyHttpServerFactory.createHttpServer(URI.create(BASE_URI), rc);
-    }
+	public static HttpServer startServer() {
+		// create a resource config that scans for JAX-RS resources and
+		// providers
+		// in com.example.rest package
+		final ResourceConfig rc = new ResourceConfig().packages("es.usc.rai.coego.martin.demiurgo.webservice")
+				.register(JacksonFeature.class);
+		;
+
+		// create and start a new instance of grizzly http server
+		// exposing the Jersey application at BASE_URI
+		return GrizzlyHttpServerFactory.createHttpServer(URI.create(BASE_URI), rc);
+	}
 
 	public static Key getKey() {
 		return k;

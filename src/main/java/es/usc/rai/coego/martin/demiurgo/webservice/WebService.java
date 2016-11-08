@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -21,6 +22,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import es.usc.rai.coego.martin.demiurgo.Demiurgo;
 import es.usc.rai.coego.martin.demiurgo.database.DatabaseInterface;
 import es.usc.rai.coego.martin.demiurgo.database.MariaDBDatabase;
+import es.usc.rai.coego.martin.demiurgo.json.LoginRequest;
 import es.usc.rai.coego.martin.demiurgo.parsing.ClassVisitor;
 import es.usc.rai.coego.martin.demiurgo.parsing.CodeVisitor;
 import es.usc.rai.coego.martin.demiurgo.parsing.ErrorHandler;
@@ -42,12 +44,12 @@ public class WebService {
 	@POST
 	@Path("/login")
 	@Produces(MediaType.TEXT_PLAIN)
-	public String login(@FormParam("name") String name, @FormParam("password") String password,
-			@FormParam("world") String world) {
+	@Consumes(MediaType.APPLICATION_JSON)
+	public String login(LoginRequest lr) {
 		DatabaseInterface db = new MariaDBDatabase();
 		db.createConnection("plataformarol", "mysql", "mysql"); // TODO:
-		if (db.login(name, password)) {
-			User user = Demiurgo.getWorld(world).getUser(name.toLowerCase());
+		if (db.login(lr.getName(), lr.getPassword())) {
+			User user = Demiurgo.getWorld(lr.getWorld()).getUser(lr.getName().toLowerCase());
 			if (user == null) {
 				return null;
 			}
@@ -55,9 +57,9 @@ public class WebService {
 
 			String token = Jwts.builder().setSubject(user.getUsername())
 					.setIssuedAt(new Date(System.currentTimeMillis()))
-					.claim("role", user.isAdmin() ? "admin" : "player").claim("world", world.toLowerCase())
+					.claim("role", user.isAdmin() ? "admin" : "player").claim("world", lr.getWorld().toLowerCase())
 					.signWith(SignatureAlgorithm.HS512, key).compact();
-			System.out.println("Logged " + name + " in world " + world);
+			System.out.println("Logged " + lr.getName() + " in world " + lr.getWorld());
 			return token;
 		}
 		return "ERROR: BAD CREDENTIALS";
