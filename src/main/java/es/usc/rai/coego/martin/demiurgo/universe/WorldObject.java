@@ -6,9 +6,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import es.usc.rai.coego.martin.demiurgo.values.ObjectValue;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
@@ -123,7 +120,13 @@ public class WorldObject {
 	}
 
 	public Map<String, ValueInterface> getFields() {
-		return fields;
+		Map<String, ValueInterface> retFields = new HashMap<>();
+		for(Entry<String, ValueInterface> e: fields.entrySet()) {
+			if(!e.getKey().equals("this")) {
+				retFields.put(e.getKey(), e.getValue());
+			}
+		}
+		return retFields;
 	}
 
 	private void writeObject(java.io.ObjectOutputStream out) throws IOException {
@@ -154,7 +157,7 @@ public class WorldObject {
 			v.rebuild(world);
 		}
 	}
-	
+	/*
 	public ObjectNode toJSON() {
 		ObjectMapper om = new ObjectMapper();
 		ObjectNode objdata = om.createObjectNode();
@@ -171,5 +174,5 @@ public class WorldObject {
 		objdata.set("fields", fields);
 		
 		return objdata;
-	}
+	}*/
 }

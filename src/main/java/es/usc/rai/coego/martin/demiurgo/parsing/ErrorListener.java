@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.antlr.v4.runtime.Recognizer;
 
-import es.usc.rai.coego.martin.demiurgo.exceptions.SyntaxErrorException;
+import es.usc.rai.coego.martin.demiurgo.exceptions.ParserException;
 
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.Parser;
@@ -24,7 +24,11 @@ public class ErrorListener extends BaseErrorListener {
 			String msg, RecognitionException e) {
 		List<String> stack = ((Parser) recognizer).getRuleInvocationStack();
 		Collections.reverse(stack);
-		errors.notifyError(new SyntaxErrorException(
-				"line " + line + ":" + charPositionInLine + ": " + msg, e));
+		//TODO: Logger
+		System.err.println("rule stack: "+stack);
+		System.err.println("line "+line+":"+charPositionInLine+" at "+
+		offendingSymbol+": "+msg);
+		errors.notifyError(new ParserException(
+				"line " + line + ":" + charPositionInLine + ": " + msg, line, charPositionInLine, 0));
 	}
 }

@@ -1,10 +1,12 @@
 package es.usc.rai.coego.martin.demiurgo.exceptions;
 
-public class ClassFilenameMismatchException extends Exception {
+public class ClassFilenameMismatchException extends DemiurgoException {
 	protected String filename;
 	protected String classname;
 
-	public ClassFilenameMismatchException(String filename, String classname) {
+	public ClassFilenameMismatchException(int line, int column, int i, String filename, String classname) {
+		super("Class filename mismatch: class '" + classname + "' does not match with filename '" + filename + "'",
+				line, column, i);
 		this.filename = filename;
 		this.classname = classname;
 	}

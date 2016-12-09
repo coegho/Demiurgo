@@ -3,10 +3,6 @@ package es.usc.rai.coego.martin.demiurgo.values;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import es.usc.rai.coego.martin.demiurgo.exceptions.IllegalOperationException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.SizeMismatchException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ValueCastException;
@@ -14,6 +10,10 @@ import es.usc.rai.coego.martin.demiurgo.universe.UserDefinedClass;
 import es.usc.rai.coego.martin.demiurgo.universe.World;
 
 public class ListValue extends AbstractValue {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	protected List<ValueInterface> value;
 	protected ReturnValueTypes innerType;
 	protected transient UserDefinedClass classType;
@@ -97,10 +97,10 @@ public class ListValue extends AbstractValue {
 				}
 				return av;
 			} else {
-				throw new SizeMismatchException();
+				throw new SizeMismatchException(-1, -1, -1, getTypeName(), other.getTypeName(), "+");
 			}
 		}
-		throw new IllegalOperationException();
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), other.getTypeName(), "+");
 	}
 
 	@Override
@@ -131,10 +131,10 @@ public class ListValue extends AbstractValue {
 				}
 				return av;
 			} else {
-				throw new SizeMismatchException();
+				throw new SizeMismatchException(-1, -1, -1, getTypeName(), other.getTypeName(), "*");
 			}
 		}
-		throw new IllegalOperationException();
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), other.getTypeName(), "*");
 	}
 
 	@Override
@@ -160,10 +160,10 @@ public class ListValue extends AbstractValue {
 				}
 				return av;
 			} else {
-				throw new SizeMismatchException();
+				throw new SizeMismatchException(-1, -1, -1, getTypeName(), other.getTypeName(), "/");
 			}
 		}
-		throw new IllegalOperationException();
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), other.getTypeName(), "/");
 	}
 
 	@Override
@@ -198,10 +198,10 @@ public class ListValue extends AbstractValue {
 				}
 				return av;
 			} else {
-				throw new SizeMismatchException();
+				throw new SizeMismatchException(-1, -1, -1, getTypeName(), other.getTypeName(), "==");
 			}
 		}
-		throw new IllegalOperationException();
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), other.getTypeName(), "==");
 	}
 
 	@Override
@@ -227,10 +227,10 @@ public class ListValue extends AbstractValue {
 				}
 				return av;
 			} else {
-				throw new SizeMismatchException();
+				throw new SizeMismatchException(-1, -1, -1, getTypeName(), other.getTypeName(), "!=");
 			}
 		}
-		throw new IllegalOperationException();
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), other.getTypeName(), "!=");
 	}
 
 	@Override
@@ -256,10 +256,10 @@ public class ListValue extends AbstractValue {
 				}
 				return av;
 			} else {
-				throw new SizeMismatchException();
+				throw new SizeMismatchException(-1, -1, -1, getTypeName(), other.getTypeName(), ">=");
 			}
 		}
-		throw new IllegalOperationException();
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), other.getTypeName(), ">=");
 	}
 
 	@Override
@@ -285,10 +285,10 @@ public class ListValue extends AbstractValue {
 				}
 				return av;
 			} else {
-				throw new SizeMismatchException();
+				throw new SizeMismatchException(-1, -1, -1, getTypeName(), other.getTypeName(), "<=");
 			}
 		}
-		throw new IllegalOperationException();
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), other.getTypeName(), "<=");
 	}
 
 	@Override
@@ -314,10 +314,10 @@ public class ListValue extends AbstractValue {
 				}
 				return av;
 			} else {
-				throw new SizeMismatchException();
+				throw new SizeMismatchException(-1, -1, -1, getTypeName(), other.getTypeName(), ">");
 			}
 		}
-		throw new IllegalOperationException();
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), other.getTypeName(), ">");
 	}
 
 	@Override
@@ -343,10 +343,10 @@ public class ListValue extends AbstractValue {
 				}
 				return av;
 			} else {
-				throw new SizeMismatchException();
+				throw new SizeMismatchException(-1, -1, -1, getTypeName(), other.getTypeName(), "<");
 			}
 		}
-		throw new IllegalOperationException();
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), other.getTypeName(), "<");
 	}
 
 	@Override
@@ -364,7 +364,7 @@ public class ListValue extends AbstractValue {
 				}
 				return av;
 			} else {
-				throw new SizeMismatchException();
+				throw new SizeMismatchException(-1, -1, -1, getTypeName(), other.getTypeName(), "&");
 			}
 		}
 		else {
@@ -391,7 +391,7 @@ public class ListValue extends AbstractValue {
 				}
 				return av;
 			} else {
-				throw new SizeMismatchException();
+				throw new SizeMismatchException(-1, -1, -1, getTypeName(), other.getTypeName(), "|");
 			}
 		}
 		else {
@@ -418,7 +418,7 @@ public class ListValue extends AbstractValue {
 		ListValue lv = new ListValue();
 
 		if (other instanceof FloatValue || other instanceof StringValue) {
-			throw new IllegalOperationException();
+			throw new IllegalOperationException(-1, -1, -1, getTypeName(), other.getTypeName(), "xDy");
 		}
 
 		if (other instanceof IntegerValue) {
@@ -439,25 +439,25 @@ public class ListValue extends AbstractValue {
 				}
 				return lv;
 			} else {
-				throw new SizeMismatchException();
+				throw new SizeMismatchException(-1, -1, -1, getTypeName(), other.getTypeName(), "xDy");
 			}
 		}
-		throw new IllegalOperationException();
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), other.getTypeName(), "xDy");
 	}
 	
 	@Override
 	public int castToInteger() throws ValueCastException {
-		throw new ValueCastException();
+		throw new ValueCastException(-1, -1, -1, getTypeName(), "INT");
 	}
 
 	@Override
 	public float castToFloat() throws ValueCastException {
-		throw new ValueCastException();
+		throw new ValueCastException(-1, -1, -1, getTypeName(), "FLOAT");
 	}
 
 	@Override
 	public String castToString() throws ValueCastException {
-		throw new ValueCastException();
+		throw new ValueCastException(-1, -1, -1, getTypeName(), "STRING");
 	}
 
 	@Override
@@ -539,13 +539,11 @@ public class ListValue extends AbstractValue {
 	}
 	
 	@Override
-	public ObjectNode toJSON() {
-		ObjectNode json = super.toJSON();
-		ArrayNode values = new ObjectMapper().createArrayNode();
-		for(ValueInterface v : getValue()) {
-			values.add(v.toJSON());
+	public String getValueAsString() {
+		List<String> strs = new ArrayList<>();
+		for(ValueInterface l : getValue()) {
+			strs.add(l.getValueAsString());
 		}
-		json.set("value", values);
-		return json;
+		return "{" + String.join(", ", strs) + "}";
 	}
 }

@@ -73,7 +73,7 @@ public class RoomPath {
 		return ret;
 	}
 	
-	public ObjectNode roomPathData() {
+	/*public ObjectNode roomPathData() {
 		ObjectMapper om = new ObjectMapper();
 		
 		ObjectNode o = om.createObjectNode();
@@ -87,5 +87,5 @@ public class RoomPath {
 		}
 		o.set("children", oc);
 		return o;
-	}
+	}*/
 }

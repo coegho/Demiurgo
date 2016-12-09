@@ -12,11 +12,9 @@ public class ClassVisitor extends ExecVisitor {
 
 	private UserDefinedClass cl;
 
-	public ClassVisitor(UserDefinedClass cl, ErrorHandler errors) {
-		super(errors);
+	public ClassVisitor(UserDefinedClass cl) {
 		this.cl = cl;
 		sm = new ScopeManager(cl);
-		this.errors = errors;
 	}
 
 	/**
@@ -27,31 +25,33 @@ public class ClassVisitor extends ExecVisitor {
 	 */
 	@Override
 	public ValueInterface visitClass_def(Class_defContext ctx) {
-		String className = ctx.SYMBOL(0).getText().toLowerCase();
-		if (!className.equals(cl.getClassName())) {
-			errors.notifyError(new ClassFilenameMismatchException(cl.getClassName(), className));
-			return null;
-		}
+		try {
+			String className = ctx.SYMBOL(0).getText().toLowerCase();
+			if (!className.equals(cl.getClassName())) {
+				throw new ClassFilenameMismatchException(ctx.start.getLine(), ctx.start.getCharPositionInLine(),
+						ctx.start.getStartIndex(), cl.getClassName(), className);
+			}
 
-		if (ctx.SYMBOL(1) != null) { // inherit from another class
-			String parentName = ctx.SYMBOL(1).getText().toLowerCase();
-			cl.setParentClass(getSM().getClassFromName(parentName));
-		} else {// inherit from "Object" class
-			cl.setParentClass(getSM().getCurrentWorld().getRootClass());
-		}
+			if (ctx.SYMBOL(1) != null) { // inherit from another class
+				String parentName = ctx.SYMBOL(1).getText().toLowerCase();
+				cl.setParentClass(getSM().getClassFromName(parentName));
+			} else {// inherit from "Object" class
+				cl.setParentClass(getSM().getCurrentWorld().getRootClass());
+			}
 
-		if (ctx.fields() != null) {
-			visit(ctx.fields());
-			if (errors.hasErrors())
-				return null;
-		}
-		if (ctx.methods() != null) {
-			visit(ctx.methods());
-			if (errors.hasErrors())
-				return null;
-		}
+			if (ctx.fields() != null) {
+				visit(ctx.fields());
 
-		return new NullValue();
+			}
+			if (ctx.methods() != null) {
+				visit(ctx.methods());
+
+			}
+
+			return new NullValue();
+		} catch (ClassFilenameMismatchException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	/**
@@ -59,8 +59,8 @@ public class ClassVisitor extends ExecVisitor {
 	 */
 	@Override
 	public ValueInterface visitCode(CodeContext ctx) {
-		errors.notifyError(new CodeClassInClassFileException());
-		return null;
+		throw new RuntimeException(new CodeClassInClassFileException(ctx.start.getLine(),
+				ctx.start.getCharPositionInLine(), ctx.start.getStartIndex()));
 	}
 
 }

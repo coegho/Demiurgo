@@ -10,28 +10,37 @@ import java.security.Key;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.BailErrorStrategy;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
 import es.usc.rai.coego.martin.demiurgo.coe.COELexer;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser;
 import es.usc.rai.coego.martin.demiurgo.database.DatabaseInterface;
 import es.usc.rai.coego.martin.demiurgo.database.MariaDBDatabase;
+import es.usc.rai.coego.martin.demiurgo.exceptions.DemiurgoException;
 import es.usc.rai.coego.martin.demiurgo.parsing.ClassVisitor;
 import es.usc.rai.coego.martin.demiurgo.parsing.ErrorHandler;
 import es.usc.rai.coego.martin.demiurgo.parsing.ErrorListener;
+import es.usc.rai.coego.martin.demiurgo.universe.Action;
 import es.usc.rai.coego.martin.demiurgo.universe.User;
 import es.usc.rai.coego.martin.demiurgo.universe.UserDefinedClass;
 import es.usc.rai.coego.martin.demiurgo.universe.World;
 import es.usc.rai.coego.martin.demiurgo.universe.WorldObject;
 import es.usc.rai.coego.martin.demiurgo.universe.WorldRoom;
+import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 import io.jsonwebtoken.impl.crypto.MacProvider;
 
 /**
@@ -109,33 +118,6 @@ public class Demiurgo {
 			}
 		});
 
-		// int portNum = 5555; //TODO: use this port
-
-		/*
-		 * if (System.getSecurityManager() == null) System.setSecurityManager (
-		 * new SecurityManager() );
-		 */
-
-		/*
-		 * try { ServerInterfaceImpl remote = new ServerInterfaceImpl(); //
-		 * registryURL = "rmi://" + hostName + ":" + portNum + "/" + //
-		 * registryURL;
-		 * 
-		 * ServerInterface stub = (ServerInterface)
-		 * UnicastRemoteObject.toStub(remote);
-		 * 
-		 * // Bind the remote object's stub in the registry Registry registry =
-		 * LocateRegistry.getRegistry(); registry.bind("Demiurgo", stub);
-		 * 
-		 * System.out.println("RMI READY"); } catch (RemoteException e) {
-		 * System.err.println(e.getLocalizedMessage()); System.exit(-1); } catch
-		 * (AlreadyBoundException e) {
-		 * System.err.println(e.getLocalizedMessage()); System.exit(-1); }
-		 */
-
-		/*
-		 * for(String w : worlds.keySet()) { loadFromDatabase(worlds.get(w)); }
-		 */
 		loadFromDatabase(worlds.get("mundo1")); // TODO: Example
 
 		server = startServer();
@@ -163,8 +145,8 @@ public class Demiurgo {
 				}
 				System.out.println(" }");
 				System.out.print("| VARIABLES = {");
-				for (String s : r.getAllVarNames())
-					System.out.print(" " + s + "=" + r.getVariable(s).toString());
+				for (Entry<String, ValueInterface> s : r.getVariables().entrySet())
+					System.out.print(" " + s.getKey() + "=" + s.getValue().getValueAsString());
 				System.out.println(" }");
 			}
 		}
@@ -181,11 +163,17 @@ public class Demiurgo {
 	}
 
 	public static HttpServer startServer() {
+		Logger l = Logger.getLogger("org.glassfish.grizzly.http.server.HttpHandler");
+		l.setLevel(Level.FINE);
+		l.setUseParentHandlers(false);
+		ConsoleHandler ch = new ConsoleHandler();
+		ch.setLevel(Level.ALL);
+		l.addHandler(ch);
 		// create a resource config that scans for JAX-RS resources and
 		// providers
 		// in com.example.rest package
 		final ResourceConfig rc = new ResourceConfig().packages("es.usc.rai.coego.martin.demiurgo.webservice")
-				.register(JacksonFeature.class);
+				.register(JacksonFeature.class).register(RolesAllowedDynamicFeature.class);
 		;
 
 		// create and start a new instance of grizzly http server
@@ -229,14 +217,25 @@ public class Demiurgo {
 			if (u.getObjId() != -1)
 				u.setObj(world.getObject(u.getObjId()));
 			world.addUser(u);
+			if (u.getDecision() != null && u.getObj() != null && u.getObj().getLocation() instanceof WorldRoom) {
+				world.getPendingRooms().add((WorldRoom) u.getObj().getLocation());
+				// TODO: characters without room
+			}
 		}
 
 		long[] ids = db.readCurrentIDs();
 
 		world.setCurrentObjId(ids[0]);
 		world.setCurrentRoomId(ids[1]);
+		world.setCurrentActionId(ids[2]);
 
 		db.stopConnection();
+	}
+
+	public static List<Action> loadActionsFromRoom(WorldRoom room) {
+		DatabaseInterface db = new MariaDBDatabase();
+		db.createConnection("plataformarol", "mysql", "mysql"); // TODO: config
+		return db.readActionsFromRoom(room);
 	}
 
 	private static synchronized void saveWorldInDatabase(World world) {
@@ -246,6 +245,11 @@ public class Demiurgo {
 		// Writing rooms
 		for (WorldRoom room : world.getAllRooms()) {
 			db.writeWorldRoom(room);
+			if (room.areActionsInCache()) {
+				for (Action a : room.getActions()) {
+					db.writeAction(a);
+				}
+			}
 		}
 
 		// Writing objects
@@ -258,7 +262,7 @@ public class Demiurgo {
 			db.writeUser(u);
 		}
 
-		db.setCurrentIDs(world.getCurrentObjId(), world.getCurrentRoomId());
+		db.setCurrentIDs(world.getCurrentObjId(), world.getCurrentRoomId(), world.getCurrentActionId());
 
 		db.stopConnection();
 	}
@@ -283,15 +287,18 @@ public class Demiurgo {
 				String filename = c.getName().toLowerCase();
 				String className = filename.substring(0, filename.length() - RolFileFilter.extension.length());
 				ErrorHandler errors = new ErrorHandler();
-				ParseTree tree = parseStream(new FileInputStream(c), errors);
-				ClassVisitor eval = new ClassVisitor(world.getClassFromName(className), errors);
-				eval.visit(tree);
+				try {	
+					ParseTree tree = parseStream(new FileInputStream(c), errors);
+					ClassVisitor eval = new ClassVisitor(world.getClassFromName(className));
+					eval.visit(tree);
 
-				if (errors.hasErrors()) {
-					for (String e : errors.getErrors()) {
-						System.err.println(e);
+				} catch(RuntimeException e) {
+					if(e.getCause() instanceof DemiurgoException) {
+						DemiurgoException ex = (DemiurgoException) e.getCause();
+						System.err.println("Error on file " + className);
+						System.err.println(ex.getMessage());
+						System.err.println("on line " + ex.getLine() + ", column " + ex.getColumn());
 					}
-					System.exit(3);
 				}
 			}
 		}
@@ -303,6 +310,7 @@ public class Demiurgo {
 		COELexer lexer = new COELexer(input);
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
 		COEParser parser = new COEParser(tokens);
+		parser.setErrorHandler(new BailErrorStrategy());
 		parser.removeErrorListeners();
 		parser.addErrorListener(new ErrorListener(errors));
 		ParseTree tree = parser.s(); // parse; start at s

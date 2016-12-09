@@ -42,9 +42,7 @@ public class NullValue extends AbstractValue {
 	}
 	
 	@Override
-	public ObjectNode toJSON() {
-		ObjectNode json = super.toJSON();
-		json.put("value", "NULL");
-		return json;
+	public String getValueAsString() {
+		return "NULL";
 	}
 }

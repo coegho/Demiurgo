@@ -275,16 +275,25 @@ public interface ValueInterface extends Serializable {
 
 	/**
 	 * Returns an array of 3 strings that codifies the value of this object.
+	 * @deprecated Use getTypeName() and getValueAsString instead.
 	 * 
 	 * @return First string specifies type; 2º string specifies additional type
 	 *         info (like class name on objects); 3º string is the real value.
 	 */
+	@Deprecated
 	public String[] getValueCodes();
 
 	/**
-	 * Creates a new ValueData object with this object's value.
+	 * Returns the value as a string. Useful for send it via JSON.
 	 * 
-	 * @return A JSON value with 3 fields: value as string, type, and class (optional).
+	 * @return The value as a string
 	 */
-	public ObjectNode toJSON();
+	public String getValueAsString();
+	
+	/**
+	 * Returns the type of this object as a string.. Useful for send it via JSON.
+	 * 
+	 * @return The type as a string
+	 */
+	public String getTypeName();
 }

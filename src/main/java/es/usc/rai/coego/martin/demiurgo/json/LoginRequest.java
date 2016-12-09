@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class LoginRequest {
 
-	String name;
-	String password;
-	String world;
+	protected String name;
+	protected String password;
+	protected String world;
 	public String getName() {
 		return name;
 	}

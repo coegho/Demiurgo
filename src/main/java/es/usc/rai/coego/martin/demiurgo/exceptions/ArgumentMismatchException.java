@@ -1,10 +1,8 @@
 package es.usc.rai.coego.martin.demiurgo.exceptions;
 
-public class ArgumentMismatchException extends Exception {
+public class ArgumentMismatchException extends DemiurgoException {
 
-	@Override
-	public String getMessage() {
-		return "Arguments doesn't match";
+	public ArgumentMismatchException(int line, int column, int i) {
+		super("Arguments doesn't match", line, column, i);
 	}
-	
 }

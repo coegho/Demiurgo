@@ -1,7 +1,5 @@
 package es.usc.rai.coego.martin.demiurgo.values;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import es.usc.rai.coego.martin.demiurgo.exceptions.IllegalOperationException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ValueCastException;
 
@@ -51,7 +49,7 @@ public class StringValue extends AbstractValue {
 			}
 			return av;
 		}
-		throw new IllegalOperationException();
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), other.getTypeName(), "+");
 	}
 
 	@Override
@@ -62,7 +60,7 @@ public class StringValue extends AbstractValue {
 		if (other instanceof ListValue) {
 			return other.eq(this);
 		}
-		throw new IllegalOperationException();
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), other.getTypeName(), "==");
 	}
 
 	@Override
@@ -73,17 +71,17 @@ public class StringValue extends AbstractValue {
 		if (other instanceof ListValue) {
 			return other.neq(this);
 		}
-		throw new IllegalOperationException();
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), other.getTypeName(), "!=");
 	}
 
 	@Override
 	public ValueInterface dice() throws IllegalOperationException {
-		throw new IllegalOperationException();
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), getTypeName(), "Dx");
 	}
 
 	@Override
 	public ValueInterface multDice(ValueInterface another) throws IllegalOperationException {
-		throw new IllegalOperationException();
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), another.getTypeName(), "xDy");
 	}
 	
 	@Override
@@ -91,7 +89,7 @@ public class StringValue extends AbstractValue {
 		try {
 			return Integer.parseInt(value);
 		} catch(NumberFormatException ex) {
-			throw new ValueCastException();
+			throw new ValueCastException(-1, -1, -1, getTypeName(), "INT");
 		}
 	}
 
@@ -100,7 +98,7 @@ public class StringValue extends AbstractValue {
 		try {
 			return Float.parseFloat(value);
 		} catch(NumberFormatException ex) {
-			throw new ValueCastException();
+			throw new ValueCastException(-1, -1, -1, getTypeName(), "FLOAT");
 		}
 	}
 
@@ -150,11 +148,11 @@ public class StringValue extends AbstractValue {
 		r[2] = value;
 		return r;
 	}
-	
+
 	@Override
-	public ObjectNode toJSON() {
-		ObjectNode json = super.toJSON();
-		json.put("value", getValue());
-		return json;
+	public String getValueAsString() {
+		return getValue();
 	}
+	
+	
 }

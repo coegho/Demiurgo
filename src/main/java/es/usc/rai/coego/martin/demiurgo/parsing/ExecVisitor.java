@@ -3,8 +3,6 @@ package es.usc.rai.coego.martin.demiurgo.parsing;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.antlr.v4.runtime.tree.RuleNode;
-
 import es.usc.rai.coego.martin.demiurgo.coe.COEBaseVisitor;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.AddSubContext;
@@ -49,6 +47,8 @@ import es.usc.rai.coego.martin.demiurgo.coe.COEParser.Var_declContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.VariableOpContext;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ArgumentMismatchException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.BadConstructorException;
+import es.usc.rai.coego.martin.demiurgo.exceptions.CannotLoopException;
+import es.usc.rai.coego.martin.demiurgo.exceptions.ConstructorCalledAsMethodException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.IllegalOperationException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.IrregularListException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.NotAListException;
@@ -95,10 +95,8 @@ import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 
 	protected ScopeManager sm;
-	protected ErrorHandler errors;
 
-	public ExecVisitor(ErrorHandler errors) {
-		this.errors = errors;
+	public ExecVisitor() {
 	}
 
 	public ScopeManager getSM() {
@@ -112,18 +110,21 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 	/**
 	 * Emits output. Useful for debugging and helping the DX to describe the
 	 * situation.
+	 * <p>
+	 * ECHO operation
 	 */
 	@Override
 	public ValueInterface visitEcho(EchoContext ctx) {
 		ValueInterface v = visit(ctx.operation());
-		if (errors.hasErrors())
-			return null;
 
 		// TODO: temporal code for debugging
 		try {
 			System.out.println(v.castToString());
 		} catch (ValueCastException e) {
-			errors.notifyError(e);
+			e.setStartIndex(ctx.start.getStartIndex());
+			e.setLine(ctx.operation().start.getLine());
+			e.setColumn(ctx.operation().start.getCharPositionInLine());
+			throw new RuntimeException(e);
 		}
 		return null;
 	}
@@ -188,14 +189,14 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			List<ValueInterface> l = new ArrayList<>();
 			for (OperationContext op : ctx.operation()) {
 				ValueInterface v = visit(op);
-				if (errors.hasErrors())
-					return null;
+
 				if ((depth == -1 || depth == v.getDepth()) && (type == null || type == v.getType())) {
 					depth = v.getDepth();
 					type = v.getType();
 					l.add(v);
 				} else {
-					throw new IrregularListException();
+					throw new IrregularListException(ctx.start.getLine(), ctx.start.getCharPositionInLine(),
+							ctx.start.getStartIndex());
 				}
 			}
 
@@ -205,9 +206,8 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 
 			return lv;
 		} catch (IrregularListException ex) {
-			errors.notifyError(ex);
+			throw new RuntimeException(ex);
 		}
-		return null;
 	}
 
 	/**
@@ -242,8 +242,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 	@Override
 	public ValueInterface visitListType(ListTypeContext ctx) {
 		ValueInterface innerType = visit(ctx.data_type());
-		if (errors.hasErrors())
-			return null;
+
 		if (innerType instanceof ListValue) {
 			// It has more depth than 1, ex. "int[][]"
 			ListValue lv = (ListValue) innerType;
@@ -266,12 +265,12 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			String className = ctx.SYMBOL().getText().toLowerCase();
 			UserDefinedClass itsClass = getSM().getClassFromName(className);
 			if (itsClass == null) {
-				throw new UndefinedClassException(className);
+				throw new UndefinedClassException(ctx.SYMBOL().getSymbol().getLine(),
+						ctx.SYMBOL().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex(), className);
 			}
 			return ObjectValue.defaultValue(itsClass);
 		} catch (UndefinedClassException e) {
-			errors.notifyError(e);
-			return null;
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -304,8 +303,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 		try {
 			ValueInterface left = visit(ctx.operation(0));
 			ValueInterface right = visit(ctx.operation(1));
-			if (errors.hasErrors())
-				return null;
+
 			switch (ctx.op.getType()) {
 			case COEParser.EQ:
 				return left.eq(right);
@@ -322,9 +320,11 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 				return left.less(right);
 			}
 		} catch (IllegalOperationException e) {
-			errors.notifyError(e);
+			e.setStartIndex(ctx.start.getStartIndex());
+			e.setLine(ctx.op.getLine());
+			e.setColumn(ctx.op.getCharPositionInLine());
+			throw new RuntimeException(e);
 		}
-		return null;
 	}
 
 	/**
@@ -342,8 +342,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 		try {
 			ValueInterface left = visit(ctx.operation(0));
 			ValueInterface right = visit(ctx.operation(1));
-			if (errors.hasErrors())
-				return null;
+
 			switch (ctx.op.getType()) {
 			case COEParser.ADD:
 				return left.add(right);
@@ -352,10 +351,12 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 				return left.sub(right);
 			}
 		} catch (IllegalOperationException e) {
-			errors.notifyError(e);
+			e.setStartIndex(ctx.start.getStartIndex());
+			e.setLine(ctx.op.getLine());
+			e.setColumn(ctx.op.getCharPositionInLine());
+			throw new RuntimeException(e);
 
 		}
-		return null;
 	}
 
 	/**
@@ -372,8 +373,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 		try {
 			ValueInterface left = visit(ctx.operation(0));
 			ValueInterface right = visit(ctx.operation(1));
-			if (errors.hasErrors())
-				return null;
+
 			switch (ctx.op.getType()) {
 			case COEParser.MUL:
 				return left.mul(right);
@@ -382,10 +382,12 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 				return left.div(right);
 			}
 		} catch (IllegalOperationException e) {
-			errors.notifyError(e);
+			e.setStartIndex(ctx.start.getStartIndex());
+			e.setLine(ctx.op.getLine());
+			e.setColumn(ctx.op.getCharPositionInLine());
+			throw new RuntimeException(e);
 
 		}
-		return null;
 	}
 
 	/**
@@ -399,48 +401,50 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 	}
 
 	/**
-	 * <p>
 	 * Performs a dice roll operation.
-	 * </p>
+	 * <p>
+	 * D operation
 	 */
 	@Override
 	public ValueInterface visitDice(DiceContext ctx) {
 		try {
 			ValueInterface v = visit(ctx.operation());
-			if (errors.hasErrors())
-				return null;
+
 			return v.dice();
 		} catch (IllegalOperationException e) {
-			errors.notifyError(e);
+			e.setStartIndex(ctx.start.getStartIndex());
+			e.setLine(ctx.operation().start.getLine());
+			e.setColumn(ctx.operation().start.getCharPositionInLine());
+			throw new RuntimeException(e);
 
 		}
-		return null;
 	}
 
 	/**
-	 * <p>
 	 * Performs a multiple dice roll operation.
-	 * </p>
+	 * <p>
+	 * operation D operation
 	 */
 	@Override
 	public ValueInterface visitMultDice(MultDiceContext ctx) {
 		try {
 			ValueInterface left = visit(ctx.operation(0));
 			ValueInterface right = visit(ctx.operation(1));
-			if (errors.hasErrors())
-				return null;
+
 			return left.multDice(right);
 		} catch (IllegalOperationException e) {
-			errors.notifyError(e);
+			e.setStartIndex(ctx.start.getStartIndex());
+			e.setLine(ctx.D().getSymbol().getLine());
+			e.setColumn(ctx.D().getSymbol().getCharPositionInLine());
+			throw new RuntimeException(e);
 
 		}
-		return null;
 	}
 
 	/**
-	 * <p>
 	 * Extracts one item of a list.
-	 * </p>
+	 * <p>
+	 * operation '[' operation ']'
 	 */
 	@Override
 	public ValueInterface visitIndex(IndexContext ctx) {
@@ -448,15 +452,19 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			ValueInterface left = visit(ctx.operation(0));
 			ValueInterface right = visit(ctx.operation(1));
 			int index = right.castToInteger();
-			if (errors.hasErrors())
-				return null;
+
 			return left.getFromIndex(index);
 		} catch (IllegalOperationException e) {
-			errors.notifyError(e);
+			e.setStartIndex(ctx.start.getStartIndex());
+			e.setLine(ctx.start.getLine());
+			e.setColumn(ctx.start.getCharPositionInLine());
+			throw new RuntimeException(e);
 		} catch (ValueCastException e) {
-			errors.notifyError(e);
+			e.setStartIndex(ctx.start.getStartIndex());
+			e.setLine(ctx.operation(1).start.getLine());
+			e.setColumn(ctx.operation(1).start.getCharPositionInLine());
+			throw new RuntimeException(e);
 		}
-		return null;
 	}
 
 	/**
@@ -468,14 +476,14 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 	public ValueInterface visitNegative(NegativeContext ctx) {
 		try {
 			ValueInterface v = visit(ctx.operation());
-			if (errors.hasErrors())
-				return null;
+
 			return v.negative();
 		} catch (IllegalOperationException e) {
-			errors.notifyError(e);
-
+			e.setStartIndex(ctx.start.getStartIndex());
+			e.setLine(ctx.start.getLine());
+			e.setColumn(ctx.start.getCharPositionInLine());
+			throw new RuntimeException(e);
 		}
-		return null;
 	}
 
 	/**
@@ -495,8 +503,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 		try {
 			ValueInterface left = visit(ctx.operation(0));
 			ValueInterface right = visit(ctx.operation(1));
-			if (errors.hasErrors())
-				return null;
+
 			switch (ctx.op.getType()) {
 			case COEParser.AND:
 				return left.and(right);
@@ -505,10 +512,11 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 				return left.or(right);
 			}
 		} catch (IllegalOperationException e) {
-			errors.notifyError(e);
-
+			e.setStartIndex(ctx.start.getStartIndex());
+			e.setLine(ctx.op.getLine());
+			e.setColumn(ctx.op.getCharPositionInLine());
+			throw new RuntimeException(e);
 		}
-		return null;
 	}
 
 	/**
@@ -521,19 +529,19 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 		try {
 			ValueInterface l = visit(ctx.variable());
 			ValueInterface right = visit(ctx.operation());
-			if (errors.hasErrors())
-				return null;
+
 			ReferenceValue left = (ReferenceValue) l;
 			if (left.getReference().canAssign(right)) {
 				left.getReference().assign(right);
 				return left.getReference();
 			} else {
-				throw new ValueCastException();
+				throw new ValueCastException(ctx.ASSIGN().getSymbol().getLine(),
+						ctx.ASSIGN().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex(),
+						right.getTypeName(), left.getTypeName());
 			}
 		} catch (ValueCastException ex) {
-			errors.notifyError(ex);
+			throw new RuntimeException(ex);
 		}
-		return null;
 	}
 
 	/**
@@ -547,8 +555,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 		ValueInterface r = visit(ctx.variable());
 		ValueInterface i = visit(ctx.operation(0));
 		ValueInterface value = visit(ctx.operation(1));
-		if (errors.hasErrors())
-			return null;
+
 		ReferenceValue ref = (ReferenceValue) r;
 		int index;
 		ValueInterface element;
@@ -556,22 +563,24 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			index = i.castToInteger();
 
 			if (!(ref.getReference() instanceof ListValue))
-				throw new NotAListException();
+				throw new NotAListException(ctx.start.getLine(), ctx.start.getCharPositionInLine(),
+						ctx.start.getStartIndex(), ref.getReference().getTypeName());
 			element = ref.getReference().getFromIndex(index);
 			if (element.canAssign(value)) {
 				element.assign(value);
 				return value;
 			} else {
-				throw new ValueCastException();
+				throw new ValueCastException(ctx.ASSIGN().getSymbol().getLine(),
+						ctx.ASSIGN().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex(),
+						value.getTypeName(), element.getTypeName());
 			}
 		} catch (ValueCastException e) {
-			errors.notifyError(e);
+			throw new RuntimeException(e);
 		} catch (NotAListException e) {
-			errors.notifyError(e);
+			throw new RuntimeException(e);
 		} catch (IllegalOperationException e) {
-			errors.notifyError(e);
+			throw new RuntimeException(e);
 		}
-		return null;
 	}
 
 	/**
@@ -583,18 +592,18 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 	public ValueInterface visitMove(MoveContext ctx) {
 		ValueInterface mobile = visit(ctx.operation(0));
 		ValueInterface room = visit(ctx.operation(1));
-		if (errors.hasErrors())
-			return null;
+
 		try {
 
 			if (mobile instanceof ObjectValue && room instanceof LocationValue) {
 				((ObjectValue) mobile).getObj().moveTo(((LocationValue) room).getLocation());
 			} else {
-				throw new WrongMovementException();
+				throw new WrongMovementException(ctx.MOVE().getSymbol().getLine(),
+						ctx.MOVE().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex(), mobile.getTypeName(),
+						room.getTypeName());
 			}
 		} catch (WrongMovementException e) {
-			errors.notifyError(e);
-			return null;
+			throw new RuntimeException(e);
 		}
 		return new NullValue();
 	}
@@ -607,17 +616,17 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 	@Override
 	public ValueInterface visitRootVariable(RootVariableContext ctx) {
 		try {
-			ValueInterface v = getSM().getVariable(ctx.SYMBOL().getText().toLowerCase());
+			String varname = ctx.SYMBOL().getText().toLowerCase();
+			ValueInterface v = getSM().getVariable(varname);
 			if (v == null)
-				throw new UndeclaredVariableException();
+				throw new UndeclaredVariableException(ctx.start.getLine(), ctx.start.getCharPositionInLine(),
+						ctx.start.getStartIndex(), varname);
 			return new ReferenceValue(v);
 		} catch (UndeclaredVariableException e) {
-			errors.notifyError(e);
+			throw new RuntimeException(e);
 		}
-		return null;
 	}
-	
-	
+
 	/**
 	 * Returns a ReferenceObject with an object identified by its ID.
 	 */
@@ -628,12 +637,13 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 
 	/**
 	 * Returns a variable within another variable (a field within an object).
+	 * <p>
+	 * variable '.' SYMBOL
 	 */
 	@Override
 	public ValueInterface visitIntermediateVariable(IntermediateVariableContext ctx) {
 		ValueInterface v = visit(ctx.variable());
-		if (errors.hasErrors())
-			return null;
+
 		try {
 			ReferenceValue prev = (ReferenceValue) v;
 			ValueInterface value = prev.getReference();
@@ -641,16 +651,17 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			if (value instanceof ObjectValue) {
 				WorldObject obj = ((ObjectValue) value).getObj();
 				if (obj.getField(fieldName) == null) {
-					throw new UndeclaredVariableException();
+					throw new UndeclaredVariableException(ctx.start.getLine(), ctx.start.getCharPositionInLine(),
+							ctx.start.getStartIndex(), fieldName);
 				}
 				return new ReferenceValue(obj.getField(fieldName));
 			} else {
-				throw new NotAnObjectException();
+				throw new NotAnObjectException(ctx.start.getLine(), ctx.start.getCharPositionInLine(),
+						ctx.start.getStartIndex(), value.getTypeName());
 			}
 		} catch (NotAnObjectException | UndeclaredVariableException e) {
-			errors.notifyError(e);
+			throw new RuntimeException(e);
 		}
-		return null;
 	}
 
 	/**
@@ -661,8 +672,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 	@Override
 	public ValueInterface visitVariableOp(VariableOpContext ctx) {
 		ValueInterface v = visit(ctx.variable());
-		if (errors.hasErrors())
-			return null;
+
 		ReferenceValue var = (ReferenceValue) v;
 		return var.getReference().cloneValue();
 	}
@@ -684,22 +694,24 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 					ObjectValue obj = (ObjectValue) ref.getReference();
 
 					if (obj.getObj().getUserClass().getClassName().equalsIgnoreCase(methodName)) {
-						throw new IllegalOperationException();
+						// Constructor
+						throw new ConstructorCalledAsMethodException(ctx.SYMBOL().getSymbol().getLine(),
+								ctx.SYMBOL().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex(),
+								methodName);
 					}
 					// arguments
 					List<ValueInterface> args = new ArrayList<>();
 					for (OperationContext x : ctx.operation()) {
 						ValueInterface a = visit(x);
-						if (errors.hasErrors())
-							return null;
+
 						args.add(a);
 					}
 
 					ClassMethod m = obj.getObj().getUserClass().getMethod(methodName);
 
 					if (!m.checkArgs(args)) {
-						System.out.println(m.getArgumentType("outro"));
-						throw new ArgumentMismatchException();
+						throw new ArgumentMismatchException(ctx.SYMBOL().getSymbol().getLine(),
+								ctx.SYMBOL().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex());
 					}
 
 					// SETTING SCOPE
@@ -717,10 +729,8 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			} else {
 				// TODO: non-class functions
 			}
-		} catch (ArgumentMismatchException e) {
-			errors.notifyError(e);
-		} catch (IllegalOperationException e) {
-			errors.notifyError(e);
+		} catch (ArgumentMismatchException | ConstructorCalledAsMethodException e) {
+			throw new RuntimeException(e);
 		}
 		return null;
 	}
@@ -738,18 +748,19 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			List<ValueInterface> args = new ArrayList<>();
 			for (OperationContext x : ctx.operation()) {
 				ValueInterface a = visit(x);
-				if (errors.hasErrors())
-					return null;
+
 				args.add(a);
 			}
 
 			if (objClass.getConstructor() == null && args.size() > 1) {
 				// Unnecessary arguments, there is no constructor
-				throw new ArgumentMismatchException();
+				throw new ArgumentMismatchException(ctx.SYMBOL().getSymbol().getLine(),
+						ctx.SYMBOL().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex());
 			}
 			if (objClass.getConstructor() != null && !objClass.getConstructor().checkArgs(args)) {
 				// Wrong constructor arguments
-				throw new ArgumentMismatchException();
+				throw new ArgumentMismatchException(ctx.SYMBOL().getSymbol().getLine(),
+						ctx.SYMBOL().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex());
 			}
 
 			WorldObject obj = new WorldObject(objClass, getSM().getCurrentRoom());
@@ -764,9 +775,8 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 
 			return new ObjectValue(obj);
 		} catch (ArgumentMismatchException e) {
-			errors.notifyError(e);
+			throw new RuntimeException(e);
 		}
-		return null;
 	}
 
 	/**
@@ -780,8 +790,6 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 	@Override
 	public ValueInterface visitExp_if(Exp_ifContext ctx) {
 		ValueInterface condition = visit(ctx.operation());
-		if (errors.hasErrors())
-			return null;
 
 		// SCOPE
 		Scope prevScope = getSM().getScope();
@@ -798,7 +806,9 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 				visit(ctx.exp_else());
 			}
 		} catch (ValueCastException e) {
-			errors.notifyError(e);
+			e.setLine(ctx.operation().start.getLine());
+			e.setColumn(ctx.operation().start.getCharPositionInLine());
+			throw new RuntimeException(e);
 		}
 
 		getSM().popScope();
@@ -842,8 +852,6 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 		try {
 			String auxVar = ctx.SYMBOL().getText().toLowerCase();
 			ValueInterface origin = visit(ctx.operation());
-			if (errors.hasErrors())
-				return null;
 
 			// SCOPE
 			Scope prevScope = getSM().getScope();
@@ -853,8 +861,9 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			else if (origin instanceof StringValue)
 				newScope = new ForScope(auxVar, (StringValue) origin, prevScope);
 			else
-				throw new IllegalOperationException(); // cannot walk other
-														// values
+				throw new CannotLoopException(ctx.FOR().getSymbol().getLine(),
+						ctx.FOR().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex(), origin.getTypeName());
+			// cannot walk other values
 
 			getSM().pushScope(newScope);
 
@@ -864,16 +873,13 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 				getSM().setVariable(auxVar, vv);
 				if (ctx.code() != null) {
 					visit(ctx.code());
-					if (errors.hasErrors())
-						return null;
 				}
 			}
 
 			getSM().popScope();
 
-		} catch (IllegalOperationException e) {
-			errors.notifyError(e);
-			return null;
+		} catch (CannotLoopException e) {
+			throw new RuntimeException(e);
 		}
 		return new NullValue();
 	}
@@ -892,8 +898,6 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 		String varName = ctx.SYMBOL().getText().toLowerCase();
 		if (ctx.operation() != null) {
 			ValueInterface v = visit(ctx.operation());
-			if (errors.hasErrors())
-				return null;
 			type.assign(v);
 
 		}
@@ -922,7 +926,8 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 
 			if (methodName.equals(curClass.getClassName())) { // CONSTRUCTOR
 				if (ctx.ASSIGN() != null) {
-					throw new BadConstructorException();
+					throw new BadConstructorException(ctx.ASSIGN().getSymbol().getLine(),
+							ctx.ASSIGN().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex());
 				}
 				curClass.setConstructor(cm); // TODO: at this moment only one
 												// constructor is allowed
@@ -931,8 +936,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 				if (ctx.ASSIGN() != null) {
 					String returnName = ctx.SYMBOL(0).getText().toLowerCase();
 					ValueInterface t = visit(ctx.data_type());
-					if (errors.hasErrors())
-						return null;
+
 					cm.setReturnArgument(returnName, t);
 
 				}
@@ -946,8 +950,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 				((ClassScope) getSM().getScope()).setDefiningMethod(null);
 			}
 		} catch (BadConstructorException e) {
-			errors.notifyError(e);
-			return null;
+			throw new RuntimeException(e);
 		}
 		return new NullValue();
 	}
@@ -962,8 +965,6 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 		for (int i = 0; i < ctx.SYMBOL().size(); i++) {
 			String argName = ctx.SYMBOL(i).getText().toLowerCase();
 			ValueInterface typeV = visit(ctx.data_type(i));
-			if (errors.hasErrors())
-				return null;
 
 			((ClassScope) getSM().getScope()).getDefiningMethod().addArgument(argName, typeV);
 		}
@@ -1001,11 +1002,11 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			if (room != null) {
 				return new LocationValue(room);
 			} else
-				throw new RoomNotFoundException();
+				throw new RoomNotFoundException(ctx.start.getLine(), ctx.start.getCharPositionInLine(),
+						ctx.start.getStartIndex(), path);
 		} catch (RoomNotFoundException e) {
-			errors.notifyError(e);
+			throw new RuntimeException(e);
 		}
-		return null;
 	}
 
 	/**
@@ -1019,26 +1020,20 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			// We get the user name without the '$' symbol
 			String username = ctx.USERNAME().getText().toLowerCase().substring(1);
 			ValueInterface objref = visit(ctx.operation());
-			if (errors.hasErrors())
-				return null;
+
 			if (objref instanceof ObjectValue) {
 				WorldObject obj = ((ObjectValue) objref).getObj();
 				User user = getSM().getCurrentWorld().getUser(username);
 				if (user == null) {
-					throw new UnexistentUserException(username);
+					throw new UnexistentUserException(ctx.start.getLine(), ctx.start.getCharPositionInLine(),
+							ctx.start.getStartIndex(), username);
 				}
 				getSM().setUserObject(user, obj);
 			}
 			return new NullValue();
 		} catch (UnexistentUserException e) {
-			errors.notifyError(e);
+			throw new RuntimeException(e);
 		}
-		return null;
-	}
-
-	@Override
-	protected boolean shouldVisitNextChild(RuleNode node, ValueInterface currentResult) {
-		return !errors.hasErrors();
 	}
 
 }

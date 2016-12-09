@@ -1,39 +1,35 @@
 package es.usc.rai.coego.martin.demiurgo.universe;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
+import es.usc.rai.coego.martin.demiurgo.Demiurgo;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
 public class WorldRoom extends WorldLocation {
 	protected String longPath;
 	protected Map<String, ValueInterface> variables;
-	protected String narratedAction;
-	protected Map<User, String> decisions;
+	protected List<Action> actions;
 
 	public WorldRoom(String longName, World world, long id) {
 		super(world, id);
 		variables = new HashMap<>();
+		this.actions = null;
 		this.longPath = longName;
-		decisions = new HashMap<>();
 	}
 
 	/**
 	 * This constructor requires a posterior call to the method 'rebuild'.
+	 * @param narration 
 	 */
-	public WorldRoom(long id, String long_path, Map<String, ValueInterface> variables) {
+	public WorldRoom(long id, String long_path, Map<String, ValueInterface> variables/*, String narration*/) {
 		super(id);
 		this.longPath = long_path;
 		this.variables = variables;
-		decisions = new HashMap<>();
+		this.actions = null;
 	}
 
 	public String getLongPath() {
@@ -56,37 +52,15 @@ public class WorldRoom extends WorldLocation {
 		this.variables.put(name, value);
 	}
 
-	public Set<String> getAllVarNames() {
-		return variables.keySet();
-	}
-
-	public String getNarratedAction() {
-		return narratedAction;
-	}
-
-	public void setNarratedAction(String narratedAction) {
-		this.narratedAction = narratedAction;
-	}
-
-	public void addDecision(User user, String text) {
-		decisions.put(user, text);
-	}
-
-	public Map<User, String> getDecisionsMap() {
-		return decisions;
-	}
-
-	protected ArrayNode getDecisions() {
-		ObjectMapper om = new ObjectMapper();
-		ArrayNode l = om.createArrayNode();
-		for (Entry<User, String> u : decisions.entrySet()) {
-			ObjectNode decision = om.createObjectNode();
-			decision.put("username", u.getKey().getUsername());
-			decision.put("room_path", getLongPath());
-			decision.put("text", u.getValue());
-			l.add(decision);
+	
+	public List<User> getDecidingUsers() {
+		List<User> users = new ArrayList<>();
+		for(WorldObject o : objects) {
+			if(o.getUser() != null && o.getUser().getDecision() != null) {
+				users.add(o.getUser());
+			}
 		}
-		return l;
+		return users;
 	}
 
 	public Map<String, ValueInterface> getVariables() {
@@ -105,9 +79,7 @@ public class WorldRoom extends WorldLocation {
 		out.defaultWriteObject();
 		out.writeLong(getId());
 		out.writeObject(getLongPath());
-		out.writeObject(getNarratedAction());
 		out.writeObject(getVariables());
-		out.writeObject(getDecisionsMap());
 		out.writeObject(getObjects());
 	}
 
@@ -116,21 +88,16 @@ public class WorldRoom extends WorldLocation {
 		in.defaultReadObject();
 		id = in.readLong();
 		longPath = (String) in.readObject();
-		narratedAction = (String) in.readObject();
 		variables = ((Map<String, ValueInterface>) in.readObject());
-		decisions = (Map<User, String>) in.readObject();
 		objects = (List<WorldObject>) in.readObject();
 	}
-
+/*
 	public String toJSON() {
 		ObjectMapper om = new ObjectMapper();
 		ObjectNode roomdata = om.createObjectNode();
 		roomdata.put("id", getId());
 		roomdata.put("longPath", getLongPath());
 		roomdata.put("narratedAction", getNarratedAction());
-		
-
-		
 		
 		ObjectNode variables = om.createObjectNode();
 		for (Entry<String, ValueInterface> e : getVariables().entrySet()) {
@@ -146,5 +113,34 @@ public class WorldRoom extends WorldLocation {
 		
 		roomdata.set("decisions", getDecisions());
 		return roomdata.toString();
+	}*/
+
+	/**
+	 * Returns all users whose character is inside this room.
+	 * @return List of users occupying this room.
+	 */
+	public List<User> getUsers() {
+		List<User> users = new ArrayList<>();
+		for(WorldObject o : getObjects()) {
+			if(o.getUser() != null) {
+				users.add(o.getUser());
+			}
+		}
+		return users;
+	}
+	
+	public List<Action> getActions() {
+		if(!areActionsInCache()) {
+			setActions(Demiurgo.loadActionsFromRoom(this));
+		}
+		return actions;
+	}
+	
+	public void setActions(List<Action> actions) {
+		this.actions = actions;
+	}
+	
+	public boolean areActionsInCache() {
+		return actions != null;
 	}
 }

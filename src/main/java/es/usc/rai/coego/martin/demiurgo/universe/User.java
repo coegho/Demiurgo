@@ -2,29 +2,29 @@ package es.usc.rai.coego.martin.demiurgo.universe;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 public class User {
 	protected String username;
-	protected boolean admin;
+	protected UserRole role;
 	protected transient WorldObject obj;
+	protected String decision;
 
 	// Serializable fields
 	protected long obj_id;
 
-	public User(String username, boolean admin) {
+	public User(String username, UserRole role) {
 		this.username = username;
-		this.admin = admin;
+		this.role = role;
 	}
 
 	/**
 	 * This constructor requires a posterior call to the method 'rebuild'.
+	 * @param string 
 	 */
-	public User(String username, boolean admin, long obj_id) {
+	public User(String username, UserRole role, long obj_id, String decision) {
 		this.username = username;
-		this.admin = admin;
+		this.role = role;
 		this.obj_id = obj_id;
+		this.decision = decision;
 	}
 
 	public String getUsername() {
@@ -41,35 +41,40 @@ public class User {
 
 	public void setObj(WorldObject obj) {
 		this.obj = obj;
-		if (obj.getUser() != this) {
-			obj.setUser(this);
-		}
 	}
 
-	public void setAdmin(boolean admin) {
-		this.admin = admin;
+	public void setRole(UserRole role) {
+		this.role = role;
 	}
 	
-	public boolean isAdmin() {
-		return admin;
+	public UserRole getRole() {
+		return role;
 	}
 
 	public long getObjId() {
 		return ((obj != null) ? obj.getId() : -1);
 	}
 
+	public String getDecision() {
+		return decision;
+	}
+
+	public void setDecision(String decision) {
+		this.decision = decision;
+	}
+
 	private void writeObject(java.io.ObjectOutputStream out) throws IOException {
 		out.defaultWriteObject();
 		out.writeObject(getUsername());
 		out.writeLong(getObjId());
-		out.writeBoolean(isAdmin());
+		out.writeObject(getRole());
 	}
 
 	private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
 		in.defaultReadObject();
 		username = (String) in.readObject();
 		obj_id = in.readLong();
-		admin = in.readBoolean();
+		role = (UserRole) in.readObject();
 	}
 
 	public void rebuild(World world) {
@@ -77,7 +82,7 @@ public class User {
 			obj = world.getObject(obj_id);
 		}
 	}
-	
+	/*
 	public ObjectNode toJSON() {
 		ObjectNode userdata = new ObjectMapper().createObjectNode();
         userdata.put("username", getUsername());
@@ -86,5 +91,5 @@ public class User {
         userdata.put("admin", isAdmin()?"admin":"player");
 		
 		return userdata;
-	}
+	}*/
 }

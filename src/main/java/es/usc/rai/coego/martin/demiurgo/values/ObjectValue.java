@@ -1,7 +1,5 @@
 package es.usc.rai.coego.martin.demiurgo.values;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import es.usc.rai.coego.martin.demiurgo.universe.UserDefinedClass;
 import es.usc.rai.coego.martin.demiurgo.universe.World;
 import es.usc.rai.coego.martin.demiurgo.universe.WorldObject;
@@ -100,10 +98,12 @@ public class ObjectValue extends AbstractValue {
 	}
 	
 	@Override
-	public ObjectNode toJSON() {
-		ObjectNode json = super.toJSON();
-		json.put("value", getObj().getId());
-		json.put("class", getObj().getClassName());
-		return json;
+	public String getTypeName() {
+		return super.getTypeName() + "/" + getObj().getClassName();
+	}
+	
+	@Override
+	public String getValueAsString() {
+		return "#"+Long.toString(getObj().getId());
 	}
 }

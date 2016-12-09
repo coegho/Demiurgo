@@ -70,9 +70,7 @@ public class LocationValue extends AbstractValue {
 	}
 	
 	@Override
-	public ObjectNode toJSON() {
-		ObjectNode json = super.toJSON();
-		json.put("value", getLocation().getId());
-		return json;
+	public String getValueAsString() {
+		return Long.toString(getLocation().getId());
 	}
 }

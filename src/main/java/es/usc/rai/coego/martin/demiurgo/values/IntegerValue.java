@@ -2,8 +2,6 @@ package es.usc.rai.coego.martin.demiurgo.values;
 
 import java.util.Random;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import es.usc.rai.coego.martin.demiurgo.exceptions.IllegalOperationException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ValueCastException;
 
@@ -55,7 +53,7 @@ public class IntegerValue extends AbstractValue {
 		if (other instanceof ListValue) {
 			return other.add(this);
 		}
-		throw new IllegalOperationException();
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), other.getTypeName(), "+");
 	}
 
 	@Override
@@ -63,7 +61,7 @@ public class IntegerValue extends AbstractValue {
 		if (other instanceof IntegerValue || other instanceof FloatValue || other instanceof ListValue) {
 			return add(other.negative());
 		}
-		throw new IllegalOperationException();
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), other.getTypeName(), "-");
 	}
 
 	@Override
@@ -77,7 +75,7 @@ public class IntegerValue extends AbstractValue {
 		if (other instanceof ListValue) {
 			return other.mul(this);
 		}
-		throw new IllegalOperationException();
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), other.getTypeName(), "*");
 	}
 
 	@Override
@@ -95,7 +93,7 @@ public class IntegerValue extends AbstractValue {
 			}
 			return av;
 		}
-		throw new IllegalOperationException();
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), other.getTypeName(), "/");
 	}
 
 	@Override
@@ -114,7 +112,7 @@ public class IntegerValue extends AbstractValue {
 		if (other instanceof ListValue) {
 			return other.eq(this);
 		}
-		throw new IllegalOperationException();
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), other.getTypeName(), "==");
 	}
 
 	@Override
@@ -128,7 +126,7 @@ public class IntegerValue extends AbstractValue {
 		if (other instanceof ListValue) {
 			return other.neq(this);
 		}
-		throw new IllegalOperationException();
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), other.getTypeName(), "!=");
 	}
 
 	@Override
@@ -142,7 +140,7 @@ public class IntegerValue extends AbstractValue {
 		if (other instanceof ListValue) {
 			return other.less(this);
 		}
-		throw new IllegalOperationException();
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), other.getTypeName(), ">=");
 	}
 
 	@Override
@@ -156,7 +154,7 @@ public class IntegerValue extends AbstractValue {
 		if (other instanceof ListValue) {
 			return other.great(this);
 		}
-		throw new IllegalOperationException();
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), other.getTypeName(), "<=");
 	}
 
 	@Override
@@ -170,7 +168,7 @@ public class IntegerValue extends AbstractValue {
 		if (other instanceof ListValue) {
 			return other.leseq(this);
 		}
-		throw new IllegalOperationException();
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), other.getTypeName(), ">");
 	}
 
 	@Override
@@ -184,7 +182,7 @@ public class IntegerValue extends AbstractValue {
 		if (other instanceof ListValue) {
 			return other.greq(this);
 		}
-		throw new IllegalOperationException();
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), other.getTypeName(), "<");
 	}
 
 	@Override
@@ -209,7 +207,7 @@ public class IntegerValue extends AbstractValue {
 			return lv;
 		}
 
-		throw new IllegalOperationException();
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), other.getTypeName(), "xDy");
 	}
 
 
@@ -273,9 +271,7 @@ public class IntegerValue extends AbstractValue {
 	}
 	
 	@Override
-	public ObjectNode toJSON() {
-		ObjectNode json = super.toJSON();
-		json.put("value", getValue());
-		return json;
+	public String getValueAsString() {
+		return Integer.toString(getValue());
 	}
 }

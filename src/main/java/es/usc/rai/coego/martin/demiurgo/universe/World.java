@@ -5,12 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Represents a world into the system.
@@ -26,26 +21,24 @@ public class World {
 	protected Map<Long, WorldObject> objects;
 	protected Map<Long, WorldLocation> locations;
 	protected Map<String, User> users;
-	protected Map<User, WorldObject> userObjects;
 	protected RoomPath rooms;
 	protected UserDefinedClass rootClass;
 	protected long currentObjId;
 	protected long currentRoomId;
-	protected Map<User, String> untraceableDecisions;
+	protected long currentActionId;
 	protected List<WorldRoom> pendingRooms;
 
 	public World(String name) {
 		this.name = name;
 		currentObjId = 0;
 		currentRoomId = 0;
+		currentActionId = 0;
 		classes = new HashMap<>();
 		objects = new HashMap<>();
 		locations = new HashMap<>();
 		users = new HashMap<>();
-		userObjects = new HashMap<>();
 		rooms = new RoomPath("/", null);
 		rootClass = new RootObjectClass(this);
-		untraceableDecisions = new HashMap<>();
 		pendingRooms = new ArrayList<>();
 		classes.put("object", rootClass);
 	}
@@ -220,7 +213,7 @@ public class World {
 	}
 
 	/**
-	 * Debug method. It returns all rooms in the world. TODO
+	 * Returns all rooms in the world.
 	 * 
 	 * @return
 	 */
@@ -246,28 +239,18 @@ public class World {
 	}
 
 	/**
-	 * Get the object associated to the given user.
-	 * 
-	 * @param user
-	 *            Username
-	 * @return The user's object
-	 */
-	public WorldObject getObjectFromUser(String user) {
-		return userObjects.get(user);
-	}
-
-	/**
 	 * Links an object with an user.
 	 * 
 	 * @param user
 	 * @param obj
 	 */
 	public void setUserObject(User user, WorldObject obj) {
-		if (obj.getUser() != null) {
-			userObjects.remove(obj.getUser());
+		if (user != null) {
+			user.setObj(obj);
 		}
-		userObjects.put(user, obj);
-		obj.setUser(user);
+		if(obj != null) {
+			obj.setUser(user);
+		}
 	}
 
 	/**
@@ -300,6 +283,10 @@ public class World {
 	public void setCurrentRoomId(long roomId) {
 		this.currentRoomId = roomId;
 	}
+	
+	public void setCurrentActionId(long currentActionId) {
+		this.currentActionId = currentActionId;
+	}
 
 	public long getCurrentObjId() {
 		return currentObjId;
@@ -308,8 +295,12 @@ public class World {
 	public long getCurrentRoomId() {
 		return currentRoomId;
 	}
+	
+	public long getCurrentActionId() {
+		return currentActionId;
+	}
 
-	public void addDecision(User user, String text) {
+	/*public void addDecision(User user, String text) {
 		if(user.getObj() != null && user.getObj().getLocation() instanceof WorldRoom) {
 			WorldRoom room = (WorldRoom)user.getObj().getLocation();
 			pendingRooms.add(room);
@@ -318,7 +309,7 @@ public class World {
 		else {
 			untraceableDecisions.put(user, text);
 		}
-	}
+	}*/
 
 	/*public List<Decision> getDecisions() {
 		List<Decision> l = new ArrayList<>();
@@ -328,7 +319,7 @@ public class World {
 		return l;
 	}*/
 	
-	public ArrayNode getDecisions() {
+	/*public ArrayNode getDecisions() {
 		ObjectMapper om = new ObjectMapper();
 		ArrayNode l = om.createArrayNode();
 		for (Entry<User, String> u : untraceableDecisions.entrySet()) {
@@ -339,12 +330,12 @@ public class World {
 			l.add(decision);
 		}
 		return l;
-	}
+	}*/
 
 	public List<WorldRoom> getPendingRooms() {
 		return pendingRooms;
 	}
-	
+	/*
 	public ArrayNode getPendingRoomsJSON() {
 		ObjectMapper om = new ObjectMapper();
 		ArrayNode arraydata = om.createArrayNode();
@@ -354,14 +345,21 @@ public class World {
 		}
 		
 		return arraydata;
-	}
+	}*/
 
 	public Collection<User> getAllUsers() {
 		return users.values();
 	}
 
-	public ObjectNode getRoomPaths() {
+	/*public ObjectNode getRoomPaths() {
 		return rooms.roomPathData();
-	}
+	}*/
 	
+	public void addAction(Action action) {
+		if (action.getId() == -1) {
+			action.setId(currentActionId);
+			currentActionId++;
+		}
+		action.getRoom().getActions().add(action);
+	}
 }

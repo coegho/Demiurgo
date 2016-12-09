@@ -43,4 +43,11 @@ public class ReferenceValue extends AbstractValue {
 	public ValueInterface cloneValue() {
 		return new ReferenceValue(getReference());
 	}
+
+	@Override
+	public String getValueAsString() {
+		return getReference().getValueAsString();
+	}
+	
+	
 }

@@ -69,7 +69,7 @@ public interface COEVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitArgs(COEParser.ArgsContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link COEParser#code}.
+	 * Visit a parse tree produced by {@link COEParser#id}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
