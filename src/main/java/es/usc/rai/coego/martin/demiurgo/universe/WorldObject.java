@@ -1,11 +1,15 @@
 package es.usc.rai.coego.martin.demiurgo.universe;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import es.usc.rai.coego.martin.demiurgo.json.JsonObject;
+import es.usc.rai.coego.martin.demiurgo.json.JsonVariable;
 import es.usc.rai.coego.martin.demiurgo.values.ObjectValue;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
@@ -157,22 +161,12 @@ public class WorldObject {
 			v.rebuild(world);
 		}
 	}
-	/*
-	public ObjectNode toJSON() {
-		ObjectMapper om = new ObjectMapper();
-		ObjectNode objdata = om.createObjectNode();
-		
-		objdata.put("id", getId());
-		objdata.put("class", getClassName());
-		if(getLocId() != -1)
-			objdata.put("loc_id", getLocId());
-		
-		ObjectNode fields = om.createObjectNode();
-		for(Entry<String, ValueInterface> e : getFields().entrySet()) {
-			fields.set(e.getKey(), e.getValue().toJSON());
+
+	public JsonObject toJson() {
+		List<JsonVariable> fields = new ArrayList<>();
+		for (Entry<String, ValueInterface> v : getFields().entrySet()) {
+			fields.add(new JsonVariable(v.getKey(), v.getValue().getValueAsString(), v.getValue().getTypeName()));
 		}
-		objdata.set("fields", fields);
-		
-		return objdata;
-	}*/
+		return new JsonObject(getId(), getClassName(), getLocId(), fields);
+	}
 }

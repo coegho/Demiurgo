@@ -5,31 +5,40 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
-import es.usc.rai.coego.martin.demiurgo.Demiurgo;
+import es.usc.rai.coego.martin.demiurgo.json.JsonDecision;
+import es.usc.rai.coego.martin.demiurgo.json.JsonObject;
+import es.usc.rai.coego.martin.demiurgo.json.JsonRoom;
+import es.usc.rai.coego.martin.demiurgo.json.JsonVariable;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
 public class WorldRoom extends WorldLocation {
 	protected String longPath;
 	protected Map<String, ValueInterface> variables;
 	protected List<Action> actions;
+	protected String prenarration;
 
 	public WorldRoom(String longName, World world, long id) {
 		super(world, id);
 		variables = new HashMap<>();
-		this.actions = null;
+		this.actions = new ArrayList<Action>();
 		this.longPath = longName;
+		this.prenarration = null;
 	}
 
 	/**
 	 * This constructor requires a posterior call to the method 'rebuild'.
-	 * @param narration 
+	 * 
+	 * @param narration
 	 */
-	public WorldRoom(long id, String long_path, Map<String, ValueInterface> variables/*, String narration*/) {
+	public WorldRoom(long id, String long_path, Map<String, ValueInterface> variables, String prenarration) {
 		super(id);
 		this.longPath = long_path;
 		this.variables = variables;
 		this.actions = null;
+		this.prenarration = prenarration;
 	}
 
 	public String getLongPath() {
@@ -52,15 +61,8 @@ public class WorldRoom extends WorldLocation {
 		this.variables.put(name, value);
 	}
 
-	
 	public List<User> getDecidingUsers() {
-		List<User> users = new ArrayList<>();
-		for(WorldObject o : objects) {
-			if(o.getUser() != null && o.getUser().getDecision() != null) {
-				users.add(o.getUser());
-			}
-		}
-		return users;
+		return getUsers().stream().filter(u -> u.getDecision() != null).collect(Collectors.toList());
 	}
 
 	public Map<String, ValueInterface> getVariables() {
@@ -91,56 +93,79 @@ public class WorldRoom extends WorldLocation {
 		variables = ((Map<String, ValueInterface>) in.readObject());
 		objects = (List<WorldObject>) in.readObject();
 	}
-/*
-	public String toJSON() {
-		ObjectMapper om = new ObjectMapper();
-		ObjectNode roomdata = om.createObjectNode();
-		roomdata.put("id", getId());
-		roomdata.put("longPath", getLongPath());
-		roomdata.put("narratedAction", getNarratedAction());
-		
-		ObjectNode variables = om.createObjectNode();
-		for (Entry<String, ValueInterface> e : getVariables().entrySet()) {
-			variables.set(e.getKey(), e.getValue().toJSON());
+
+	public JsonRoom toJson() {
+		JsonRoom r = new JsonRoom();
+		r.setId(getId());
+		r.setLongPath(getLongPath());
+
+		// Variables to JSON
+		List<JsonVariable> variables = new ArrayList<>();
+		for (Entry<String, ValueInterface> v : getVariables().entrySet()) {
+			variables.add(new JsonVariable(v.getKey(), v.getValue().getValueAsString(), v.getValue().getTypeName()));
 		}
-		roomdata.set("variables", variables);
-		
-		ArrayNode objects = om.createArrayNode();
-		for(WorldObject o: getObjects()) {
-			objects.add(o.toJSON());
+		r.setVariables(variables);
+
+		// Objects to JSON
+		List<JsonObject> objects = new ArrayList<>();
+		for (WorldObject o : getObjects()) {
+			objects.add(o.toJson());
 		}
-		roomdata.set("objects", objects);
-		
-		roomdata.set("decisions", getDecisions());
-		return roomdata.toString();
-	}*/
+		r.setObjects(objects);
+
+		List<JsonDecision> decisions = new ArrayList<>();
+		for (User u : getDecidingUsers()) {
+			decisions.add(new JsonDecision(u.getUsername(), u.getDecision()));
+		}
+		r.setDecisions(decisions);
+		return r;
+	}
 
 	/**
 	 * Returns all users whose character is inside this room.
+	 * 
 	 * @return List of users occupying this room.
 	 */
 	public List<User> getUsers() {
 		List<User> users = new ArrayList<>();
-		for(WorldObject o : getObjects()) {
-			if(o.getUser() != null) {
+		for (WorldObject o : getObjects()) {
+			if (o.getUser() != null) {
 				users.add(o.getUser());
 			}
 		}
 		return users;
 	}
-	
+
 	public List<Action> getActions() {
-		if(!areActionsInCache()) {
-			setActions(Demiurgo.loadActionsFromRoom(this));
-		}
 		return actions;
 	}
-	
+
 	public void setActions(List<Action> actions) {
 		this.actions = actions;
 	}
-	
+
+	public String getPrenarration() {
+		return prenarration;
+	}
+
+	public void setPrenarration(String prenarration) {
+		this.prenarration = prenarration;
+	}
+
+	public void appendPrenarration(String prenarration) {
+		if (this.prenarration == null)
+			this.prenarration = "";
+		this.prenarration += "\n" + prenarration;
+	}
+
 	public boolean areActionsInCache() {
 		return actions != null;
+	}
+
+	public void clearDecisionsAndPrenarration() {
+		prenarration = null;
+		for(User u : getUsers()) {
+			u.setDecision(null);
+		}
 	}
 }

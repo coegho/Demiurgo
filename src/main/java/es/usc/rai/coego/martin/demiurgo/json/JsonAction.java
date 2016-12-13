@@ -4,25 +4,23 @@ import java.util.List;
 
 public class JsonAction {
 	private long id;
-	private String code;
 	private String narration;
 	private String room;
 	private List<String> witnesses;
 	private String date;
-	private String status;
+	private boolean published;
 	
 	public JsonAction() {
 	}
 	
-	public JsonAction(long id, String code, String narration, String room, List<String> witnesses, String date, String status) {
+	public JsonAction(long id, String narration, String room, List<String> witnesses, String date, boolean published) {
 		super();
 		this.id = id;
-		this.code = code;
 		this.narration = narration;
 		this.room = room;
 		this.witnesses = witnesses;
 		this.date = date;
-		this.status = status;
+		this.published = published;
 	}
 
 	public long getId() {
@@ -31,14 +29,6 @@ public class JsonAction {
 
 	public void setId(long id) {
 		this.id = id;
-	}
-
-	public String getCode() {
-		return code;
-	}
-
-	public void setCode(String code) {
-		this.code = code;
 	}
 
 	public String getNarration() {
@@ -73,11 +63,11 @@ public class JsonAction {
 		this.date = date;
 	}
 	
-	public String getStatus() {
-		return status;
+	public boolean isPublished() {
+		return published;
 	}
 	
-	public void setStatus(String status) {
-		this.status = status;
+	public void setPublished(boolean published) {
+		this.published = published;
 	}
 }

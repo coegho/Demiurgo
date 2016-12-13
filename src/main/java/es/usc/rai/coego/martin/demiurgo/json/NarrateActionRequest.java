@@ -2,7 +2,6 @@ package es.usc.rai.coego.martin.demiurgo.json;
 
 public class NarrateActionRequest {
 	private long id;
-	private String room;
 	private String narration;
 	
 	public long getId() {
@@ -11,14 +10,6 @@ public class NarrateActionRequest {
 	
 	public void setId(long id) {
 		this.id = id;
-	}
-	
-	public String getRoom() {
-		return room;
-	}
-	
-	public void setRoom(String room) {
-		this.room = room;
 	}
 	
 	public String getNarration() {

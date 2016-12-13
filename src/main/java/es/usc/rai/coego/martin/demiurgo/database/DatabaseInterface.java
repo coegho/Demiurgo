@@ -17,6 +17,8 @@ public interface DatabaseInterface {
 	
 	public boolean login(String name, String password);
 	
+	public User register(String name, String password);
+	
 	public void writeUser(User user);
 	
 	public void writeWorldObject(WorldObject obj);

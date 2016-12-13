@@ -8,6 +8,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -77,6 +78,22 @@ public class MariaDBDatabase implements DatabaseInterface {
 			return false; // TODO throw exception
 		}
 	}
+	
+	@Override
+	public User register(String name, String password) {
+		try {
+			PreparedStatement stm = con.prepareStatement("INSERT users (username, passwd) VALUES (?, ?)"/*, Statement.RETURN_GENERATED_KEYS*/);
+			stm.setString(1, name);
+			stm.setString(2, password);
+			stm.executeUpdate();
+			
+			//ResultSet rs = stm.getGeneratedKeys();
+			return new User(name, UserRole.USER);
+		} catch (SQLException e) {
+			System.err.println(e.getLocalizedMessage());
+			return null; // TODO throw exception
+		}
+	}
 
 	@Override
 	public void writeUser(User user) {
@@ -117,10 +134,11 @@ public class MariaDBDatabase implements DatabaseInterface {
 	public void writeWorldRoom(WorldRoom room) {
 		try {
 			PreparedStatement stm = con.prepareStatement(
-					"INSERT rooms (id, long_path, room_value) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE long_path=VALUES(long_path), room_value=VALUES(room_value)");
+					"INSERT rooms (id, long_path, room_value, prenarration) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE long_path=VALUES(long_path), room_value=VALUES(room_value), prenarration=VALUES(prenarration)");
 			stm.setLong(1, room.getId());
 			stm.setString(2, room.getLongPath());
 			stm.setObject(3, room.getVariables());
+			stm.setString(4, room.getPrenarration());
 			stm.executeUpdate();
 
 		} catch (SQLException e) {
@@ -132,13 +150,12 @@ public class MariaDBDatabase implements DatabaseInterface {
 	public void writeAction(Action action) {
 		try {
 			PreparedStatement stm = con.prepareStatement(
-					"INSERT actions (id, room, code, narration, publish_date, status) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE room=VALUES(room), code=VALUES(code), narration=VALUES(narration), publish_date=VALUES(publish_date), status=VALUES(status)");
+					"INSERT actions (id, room, narration, publish_date, published) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE room=VALUES(room), narration=VALUES(narration), publish_date=VALUES(publish_date), published=VALUES(published)");
 			stm.setLong(1, action.getId());
 			stm.setLong(2, action.getRoom().getId());
-			stm.setString(3, action.getCode());
-			stm.setString(4, action.getNarration());
-			stm.setTimestamp(5, new java.sql.Timestamp(action.getDate().getTime()));
-			stm.setString(6, action.getStatus().name());
+			stm.setString(3, action.getNarration());
+			stm.setTimestamp(4, new java.sql.Timestamp(action.getDate().getTime()));
+			stm.setBoolean(5, action.isPublished());
 			stm.executeUpdate();
 
 			PreparedStatement std = con.prepareStatement("DELETE FROM witness_action WHERE action = ?");
@@ -216,7 +233,7 @@ public class MariaDBDatabase implements DatabaseInterface {
 	public List<WorldRoom> readAllRooms() {
 		ArrayList<WorldRoom> rooms = new ArrayList<>();
 		try {
-			PreparedStatement stm = con.prepareStatement("SELECT id,long_path,room_value FROM rooms");
+			PreparedStatement stm = con.prepareStatement("SELECT id,long_path,room_value, prenarration FROM rooms");
 			ResultSet rs = stm.executeQuery();
 			while (rs.next()) {
 				long id = rs.getLong("id");
@@ -225,9 +242,10 @@ public class MariaDBDatabase implements DatabaseInterface {
 				ObjectInputStream objectIn = null;
 				if (buf != null)
 					objectIn = new ObjectInputStream(new ByteArrayInputStream(buf));
-
+				String prenarration = rs.getString("prenarration");
+				
 				Map<String, ValueInterface> variables = (Map<String, ValueInterface>) objectIn.readObject();
-				rooms.add(new WorldRoom(id, path, variables));
+				rooms.add(new WorldRoom(id, path, variables, prenarration));
 			}
 
 			return rooms;
@@ -239,20 +257,19 @@ public class MariaDBDatabase implements DatabaseInterface {
 
 	@Override
 	public List<Action> readActionsFromRoom(WorldRoom room) {
-		ArrayList<Action> actions = new ArrayList<>();
+		List<Action> actions = new ArrayList<>();
 		try {
 			PreparedStatement stm = con
-					.prepareStatement("SELECT id, code, narration, publish_date, status FROM actions WHERE room = ?");
+					.prepareStatement("SELECT id, narration, publish_date, published FROM actions WHERE room = ? ORDER BY publish_date");
 			PreparedStatement wtns = con.prepareStatement("SELECT username FROM witness_action WHERE action = ?");
 			stm.setLong(1, room.getId());
 			ResultSet rs = stm.executeQuery();
 			while (rs.next()) {
 				// Extracting action data
 				long id = rs.getLong("id");
-				String code = rs.getString("code");
 				String narration = rs.getString("narration");
 				Date date = rs.getDate("publish_date");
-				Action.Status status = Action.Status.valueOf(rs.getString("status"));
+				boolean published = rs.getBoolean("published");
 
 				// Looking for witnesses
 				wtns.setLong(1, id);
@@ -261,7 +278,7 @@ public class MariaDBDatabase implements DatabaseInterface {
 				while (rsw.next()) {
 					witnesses.add(room.getWorld().getUser(rsw.getString("username")));
 				}
-				actions.add(new Action(id, room, code, narration, witnesses, date, status));
+				actions.add(new Action(id, room, narration, witnesses, date, published));
 			}
 			return actions;
 

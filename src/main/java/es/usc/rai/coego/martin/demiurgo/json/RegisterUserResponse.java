@@ -1,22 +1,22 @@
 package es.usc.rai.coego.martin.demiurgo.json;
 
-public class NarrateActionResponse {
+public class RegisterUserResponse {
 	private ResponseStatus status;
-	private JsonAction action;
-
+	private boolean active;
+	
 	public ResponseStatus getStatus() {
 		return status;
 	}
-
+	
 	public void setStatus(ResponseStatus status) {
 		this.status = status;
 	}
-	
-	public JsonAction getAction() {
-		return action;
+
+	public boolean isActive() {
+		return active;
 	}
-	
-	public void setAction(JsonAction action) {
-		this.action = action;
+
+	public void setActive(boolean active) {
+		this.active = active;
 	}
 }

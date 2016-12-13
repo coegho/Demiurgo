@@ -160,11 +160,4 @@ public abstract class AbstractValue implements ValueInterface {
 	public String getTypeName() {
 		return getType().name();
 	}
-	
-	/*public ObjectNode toJSON() {
-		ObjectMapper om = new ObjectMapper();
-		ObjectNode json = om.createObjectNode();
-		json.put("type", getType().name());
-		return json;
-	}*/
 }

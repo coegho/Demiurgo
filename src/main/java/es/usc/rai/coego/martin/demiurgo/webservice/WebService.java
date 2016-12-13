@@ -4,15 +4,14 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -26,26 +25,23 @@ import javax.ws.rs.core.SecurityContext;
 
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.antlr.v4.runtime.tree.ParseTree;
-import org.glassfish.jersey.internal.Errors;
 
 import es.usc.rai.coego.martin.demiurgo.Demiurgo;
 import es.usc.rai.coego.martin.demiurgo.exceptions.DemiurgoException;
 import es.usc.rai.coego.martin.demiurgo.json.AllRoomPathsResponse;
 import es.usc.rai.coego.martin.demiurgo.json.CheckRoomResponse;
+import es.usc.rai.coego.martin.demiurgo.json.CreateRoomRequest;
 import es.usc.rai.coego.martin.demiurgo.json.ExecuteCodeRequest;
 import es.usc.rai.coego.martin.demiurgo.json.ExecuteCodeResponse;
-import es.usc.rai.coego.martin.demiurgo.json.FixCodeRequest;
 import es.usc.rai.coego.martin.demiurgo.json.GetPendingRoomsResponse;
 import es.usc.rai.coego.martin.demiurgo.json.JsonAction;
-import es.usc.rai.coego.martin.demiurgo.json.JsonDecision;
-import es.usc.rai.coego.martin.demiurgo.json.JsonObject;
-import es.usc.rai.coego.martin.demiurgo.json.JsonRoom;
-import es.usc.rai.coego.martin.demiurgo.json.JsonUser;
-import es.usc.rai.coego.martin.demiurgo.json.JsonVariable;
 import es.usc.rai.coego.martin.demiurgo.json.MyUserResponse;
 import es.usc.rai.coego.martin.demiurgo.json.NarrateActionRequest;
 import es.usc.rai.coego.martin.demiurgo.json.NarrateActionResponse;
+import es.usc.rai.coego.martin.demiurgo.json.PastActionsResponse;
 import es.usc.rai.coego.martin.demiurgo.json.ResponseStatus;
+import es.usc.rai.coego.martin.demiurgo.json.RoomHistoryResponse;
+import es.usc.rai.coego.martin.demiurgo.json.SubmitDecisionRequest;
 import es.usc.rai.coego.martin.demiurgo.parsing.ClassVisitor;
 import es.usc.rai.coego.martin.demiurgo.parsing.CodeVisitor;
 import es.usc.rai.coego.martin.demiurgo.parsing.ErrorHandler;
@@ -55,7 +51,6 @@ import es.usc.rai.coego.martin.demiurgo.universe.UserDefinedClass;
 import es.usc.rai.coego.martin.demiurgo.universe.World;
 import es.usc.rai.coego.martin.demiurgo.universe.WorldObject;
 import es.usc.rai.coego.martin.demiurgo.universe.WorldRoom;
-import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 import es.usc.rai.coego.martin.demiurgo.webservice.auth.DemiurgoPrincipal;
 import es.usc.rai.coego.martin.demiurgo.webservice.auth.Secured;
 import io.jsonwebtoken.Claims;
@@ -65,7 +60,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MissingClaimException;
 import io.jsonwebtoken.SignatureException;
 
-@Path("/webservice")
+@Path("/")
 @Secured
 @PermitAll
 public class WebService {
@@ -77,78 +72,109 @@ public class WebService {
 	@Produces(MediaType.APPLICATION_JSON)
 	public MyUserResponse me() {
 		MyUserResponse me = new MyUserResponse();
-		try {
-			String world = ((DemiurgoPrincipal) securityContext.getUserPrincipal()).getWorld();
-			String username = securityContext.getUserPrincipal().getName();
-			User u = Demiurgo.getWorld(world).getUser(username);
 
-			if (u != null) {
-				me.setStatus(new ResponseStatus());
-				JsonUser ju = new JsonUser();
-				ju.setName(u.getUsername());
-				ju.setObjId(u.getObjId());
-				ju.setWorld(world);
-				ju.setRole(u.getRole().toString());
-				me.setUser(ju);
-				return me;
-			} else
-				me.setStatus(new ResponseStatus(false, "user not found"));
-		} catch (SignatureException | MissingClaimException | IncorrectClaimException e) {
-			System.err.println(e.getLocalizedMessage());
-			me.setStatus(new ResponseStatus(false, e.getLocalizedMessage()));
-		}
+		String world = ((DemiurgoPrincipal) securityContext.getUserPrincipal()).getWorld();
+		String username = securityContext.getUserPrincipal().getName();
+		User u = Demiurgo.getWorld(world).getUser(username);
+
+		if (u != null) {
+			me.setStatus(new ResponseStatus());
+			me.setUser(u.toJson());
+			me.setWorld(world);
+			return me;
+		} else
+			me.setStatus(new ResponseStatus(false, "user not found"));
+
 		return me;
 	}
 
+	///////////// USER SERVICES/////////////
+	@POST
+	@Path("/submitdecision")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@RolesAllowed("user")
+	public Response submitDecision(SubmitDecisionRequest req) {
+		String world = ((DemiurgoPrincipal) securityContext.getUserPrincipal()).getWorld();
+		World w = Demiurgo.getWorld(world);
+		String username = securityContext.getUserPrincipal().getName();
+		User u = Demiurgo.getWorld(world).getUser(username);
+
+		u.setDecision(req.getDecision());
+		WorldObject obj = u.getObj();
+		if (obj != null && obj.getLocation() instanceof WorldRoom) {
+			w.getPendingRooms().add((WorldRoom) obj.getLocation());
+		} else {
+			// TODO: characters without room
+		}
+		return Response.ok().build();
+	}
+
+	@GET
+	@Path("/pastactions")
+	@Produces(MediaType.APPLICATION_JSON)
+	@RolesAllowed("user")
+	public Response seePastActions(@QueryParam("first") @DefaultValue("-10") String first,
+			@QueryParam("count") @DefaultValue("10") String max) {
+		PastActionsResponse res = new PastActionsResponse();
+		String world = ((DemiurgoPrincipal) securityContext.getUserPrincipal()).getWorld();
+		World w = Demiurgo.getWorld(world);
+		String username = securityContext.getUserPrincipal().getName();
+		User u = Demiurgo.getWorld(world).getUser(username);
+
+		List<String> narrations = new ArrayList<>();
+
+		// We get all actions with this user involved in them
+		List<Action> allActions = w.getActions().values().stream().filter(a -> a.getWitnesses().contains(u))
+				.collect(Collectors.toList());
+
+		int f, l;
+		f = Integer.parseInt(first);
+		if (f < 0)
+			f = allActions.size() + f;
+		if (f < 0)
+			f = 0;
+		l = f + Integer.parseInt(max);
+		if (l >= allActions.size())
+			l = allActions.size();
+
+		List<Action> someActions = allActions.subList(f, l);
+		for (Action a : someActions) {
+			narrations.add(a.getNarration()); // TODO: filter content
+		}
+		res.setStatus(new ResponseStatus());
+		res.setActions(narrations);
+
+		return Response.ok(res).build();
+	}
+
+	///////////// GM SERVICES/////////////
 	@GET
 	@Path("/checkroom")
 	@Produces(MediaType.APPLICATION_JSON)
 	@RolesAllowed("gm")
 	public CheckRoomResponse checkRoom(@QueryParam(value = "path") String path) {
 		CheckRoomResponse res = new CheckRoomResponse();
-		try {
-			String world = ((DemiurgoPrincipal) securityContext.getUserPrincipal()).getWorld();
-			WorldRoom room = Demiurgo.getWorld(world).getRoom(path);
 
-			if (room != null) {
-				JsonRoom r = new JsonRoom();
-				r.setId(room.getId());
-				r.setLongPath(path);
+		String world = ((DemiurgoPrincipal) securityContext.getUserPrincipal()).getWorld();
+		WorldRoom room = Demiurgo.getWorld(world).getRoom(path);
 
-				List<JsonVariable> variables = new ArrayList<>();
-				for (Entry<String, ValueInterface> v : room.getVariables().entrySet()) {
-					variables.add(
-							new JsonVariable(v.getKey(), v.getValue().getValueAsString(), v.getValue().getTypeName()));
-				}
-				r.setVariables(variables);
+		if (room != null) {
+			res.setRoom(room.toJson());
 
-				List<JsonObject> objects = new ArrayList<>();
-				for (WorldObject o : room.getObjects()) {
-					List<JsonVariable> fields = new ArrayList<>();
-					for (Entry<String, ValueInterface> v : o.getFields().entrySet()) {
-						fields.add(new JsonVariable(v.getKey(), v.getValue().getValueAsString(),
-								v.getValue().getTypeName()));
-					}
-					objects.add(new JsonObject(o.getId(), o.getClassName(), o.getLocId(), fields));
-				}
-				r.setObjects(objects);
-
-				List<JsonDecision> decisions = new ArrayList<>();
-				for (User u : room.getDecidingUsers()) {
-					decisions.add(new JsonDecision(u.getUsername(), u.getDecision()));
-				}
-				r.setDecisions(decisions);
-				res.setRoom(r);
-				return res;
-			} else {
-				System.err.println("Cannot find room '" + path + "'");
-				res.setStatus(new ResponseStatus(false, "Cannot find room '" + path + "'"));
-				return res;
+			// Looking for unpublished action
+			List<Action> actions = room.getActions().stream().filter(p -> !p.isPublished())
+					.collect(Collectors.toList());
+			if (actions.size() > 0) {
+				res.setUnpublishedAction(actions.get(0).toJson());
 			}
-		} catch (SignatureException | MissingClaimException | IncorrectClaimException e) {
-			res.setStatus(new ResponseStatus(false, e.getLocalizedMessage()));
+
+			return res;
+		} else {
+			res.setStatus(new ResponseStatus(false, "Cannot find room '" + path + "'"));
 			return res;
 		}
+
 	}
 
 	@POST
@@ -160,67 +186,78 @@ public class WebService {
 		ExecuteCodeResponse res = new ExecuteCodeResponse();
 
 		String world = ((DemiurgoPrincipal) securityContext.getUserPrincipal()).getWorld();
-		InputStream is = new ByteArrayInputStream(req.getCode().getBytes(StandardCharsets.UTF_8));
-		ParseTree tree;
-		WorldRoom room = Demiurgo.getWorld(world).getRoom(req.getPath());
+		World w = Demiurgo.getWorld(world);
+		WorldRoom room = w.getRoom(req.getPath());
 		if (room == null) {
 			return Response.status(Response.Status.NOT_FOUND).entity("Cannot find room '" + req.getPath() + "'")
 					.build();
 		}
-		CodeVisitor eval = new CodeVisitor(room);
+		
+		//We define witnesses before executing code
+		//This way, exiting users can see their last action before exit room
+		List<User> witnesses = room.getUsers();
 
-		Action.Status status;
-		String goodCode;
+		InputStream is = new ByteArrayInputStream(req.getCode().getBytes(StandardCharsets.UTF_8));
+		ParseTree tree;
+		CodeVisitor eval = new CodeVisitor(room);
 
 		ErrorHandler errors = new ErrorHandler();
 		try {
-			
+
 			tree = Demiurgo.parseStream(is, errors);
 			eval.visit(tree);
 
 			// if there are no errors catched, everything is ok at this point
-			status = Action.Status.READY;
-			goodCode = req.getCode();
+			w.getLogger().info(req.getCode() + "\n###Execution complete###");
 			res.setStatus(new ResponseStatus());
+			room.appendPrenarration(eval.getPrenarration());
+			Action action = new Action(0, room, room.getPrenarration(), witnesses);
+			Demiurgo.getWorld(world).addAction(action);
+			room.clearDecisionsAndPrenarration();
+			
+			res.setAction(action.toJson());
 
 		} catch (ParseCancellationException e) {
 			// Syntax error
-			res.setErrorStartIndex(0);
 			res.setStatus(new ResponseStatus(false, errors.getErrors().get(0).getMessage()));
 			return Response.ok(res).build();
 		} catch (RuntimeException e) {
 			if (e.getCause() instanceof DemiurgoException) {
 				// Semantic error
-				DemiurgoException ex = (DemiurgoException) e.getCause();
+				// DemiurgoException ex = (DemiurgoException) e.getCause();
+				w.getLogger().info(req.getCode() + "\n###" + e.getMessage() + "###");
 				res.setStatus(new ResponseStatus(false, e.getMessage()));
-				status = Action.Status.FIX;
-				goodCode = req.getCode().substring(0, ex.getStartIndex());
-				// points out unexecuted code
-				res.setErrorStartIndex(ex.getStartIndex());
+				// store prenarration
+				room.appendPrenarration(eval.getPrenarration());
 			} else {
 				// Unexpected internal error
-				System.err.println(e.getCause().getMessage()); // TODO: Logger?
-				return Response.serverError().entity(e.getMessage()).build();
+				Demiurgo.getLogger().severe(e.getCause().getMessage());
+				;
+				return Response.serverError().build();
 			}
 		} catch (IOException e) {
 			// Unexpected IO error
-			return Response.serverError().entity(e.getMessage()).build();
+			Demiurgo.getLogger().severe(e.getCause().getMessage());
+			;
+			return Response.serverError().build();
 		}
-
-		// TODO: only part of code
-		Action action = new Action(0, room, goodCode, eval.getPrenarration(), status);
-		Demiurgo.getWorld(world).addAction(action);
-
-		List<String> witnesses = new ArrayList<>();
-		for (User u : action.getWitnesses()) {
-			witnesses.add(u.getUsername());
-		}
-		DateFormat df = DateFormat.getInstance();
-		res.setAction(new JsonAction(action.getId(), action.getCode(), action.getNarration(),
-				action.getRoom().getLongPath(), witnesses, df.format(action.getDate()), action.getStatus().toString()));
 
 		return Response.ok(res).build();
 
+	}
+
+	@GET
+	@Path("/action")
+	@Produces(MediaType.APPLICATION_JSON)
+	@RolesAllowed("gm")
+	public Response getAction(@QueryParam("id") long id) {
+		String world = ((DemiurgoPrincipal) securityContext.getUserPrincipal()).getWorld();
+		World w = Demiurgo.getWorld(world);
+		Action a = w.getAction(id);
+		if (a != null) {
+			return Response.ok(a.toJson()).build();
+		}
+		return Response.status(Response.Status.NOT_FOUND).build();
 	}
 
 	@POST
@@ -231,107 +268,54 @@ public class WebService {
 	public Response narrateAction(NarrateActionRequest req) {
 		NarrateActionResponse res = new NarrateActionResponse();
 		String world = ((DemiurgoPrincipal) securityContext.getUserPrincipal()).getWorld();
-		WorldRoom room = Demiurgo.getWorld(world).getRoom(req.getRoom());
-		if (room == null) {
-			return Response.status(Response.Status.NOT_FOUND).entity("Cannot find room '" + req.getRoom() + "'")
-					.build();
-		}
+		World w = Demiurgo.getWorld(world);
 		// Search action by id
-		Action action = room.getActions().stream().filter(p -> p.getId() == req.getId()).collect(Collectors.toList())
-				.get(0);
+		Action action = w.getAction(req.getId());
 
-		if (action.getStatus() == Action.Status.FIX) {
-			// The code must be fixed, cannot publish action
-			res.setStatus(new ResponseStatus(false, "The code must be fixed, cannot publish action"));
-			return Response.ok(res).build();
-		}
 		action.setNarration(req.getNarration());
-		action.setStatus(Action.Status.PUBLISHED);
+		action.setPublished(true);
+
+		res.setStatus(new ResponseStatus());
+		res.setAction(action.toJson());
+		return Response.ok(res).build();
+	}
+
+	@GET
+	@Path("/history")
+	@Produces(MediaType.APPLICATION_JSON)
+	@RolesAllowed("gm")
+	public Response seeRoomHistory(@QueryParam("path") String path,
+			@QueryParam("first") @DefaultValue("0") String first,
+			@QueryParam("count") @DefaultValue("15") String count) {
+		RoomHistoryResponse res = new RoomHistoryResponse();
+		String world = ((DemiurgoPrincipal) securityContext.getUserPrincipal()).getWorld();
+		World w = Demiurgo.getWorld(world);
+		WorldRoom room = w.getRoom(path);
+		if (room == null) {
+			return Response.status(Response.Status.NOT_FOUND).entity("Cannot find room " + path).build();
+		}
+		List<Action> allActions = room.getActions().stream().filter(a -> a.isPublished()).collect(Collectors.toList());
+		int f, l;
+		f = Integer.parseInt(first);
+		if (f < 0)
+			f = allActions.size() + f;
+		if (f < 0)
+			f = 0;
+		l = f + Integer.parseInt(count);
+		if (l >= allActions.size())
+			l = allActions.size();
+
+		List<JsonAction> actions = new ArrayList<>();
+		for (Action a : allActions.subList(f, l)) {
+			actions.add(a.toJson());
+		}
+		res.setActions(actions);
+		res.setTotalActions(allActions.size());
 		res.setStatus(new ResponseStatus());
 		return Response.ok(res).build();
 	}
 
-	@POST
-	@Path("/fixcode")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	@RolesAllowed("gm")
-	public Response fixActionCode(FixCodeRequest req) {
-		ExecuteCodeResponse res = new ExecuteCodeResponse();
-
-		String world = ((DemiurgoPrincipal) securityContext.getUserPrincipal()).getWorld();
-		InputStream is = new ByteArrayInputStream(req.getNewCode().getBytes(StandardCharsets.UTF_8));
-		ParseTree tree;
-		WorldRoom room = Demiurgo.getWorld(world).getRoom(req.getPath());
-		if (room == null) {
-			return Response.status(Response.Status.NOT_FOUND).entity("Cannot find room '" + req.getPath() + "'")
-					.build();
-		}
-
-		// Selecting previous action
-		Action action = room.getActions().stream().filter(p -> p.getId() == req.getId()).collect(Collectors.toList())
-				.get(0);
-
-		if (action.getStatus() == Action.Status.FIX) {
-			// The code does not need a fix
-			res.setStatus(new ResponseStatus(false, "The code does not need a fix"));
-			return Response.ok(res).build();
-		}
-		CodeVisitor eval = new CodeVisitor(room);
-
-		Action.Status status;
-		String goodCode;
-
-		try {
-			ErrorHandler errors = new ErrorHandler();;
-			tree = Demiurgo.parseStream(is, errors );
-			eval.visit(tree);
-
-			// if there are no errors catched, everything is ok at this point
-			status = Action.Status.READY;
-			goodCode = req.getNewCode();
-			res.setStatus(new ResponseStatus());
-
-		} catch (ParseCancellationException e) {
-			// Syntax error
-			res.setErrorStartIndex(0);
-			res.setStatus(new ResponseStatus(false, Errors.getErrorMessages().get(0).getMessage()));
-			return Response.ok(res).build();
-		} catch (RuntimeException e) {
-			if (e.getCause() instanceof DemiurgoException) {
-				// Semantic error
-				DemiurgoException ex = (DemiurgoException) e.getCause();
-				res.setStatus(new ResponseStatus(false, e.getMessage()));
-				status = Action.Status.FIX;
-				goodCode = req.getNewCode().substring(0, ex.getStartIndex());
-				// points out unexecuted code
-				res.setErrorStartIndex(ex.getStartIndex());
-			} else {
-				// Unexpected internal error
-				System.err.println(e.getCause().getMessage()); // TODO: Logger?
-				return Response.serverError().entity(e.getMessage()).build();
-			}
-		} catch (IOException e) {
-			// Unexpected IO error
-			return Response.serverError().entity(e.getMessage()).build();
-		}
-
-		action.setCode(action.getCode() + goodCode);
-		action.setNarration(action.getNarration() + eval.getPrenarration());
-		action.setWitnesses(new ArrayList<>(room.getUsers()));
-		action.setStatus(status);
-
-		List<String> witnesses = new ArrayList<>();
-		for (User u : action.getWitnesses()) {
-			witnesses.add(u.getUsername());
-		}
-		DateFormat df = DateFormat.getInstance();
-		res.setAction(new JsonAction(action.getId(), action.getCode(), action.getNarration(),
-				action.getRoom().getLongPath(), witnesses, df.format(action.getDate()), action.getStatus().toString()));
-
-		return Response.ok(res).build();
-	}
-
+	// TODO
 	@POST
 	@Path("/newclass")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -347,7 +331,7 @@ public class WebService {
 			ParseTree tree;
 
 			ErrorHandler errors = new ErrorHandler();
-			tree = Demiurgo.parseStream(is, errors );
+			tree = Demiurgo.parseStream(is, errors);
 
 			UserDefinedClass newClass = new UserDefinedClass(name, w);
 			w.addClass(newClass);
@@ -368,42 +352,15 @@ public class WebService {
 
 	@POST
 	@Path("/createroom")
+	@RolesAllowed("gm")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String createRoom(@FormParam("token") String token, @FormParam("path") String path) {
-		try {
-			Jws<Claims> cl = Jwts.parser().require("role", "admin").setSigningKey(Demiurgo.getKey())
-					.parseClaimsJws(token);
-			String world = (String) cl.getBody().get("world");
-			WorldRoom room = Demiurgo.getWorld(world).newRoom(path);
-			return (room != null) ? "OK" : "ERROR";
-		} catch (SignatureException | MissingClaimException | IncorrectClaimException e) {
-			System.err.println(e.getLocalizedMessage());
-			return "ERROR";
-		}
-	}
-
-	@POST
-	@Path("/submitdecision")
-	@Produces(MediaType.APPLICATION_JSON)
-	public String submitDecision(@FormParam("token") String token, @FormParam("text") String text) {
-		try {
-			Jws<Claims> cl = Jwts.parser().require("role", "player").setSigningKey(Demiurgo.getKey())
-					.parseClaimsJws(token);
-			String world = (String) cl.getBody().get("world");
-			String user = (String) cl.getBody().getSubject();
-			World w = Demiurgo.getWorld(world);
-			w.getUser(user).setDecision(text);
-			WorldObject obj = w.getUser(user).getObj();
-			if (obj != null && obj.getLocation() instanceof WorldRoom) {
-				w.getPendingRooms().add((WorldRoom) obj.getLocation());
-			} else {
-				// TODO: characters without room
-			}
-			return "OK";
-		} catch (SignatureException | MissingClaimException | IncorrectClaimException e) {
-			System.err.println(e.getLocalizedMessage());
-			return "ERROR";
-		}
+	public Response createRoom(CreateRoomRequest req) {
+		String world = ((DemiurgoPrincipal) securityContext.getUserPrincipal()).getWorld();
+		World w = Demiurgo.getWorld(world);
+		WorldRoom room = w.newRoom(req.getPath());
+		
+		return Response.ok(room.toJson()).build();
+		//TODO: could this fail?
 	}
 
 	@GET

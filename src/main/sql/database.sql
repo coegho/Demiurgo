@@ -1,6 +1,6 @@
 CREATE TABLE users (
   username varchar(128) NOT NULL PRIMARY KEY,
-  passwd varchar(32) NOT NULL DEFAULT '',
+  passwd char(64) NULL,
   role enum('GM','USER') NOT NULL default 'USER',
   obj_id bigint NULL,
   decision TEXT NULL DEFAULT NULL
@@ -16,16 +16,16 @@ CREATE TABLE objects (
 CREATE TABLE rooms (
   id bigint NOT NULL PRIMARY KEY,
   long_path varchar(256) NOT NULL,
-  room_value BLOB
+  room_value BLOB,
+  prenarration TEXT NULL DEFAULT NULL
 );
 
 CREATE TABLE actions (
   id bigint NOT NULL PRIMARY KEY,
   room bigint NOT NULL,
-  code TEXT NOT NULL,
   narration TEXT NULL DEFAULT NULL,
   publish_date datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  status enum('FIX', 'READY', 'PUBLISHED') NOT NULL DEFAULT 'READY'
+  published boolean NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE witness_action (

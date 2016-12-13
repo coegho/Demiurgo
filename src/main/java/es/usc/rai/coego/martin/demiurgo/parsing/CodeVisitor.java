@@ -9,11 +9,11 @@ import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
 public class CodeVisitor extends ExecVisitor {
 
-	private String prenarration;
+	private StringBuilder prenarration;
 	
 	public CodeVisitor(WorldRoom room) {
 		sm = new ScopeManager(room);
-		this.prenarration = "";
+		this.prenarration = new StringBuilder();
 	}
 
 	/**
@@ -32,10 +32,9 @@ public class CodeVisitor extends ExecVisitor {
 	public ValueInterface visitEcho(EchoContext ctx) {
 		ValueInterface v = visit(ctx.operation());
 
-		// TODO: temporal code for debugging
 		try {
-			prenarration += v.castToString();
-			System.out.println(v.castToString());
+			prenarration.append(v.castToString());
+			prenarration.append("\n");
 		} catch (ValueCastException e) {
 			throw new RuntimeException(e);
 		}
@@ -43,6 +42,6 @@ public class CodeVisitor extends ExecVisitor {
 	}
 	
 	public String getPrenarration() {
-		return prenarration;
+		return prenarration.toString();
 	}
 }

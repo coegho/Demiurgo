@@ -2,6 +2,8 @@ package es.usc.rai.coego.martin.demiurgo.universe;
 
 import java.io.IOException;
 
+import es.usc.rai.coego.martin.demiurgo.json.JsonUser;
+
 public class User {
 	protected String username;
 	protected UserRole role;
@@ -52,7 +54,7 @@ public class User {
 	}
 
 	public long getObjId() {
-		return ((obj != null) ? obj.getId() : -1);
+		return obj_id;
 	}
 
 	public String getDecision() {
@@ -82,14 +84,13 @@ public class User {
 			obj = world.getObject(obj_id);
 		}
 	}
-	/*
-	public ObjectNode toJSON() {
-		ObjectNode userdata = new ObjectMapper().createObjectNode();
-        userdata.put("username", getUsername());
-        if(getObjId() != -1)
-        	userdata.put("obj_id", getObjId());
-        userdata.put("admin", isAdmin()?"admin":"player");
-		
-		return userdata;
-	}*/
+	
+	public JsonUser toJson() {
+		JsonUser ju = new JsonUser();
+		ju.setName(getUsername());
+		ju.setObj((getObj() != null)?(getObj().toJson()):null);
+		ju.setRole(getRole().toString());
+		ju.setDecision(getDecision());
+		return ju;
+	}
 }

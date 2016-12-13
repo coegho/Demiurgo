@@ -2,17 +2,21 @@ package es.usc.rai.coego.martin.demiurgo;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.URI;
 import java.security.Key;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.logging.ConsoleHandler;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,7 +44,6 @@ import es.usc.rai.coego.martin.demiurgo.universe.UserDefinedClass;
 import es.usc.rai.coego.martin.demiurgo.universe.World;
 import es.usc.rai.coego.martin.demiurgo.universe.WorldObject;
 import es.usc.rai.coego.martin.demiurgo.universe.WorldRoom;
-import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 import io.jsonwebtoken.impl.crypto.MacProvider;
 
 /**
@@ -53,6 +56,7 @@ import io.jsonwebtoken.impl.crypto.MacProvider;
 public class Demiurgo {
 	protected static Map<String, World> worlds;
 	protected static Key k;
+	protected static Logger logger;
 
 	// Base URI the Grizzly HTTP server will listen on
 	public static final String BASE_URI;
@@ -72,17 +76,18 @@ public class Demiurgo {
 	private static HttpServer server;
 
 	public static void main(String[] args) {
-
+		logger = Logger.getGlobal();
+		logger.setLevel(Level.FINE);
 		worlds = new HashMap<>();
-		k = MacProvider.generateKey();
+		k = loadKey("demiurgo_key");
 
 		File platRoot = new File("worlds");
 		if (!platRoot.exists()) {
-			System.err.println("ERROR: Cannot find 'worlds' folder");
+			logger.severe("ERROR: Cannot find 'worlds' folder");
 			System.exit(1);
 		}
 		if (!platRoot.isDirectory()) {
-			System.err.println("ERROR: 'worlds' is not a folder");
+			logger.severe("ERROR: 'worlds' is not a folder");
 			System.exit(2);
 		}
 
@@ -93,63 +98,35 @@ public class Demiurgo {
 				try {
 					worlds.put(w.getName().toLowerCase(), rebuildWorld(w));
 				} catch (IOException e) {
-					System.err.println(e.getMessage());
+					logger.severe(e.getMessage());
 					System.exit(4);
 				}
 			} else {
-				System.err.println("WARNING: " + w.getName() + " is not a folder");
+				logger.warning(w.getName() + " is not a folder");
 			}
 		}
 
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {
-				System.out.println("Saving changes...");
-				/*
-				 * try { LocateRegistry.getRegistry().unbind("Demiurgo"); }
-				 * catch (RemoteException | NotBoundException e) {
-				 * System.err.println(e.getLocalizedMessage()); }
-				 */
+				logger.info("Saving changes...");
 				if (server != null) {
 					server.shutdown();
 				}
 				saveAllInDatabase();
-				System.out.println("Changes saved correctly");
+				logger.info("Changes saved correctly");
 			}
 		});
 
-		loadFromDatabase(worlds.get("mundo1")); // TODO: Example
+		logger.info("Loading data from database...");
+		for(World w : worlds.values()) {
+			logger.info("loading " + w.getName() + "...");
+			loadFromDatabase(w);
+		}
+		logger.info("Data loaded");
 
 		server = startServer();
 		server.getHttpHandler().setAllowEncodedSlash(true);
-
-		// TODO: Check
-		for (String wn : worlds.keySet()) {
-			// Checking world state
-			World w = worlds.get(wn);
-			System.out.println("##########CHECKING WORLD STATE: " + w.getName() + "########");
-			System.out.println("--DEFINED CLASSES--");
-			for (String c : w.getAllClasses()) {
-				System.out.println(c);
-			}
-			System.out.println("--USERS--");
-			for (String c : w.getAllUserNames()) {
-				System.out.println(c);
-			}
-			System.out.println("--CHECKING ROOMS--");
-			for (WorldRoom r : w.getAllRooms()) {
-				System.out.println("ROOM " + r.getLongPath());
-				System.out.print("| OBJECTS = {");
-				for (WorldObject o : r.getObjects()) {
-					System.out.print(" #" + o.getId() + ":" + o.getClassName());
-				}
-				System.out.println(" }");
-				System.out.print("| VARIABLES = {");
-				for (Entry<String, ValueInterface> s : r.getVariables().entrySet())
-					System.out.print(" " + s.getKey() + "=" + s.getValue().getValueAsString());
-				System.out.println(" }");
-			}
-		}
 
 		// TODO: little eclipse hack
 
@@ -160,6 +137,35 @@ public class Demiurgo {
 			e.printStackTrace();
 		}
 		System.exit(0);
+	}
+
+	//TODO: better method of handle keys
+	private static Key loadKey(String keyFilePath) {
+		ObjectOutputStream oos;
+		ObjectInputStream ois;
+		try {
+			File f = new File(keyFilePath);
+			if(!f.exists()) {
+				Key key = MacProvider.generateKey();
+				FileOutputStream fos = new FileOutputStream(f);
+				oos = new ObjectOutputStream(fos);
+				oos.writeObject(key);
+				return key;
+			}
+			else {
+				FileInputStream fis = new FileInputStream(f);
+				ois = new ObjectInputStream(fis);
+				Key key = (Key) ois.readObject();
+				return key;
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	public static HttpServer startServer() {
@@ -215,11 +221,20 @@ public class Demiurgo {
 		List<User> users = db.readAllUsers();
 		for (User u : users) {
 			if (u.getObjId() != -1)
-				u.setObj(world.getObject(u.getObjId()));
+				world.setUserObject(u, (world.getObject(u.getObjId())));
 			world.addUser(u);
 			if (u.getDecision() != null && u.getObj() != null && u.getObj().getLocation() instanceof WorldRoom) {
 				world.getPendingRooms().add((WorldRoom) u.getObj().getLocation());
 				// TODO: characters without room
+			}
+		}
+
+		// Reading actions
+		for (WorldRoom r : rooms) {
+			List<Action> l = loadActionsFromRoom(r);
+			r.setActions(l);
+			for (Action a : l) {
+				world.getActions().put(a.getId(), a);
 			}
 		}
 
@@ -269,13 +284,20 @@ public class Demiurgo {
 
 	private static World rebuildWorld(File w) throws IOException {
 		World world = new World(w.getName().toLowerCase());
+		Logger wl = Logger.getLogger(World.class.getName() + "." + world.getName());
+		wl.setLevel(Level.INFO);
+		wl.setUseParentHandlers(false);
+		Handler wh = new FileHandler(new File("world.log").getAbsolutePath(), true);
+		// wh.setFormatter(new XMLFormatter()); TODO: custom formatter
+		wl.addHandler(wh);
+		world.setLogger(wl);
 		File classes = new File(w, "classes");
-		File[] list = classes.listFiles(new RolFileFilter());
+		File[] list = classes.listFiles(new COEFileFilter());
 		// Declaring classes
 		for (File c : list) {
 			if (c.exists() && c.isFile()) {
 				String filename = c.getName().toLowerCase();
-				String className = filename.substring(0, filename.length() - RolFileFilter.extension.length());
+				String className = filename.substring(0, filename.length() - COEFileFilter.extension.length());
 				world.addClass(new UserDefinedClass(className, world));
 			} else {
 				System.err.print(c.getName());
@@ -285,15 +307,15 @@ public class Demiurgo {
 		for (File c : list) {
 			if (c.exists() && c.isFile()) {
 				String filename = c.getName().toLowerCase();
-				String className = filename.substring(0, filename.length() - RolFileFilter.extension.length());
+				String className = filename.substring(0, filename.length() - COEFileFilter.extension.length());
 				ErrorHandler errors = new ErrorHandler();
-				try {	
+				try {
 					ParseTree tree = parseStream(new FileInputStream(c), errors);
 					ClassVisitor eval = new ClassVisitor(world.getClassFromName(className));
 					eval.visit(tree);
 
-				} catch(RuntimeException e) {
-					if(e.getCause() instanceof DemiurgoException) {
+				} catch (RuntimeException e) {
+					if (e.getCause() instanceof DemiurgoException) {
 						DemiurgoException ex = (DemiurgoException) e.getCause();
 						System.err.println("Error on file " + className);
 						System.err.println(ex.getMessage());
@@ -332,11 +354,15 @@ public class Demiurgo {
 		 */
 		saveWorldInDatabase(worlds.get("mundo1")); // TODO: Example
 	}
+
+	public static Logger getLogger() {
+		return logger;
+	}
 }
 
-class RolFileFilter implements FilenameFilter {
+class COEFileFilter implements FilenameFilter {
 
-	static String extension = ".rol";
+	static String extension = ".coe";
 
 	@Override
 	public boolean accept(File dir, String name) {

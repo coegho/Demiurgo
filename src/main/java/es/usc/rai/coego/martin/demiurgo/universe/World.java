@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 /**
  * Represents a world into the system.
@@ -21,12 +22,14 @@ public class World {
 	protected Map<Long, WorldObject> objects;
 	protected Map<Long, WorldLocation> locations;
 	protected Map<String, User> users;
+	protected Map<Long, Action> actions;
 	protected RoomPath rooms;
 	protected UserDefinedClass rootClass;
 	protected long currentObjId;
 	protected long currentRoomId;
 	protected long currentActionId;
 	protected List<WorldRoom> pendingRooms;
+	protected Logger worldLogger;
 
 	public World(String name) {
 		this.name = name;
@@ -37,6 +40,7 @@ public class World {
 		objects = new HashMap<>();
 		locations = new HashMap<>();
 		users = new HashMap<>();
+		actions = new HashMap<>();
 		rooms = new RoomPath("/", null);
 		rootClass = new RootObjectClass(this);
 		pendingRooms = new ArrayList<>();
@@ -116,16 +120,19 @@ public class World {
 		RoomPath rg = rooms;
 		String partialPath = "";
 
-		if(loc.equals("/")) {
+		if (loc.isEmpty()) {
+			return null;
+		}
+		if (loc.equals("/")) {
 			return rg;
 		}
 		for (String s : loc.substring(1).split("/")) {
-			partialPath += "/"+ s;
+			partialPath += "/" + s;
 			if (rg.getChildren().containsKey(s)) {
 				rg = rg.getChildren().get(s);
 			} else {
 				if (constructive) {
-					RoomPath ng = new RoomPath(partialPath.length()>0?partialPath:partialPath+"/", rg);
+					RoomPath ng = new RoomPath(partialPath.length() > 0 ? partialPath : partialPath + "/", rg);
 					rg.getChildren().put(s, ng);
 					rg = ng;
 				} else
@@ -248,7 +255,7 @@ public class World {
 		if (user != null) {
 			user.setObj(obj);
 		}
-		if(obj != null) {
+		if (obj != null) {
 			obj.setUser(user);
 		}
 	}
@@ -283,7 +290,7 @@ public class World {
 	public void setCurrentRoomId(long roomId) {
 		this.currentRoomId = roomId;
 	}
-	
+
 	public void setCurrentActionId(long currentActionId) {
 		this.currentActionId = currentActionId;
 	}
@@ -295,71 +302,81 @@ public class World {
 	public long getCurrentRoomId() {
 		return currentRoomId;
 	}
-	
+
 	public long getCurrentActionId() {
 		return currentActionId;
 	}
 
-	/*public void addDecision(User user, String text) {
-		if(user.getObj() != null && user.getObj().getLocation() instanceof WorldRoom) {
-			WorldRoom room = (WorldRoom)user.getObj().getLocation();
-			pendingRooms.add(room);
-			room.addDecision(user, text);
-		}
-		else {
-			untraceableDecisions.put(user, text);
-		}
-	}*/
+	/*
+	 * public void addDecision(User user, String text) { if(user.getObj() !=
+	 * null && user.getObj().getLocation() instanceof WorldRoom) { WorldRoom
+	 * room = (WorldRoom)user.getObj().getLocation(); pendingRooms.add(room);
+	 * room.addDecision(user, text); } else { untraceableDecisions.put(user,
+	 * text); } }
+	 */
 
-	/*public List<Decision> getDecisions() {
-		List<Decision> l = new ArrayList<>();
-		for(User u : untraceableDecisions.keySet()) {
-			l.add(new Decision(u.getUsername(), null, untraceableDecisions.get(u)));
-		}
-		return l;
-	}*/
-	
-	/*public ArrayNode getDecisions() {
-		ObjectMapper om = new ObjectMapper();
-		ArrayNode l = om.createArrayNode();
-		for (Entry<User, String> u : untraceableDecisions.entrySet()) {
-			ObjectNode decision = om.createObjectNode();
-			decision.put("username", u.getKey().getUsername());
-			decision.put("room_path", "noroom");
-			decision.put("text", u.getValue());
-			l.add(decision);
-		}
-		return l;
-	}*/
+	/*
+	 * public List<Decision> getDecisions() { List<Decision> l = new
+	 * ArrayList<>(); for(User u : untraceableDecisions.keySet()) { l.add(new
+	 * Decision(u.getUsername(), null, untraceableDecisions.get(u))); } return
+	 * l; }
+	 */
+
+	/*
+	 * public ArrayNode getDecisions() { ObjectMapper om = new ObjectMapper();
+	 * ArrayNode l = om.createArrayNode(); for (Entry<User, String> u :
+	 * untraceableDecisions.entrySet()) { ObjectNode decision =
+	 * om.createObjectNode(); decision.put("username",
+	 * u.getKey().getUsername()); decision.put("room_path", "noroom");
+	 * decision.put("text", u.getValue()); l.add(decision); } return l; }
+	 */
 
 	public List<WorldRoom> getPendingRooms() {
 		return pendingRooms;
 	}
 	/*
-	public ArrayNode getPendingRoomsJSON() {
-		ObjectMapper om = new ObjectMapper();
-		ArrayNode arraydata = om.createArrayNode();
-		
-		for(WorldRoom r : pendingRooms) {
-			arraydata.add(r.getLongPath());
-		}
-		
-		return arraydata;
-	}*/
+	 * public ArrayNode getPendingRoomsJSON() { ObjectMapper om = new
+	 * ObjectMapper(); ArrayNode arraydata = om.createArrayNode();
+	 * 
+	 * for(WorldRoom r : pendingRooms) { arraydata.add(r.getLongPath()); }
+	 * 
+	 * return arraydata; }
+	 */
 
 	public Collection<User> getAllUsers() {
 		return users.values();
 	}
 
-	/*public ObjectNode getRoomPaths() {
-		return rooms.roomPathData();
-	}*/
-	
+	/*
+	 * public ObjectNode getRoomPaths() { return rooms.roomPathData(); }
+	 */
+
 	public void addAction(Action action) {
 		if (action.getId() == -1) {
 			action.setId(currentActionId);
 			currentActionId++;
 		}
 		action.getRoom().getActions().add(action);
+		actions.put(action.getId(), action);
+	}
+
+	public Action getAction(long id) {
+		return actions.get(id);
+	}
+
+	public Map<Long, Action> getActions() {
+		return actions;
+	}
+
+	public void setActions(Map<Long, Action> actions) {
+		this.actions = actions;
+	}
+
+	public Logger getLogger() {
+		return worldLogger;
+	}
+
+	public void setLogger(Logger logger) {
+		this.worldLogger = logger;
 	}
 }

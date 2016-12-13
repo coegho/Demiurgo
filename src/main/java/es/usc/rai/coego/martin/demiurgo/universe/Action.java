@@ -1,37 +1,45 @@
 package es.usc.rai.coego.martin.demiurgo.universe;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class Action {
+import es.usc.rai.coego.martin.demiurgo.json.JsonAction;
+
+public class Action implements Comparable<Action> {
 	protected long id;
-	protected String code;
 	protected String narration;
 	protected WorldRoom room;
 	protected List<User> witnesses;
 	protected Date date;
-	protected Status status;
+	protected boolean published;
 
-	public Action(int i, WorldRoom room, String code, String prenarration, Status status) {
+	public Action(int i, WorldRoom room, String prenarration) {
 		this.id = -1;
-		this.code = code;
 		this.room = room;
 		this.narration = prenarration;
 		this.witnesses = new ArrayList<>(room.getUsers());
 		this.date = new Date();
-		this.status = status;
+		this.published = false;
+	}
+	
+	public Action(int i, WorldRoom room, String prenarration, List<User> witnesses) {
+		this.id = -1;
+		this.room = room;
+		this.narration = prenarration;
+		this.witnesses = witnesses;
+		this.date = new Date();
+		this.published = false;
 	}
 
-	public Action(long id, WorldRoom room, String code, String narration, List<User> witnesses, Date date,
-			Status status) {
+	public Action(long id, WorldRoom room, String narration, List<User> witnesses, Date date, boolean published) {
 		this.id = id;
-		this.code = code;
 		this.room = room;
 		this.narration = narration;
 		this.witnesses = witnesses;
 		this.date = date;
-		this.status = status;
+		this.published = published;
 	}
 
 	public long getId() {
@@ -40,14 +48,6 @@ public class Action {
 
 	public void setId(long id) {
 		this.id = id;
-	}
-
-	public String getCode() {
-		return code;
-	}
-
-	public void setCode(String code) {
-		this.code = code;
 	}
 
 	public String getNarration() {
@@ -81,16 +81,33 @@ public class Action {
 	public void setDate(Date date) {
 		this.date = date;
 	}
-
-	public Status getStatus() {
-		return status;
+	
+	public boolean isPublished() {
+		return published;
 	}
 	
-	public void setStatus(Status status) {
-		this.status = status;
+	public void setPublished(boolean published) {
+		this.published = published;
+	}
+	
+	public JsonAction toJson() {
+		List<String> witnesses = new ArrayList<>();
+		for (User u : getWitnesses()) {
+			witnesses.add(u.getUsername());
+		}
+		DateFormat df = DateFormat.getInstance();
+		return new JsonAction(getId(), getNarration(), getRoom().getLongPath(),
+				witnesses, df.format(getDate()), isPublished());
 	}
 
-	public enum Status {
-		FIX, READY, PUBLISHED;
+	@Override
+	public int compareTo(Action o) {
+		if(o.getDate().getTime() > this.getDate().getTime()) {
+			return -1;
+		}
+		if(o.getDate().getTime() < this.getDate().getTime()) {
+			return 1;
+		}
+		return 0;
 	}
 }
