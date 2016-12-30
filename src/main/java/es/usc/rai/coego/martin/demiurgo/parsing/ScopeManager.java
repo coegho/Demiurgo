@@ -10,9 +10,9 @@ import es.usc.rai.coego.martin.demiurgo.scopes.RoomScope;
 import es.usc.rai.coego.martin.demiurgo.scopes.Scope;
 import es.usc.rai.coego.martin.demiurgo.scopes.WorldScope;
 import es.usc.rai.coego.martin.demiurgo.universe.User;
-import es.usc.rai.coego.martin.demiurgo.universe.UserDefinedClass;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass;
 import es.usc.rai.coego.martin.demiurgo.universe.World;
-import es.usc.rai.coego.martin.demiurgo.universe.WorldObject;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoObject;
 import es.usc.rai.coego.martin.demiurgo.universe.WorldRoom;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
@@ -58,7 +58,7 @@ public class ScopeManager {
 	 * @param cl
 	 *            The class which is being defined.
 	 */
-	public ScopeManager(UserDefinedClass cl) {
+	public ScopeManager(DemiurgoClass cl) {
 		this.variables = new HashMap<>();
 		scopes = new ArrayList<>();
 		globals = new WorldScope(cl.getWorld());
@@ -86,16 +86,16 @@ public class ScopeManager {
 		return globals.getWorld();
 	}
 
-	public UserDefinedClass getClassFromName(String className) {
+	public DemiurgoClass getClassFromName(String className) {
 		return globals.getClassFromName(className);
 	}
 
-	public UserDefinedClass getRootClass() {
+	public DemiurgoClass getRootClass() {
 		return globals.getRootClass();
 	}
 
 
-	public WorldObject getObject(long id) {
+	public DemiurgoObject getObject(long id) {
 		return globals.getObject(id);
 	}
 
@@ -107,7 +107,7 @@ public class ScopeManager {
 		return globals.getRoom(roomRelativeName, currentRoom);
 	}
 
-	public void setUserObject(User user, WorldObject obj) {
+	public void setUserObject(User user, DemiurgoObject obj) {
 		globals.setUserObject(user, obj);
 	}
 

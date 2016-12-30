@@ -8,16 +8,16 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import es.usc.rai.coego.martin.demiurgo.universe.Action;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoObject;
 import es.usc.rai.coego.martin.demiurgo.universe.User;
 import es.usc.rai.coego.martin.demiurgo.universe.UserRole;
-import es.usc.rai.coego.martin.demiurgo.universe.WorldObject;
 import es.usc.rai.coego.martin.demiurgo.universe.WorldRoom;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
@@ -58,6 +58,40 @@ public class MariaDBDatabase implements DatabaseInterface {
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
 		}
+	}
+	
+	@Override
+	public void beginTransaction() {
+		if(existsActiveConnection())
+			try {
+				con.setAutoCommit(false);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	}
+	
+	@Override
+	public void commitTransaction() {
+		if(existsActiveConnection())
+			try {
+				con.commit();
+				con.setAutoCommit(true);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	}
+	
+	@Override
+	public void rollbackTransaction() {
+		if(existsActiveConnection())
+			try {
+				con.rollback();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 	}
 
 	@Override
@@ -115,7 +149,7 @@ public class MariaDBDatabase implements DatabaseInterface {
 	}
 
 	@Override
-	public void writeWorldObject(WorldObject obj) {
+	public void writeDemiurgoObject(DemiurgoObject obj) {
 		try {
 			PreparedStatement stm = con.prepareStatement(
 					"INSERT objects (obj_id, classname, room, obj_value) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE classname=VALUES(classname), room=VALUES(room), obj_value=VALUES(obj_value)");
@@ -123,6 +157,20 @@ public class MariaDBDatabase implements DatabaseInterface {
 			stm.setString(2, obj.getClassName());
 			stm.setLong(3, obj.getLocId());
 			stm.setObject(4, obj.getFields());
+			stm.executeUpdate();
+
+		} catch (SQLException e) {
+			System.err.println(e.getLocalizedMessage());
+		}
+	}
+	
+	@Override
+	public void writeDemiurgoClass(DemiurgoClass cl) {
+		try {
+			PreparedStatement stm = con.prepareStatement(
+					"INSERT classes (classname, code) VALUES (?, ?) ON DUPLICATE KEY UPDATE code=VALUES(code)");
+			stm.setString(1, cl.getClassName());
+			stm.setString(2, cl.getCode());
 			stm.executeUpdate();
 
 		} catch (SQLException e) {
@@ -202,8 +250,8 @@ public class MariaDBDatabase implements DatabaseInterface {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<WorldObject> readAllObjects() {
-		ArrayList<WorldObject> objs = new ArrayList<>();
+	public List<DemiurgoObject> readAllObjects() {
+		ArrayList<DemiurgoObject> objs = new ArrayList<>();
 		try {
 			PreparedStatement stm = con.prepareStatement("SELECT obj_id, classname, room, obj_value FROM objects");
 			ResultSet rs = stm.executeQuery();
@@ -217,12 +265,32 @@ public class MariaDBDatabase implements DatabaseInterface {
 					objectIn = new ObjectInputStream(new ByteArrayInputStream(buf));
 
 				Map<String, ValueInterface> variables = (Map<String, ValueInterface>) objectIn.readObject();
-				WorldObject obj = new WorldObject(id, classname, loc_id, variables);
+				DemiurgoObject obj = new DemiurgoObject(id, classname, loc_id, variables);
 				objs.add(obj);
 			}
 
 			return objs;
 		} catch (SQLException | IOException | ClassNotFoundException e) {
+			System.err.println(e.getLocalizedMessage());
+			return null; // TODO throw exception
+		}
+	}
+	
+	@Override
+	public List<DemiurgoClass> readAllClasses() {
+		ArrayList<DemiurgoClass> classes = new ArrayList<>();
+		try {
+			PreparedStatement stm = con.prepareStatement("SELECT classname, code FROM classes");
+			ResultSet rs = stm.executeQuery();
+			while (rs.next()) {
+				String classname = rs.getString("classname");
+				String code = rs.getString("code");
+				DemiurgoClass dclass = new DemiurgoClass(classname, code);
+				classes.add(dclass);
+			}
+
+			return classes;
+		} catch (SQLException  e) {
 			System.err.println(e.getLocalizedMessage());
 			return null; // TODO throw exception
 		}

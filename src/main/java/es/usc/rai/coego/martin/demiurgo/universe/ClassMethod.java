@@ -10,6 +10,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNodeImpl;
 
 import es.usc.rai.coego.martin.demiurgo.coe.COELexer;
+import es.usc.rai.coego.martin.demiurgo.json.JsonMethod;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
 public class ClassMethod {
@@ -84,6 +85,12 @@ public class ClassMethod {
 		}
 		r += " }";
 		return r;
+	}
+
+	public JsonMethod toJson(String name) {
+		List<String> args = new ArrayList<>(this.argNames);
+		args.remove(retVarName);
+		return new JsonMethod(name, args, retVarName);
 	}
 	
 }

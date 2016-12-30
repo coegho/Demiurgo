@@ -2,15 +2,16 @@ package es.usc.rai.coego.martin.demiurgo.universe;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import es.usc.rai.coego.martin.demiurgo.json.JsonDecision;
 import es.usc.rai.coego.martin.demiurgo.json.JsonObject;
 import es.usc.rai.coego.martin.demiurgo.json.JsonRoom;
+import es.usc.rai.coego.martin.demiurgo.json.JsonUser;
 import es.usc.rai.coego.martin.demiurgo.json.JsonVariable;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
@@ -91,7 +92,7 @@ public class WorldRoom extends WorldLocation {
 		id = in.readLong();
 		longPath = (String) in.readObject();
 		variables = ((Map<String, ValueInterface>) in.readObject());
-		objects = (List<WorldObject>) in.readObject();
+		objects = (List<DemiurgoObject>) in.readObject();
 	}
 
 	public JsonRoom toJson() {
@@ -104,20 +105,22 @@ public class WorldRoom extends WorldLocation {
 		for (Entry<String, ValueInterface> v : getVariables().entrySet()) {
 			variables.add(new JsonVariable(v.getKey(), v.getValue().getValueAsString(), v.getValue().getTypeName()));
 		}
+
+		variables.sort(Comparator.comparing(JsonVariable::getName));
 		r.setVariables(variables);
 
 		// Objects to JSON
 		List<JsonObject> objects = new ArrayList<>();
-		for (WorldObject o : getObjects()) {
+		for (DemiurgoObject o : getObjects()) {
 			objects.add(o.toJson());
 		}
 		r.setObjects(objects);
 
-		List<JsonDecision> decisions = new ArrayList<>();
-		for (User u : getDecidingUsers()) {
-			decisions.add(new JsonDecision(u.getUsername(), u.getDecision()));
+		List<JsonUser> users = new ArrayList<>();
+		for (User u : getUsers()) {
+			users.add(u.toJson());
 		}
-		r.setDecisions(decisions);
+		r.setUsers(users);
 		return r;
 	}
 
@@ -128,7 +131,7 @@ public class WorldRoom extends WorldLocation {
 	 */
 	public List<User> getUsers() {
 		List<User> users = new ArrayList<>();
-		for (WorldObject o : getObjects()) {
+		for (DemiurgoObject o : getObjects()) {
 			if (o.getUser() != null) {
 				users.add(o.getUser());
 			}
@@ -167,5 +170,6 @@ public class WorldRoom extends WorldLocation {
 		for(User u : getUsers()) {
 			u.setDecision(null);
 		}
+		world.getPendingRooms().remove(this);
 	}
 }

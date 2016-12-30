@@ -18,13 +18,13 @@ import java.util.logging.Logger;
  */
 public class World {
 	protected String name;
-	protected Map<String, UserDefinedClass> classes;
-	protected Map<Long, WorldObject> objects;
+	protected Map<String, DemiurgoClass> classes;
+	protected Map<Long, DemiurgoObject> objects;
 	protected Map<Long, WorldLocation> locations;
 	protected Map<String, User> users;
 	protected Map<Long, Action> actions;
 	protected RoomPath rooms;
-	protected UserDefinedClass rootClass;
+	protected DemiurgoClass rootClass;
 	protected long currentObjId;
 	protected long currentRoomId;
 	protected long currentActionId;
@@ -55,11 +55,11 @@ public class World {
 		this.name = name;
 	}
 
-	public UserDefinedClass getClassFromName(String className) {
+	public DemiurgoClass getClassFromName(String className) {
 		return classes.get(className);
 	}
 
-	public void addClass(UserDefinedClass newClass) {
+	public void addClass(DemiurgoClass newClass) {
 		classes.put(newClass.getClassName(), newClass);
 	}
 
@@ -67,15 +67,15 @@ public class World {
 		classes.remove(className);
 	}
 
-	public UserDefinedClass getRootClass() {
+	public DemiurgoClass getRootClass() {
 		return rootClass;
 	}
 
-	public void setRootClass(UserDefinedClass rootClass) {
+	public void setRootClass(DemiurgoClass rootClass) {
 		this.rootClass = rootClass;
 	}
 
-	public void addObject(WorldObject obj) {
+	public void addObject(DemiurgoObject obj) {
 		if (obj.getId() == -1) {
 			obj.setId(currentObjId);
 			currentObjId++;
@@ -83,11 +83,11 @@ public class World {
 		objects.put(obj.getId(), obj);
 	}
 
-	public void removeObject(WorldObject obj) {
+	public void removeObject(DemiurgoObject obj) {
 		objects.remove(obj.id);
 	}
 
-	public WorldObject getObject(long id) {
+	public DemiurgoObject getObject(long id) {
 		return objects.get(id);
 	}
 
@@ -101,7 +101,7 @@ public class World {
 	 * @param obj
 	 *            Moved object.
 	 */
-	public void moveTo(WorldLocation origin, WorldLocation destination, WorldObject obj) {
+	public void moveTo(WorldLocation origin, WorldLocation destination, DemiurgoObject obj) {
 		origin.removeObject(obj);
 		obj.setLocation(destination);
 		destination.addObject(obj);
@@ -233,15 +233,15 @@ public class World {
 	 * 
 	 * @return
 	 */
-	public Set<String> getAllClasses() {
-		return classes.keySet();
+	public Collection<DemiurgoClass> getClasses() {
+		return classes.values();
 	}
 
 	public Set<String> getAllUserNames() {
 		return users.keySet();
 	}
 
-	public Collection<WorldObject> getAllObjects() {
+	public Collection<DemiurgoObject> getAllObjects() {
 		return objects.values();
 	}
 
@@ -251,7 +251,7 @@ public class World {
 	 * @param user
 	 * @param obj
 	 */
-	public void setUserObject(User user, WorldObject obj) {
+	public void setUserObject(User user, DemiurgoObject obj) {
 		if (user != null) {
 			user.setObj(obj);
 		}
@@ -307,41 +307,9 @@ public class World {
 		return currentActionId;
 	}
 
-	/*
-	 * public void addDecision(User user, String text) { if(user.getObj() !=
-	 * null && user.getObj().getLocation() instanceof WorldRoom) { WorldRoom
-	 * room = (WorldRoom)user.getObj().getLocation(); pendingRooms.add(room);
-	 * room.addDecision(user, text); } else { untraceableDecisions.put(user,
-	 * text); } }
-	 */
-
-	/*
-	 * public List<Decision> getDecisions() { List<Decision> l = new
-	 * ArrayList<>(); for(User u : untraceableDecisions.keySet()) { l.add(new
-	 * Decision(u.getUsername(), null, untraceableDecisions.get(u))); } return
-	 * l; }
-	 */
-
-	/*
-	 * public ArrayNode getDecisions() { ObjectMapper om = new ObjectMapper();
-	 * ArrayNode l = om.createArrayNode(); for (Entry<User, String> u :
-	 * untraceableDecisions.entrySet()) { ObjectNode decision =
-	 * om.createObjectNode(); decision.put("username",
-	 * u.getKey().getUsername()); decision.put("room_path", "noroom");
-	 * decision.put("text", u.getValue()); l.add(decision); } return l; }
-	 */
-
 	public List<WorldRoom> getPendingRooms() {
 		return pendingRooms;
 	}
-	/*
-	 * public ArrayNode getPendingRoomsJSON() { ObjectMapper om = new
-	 * ObjectMapper(); ArrayNode arraydata = om.createArrayNode();
-	 * 
-	 * for(WorldRoom r : pendingRooms) { arraydata.add(r.getLongPath()); }
-	 * 
-	 * return arraydata; }
-	 */
 
 	public Collection<User> getAllUsers() {
 		return users.values();
@@ -378,5 +346,15 @@ public class World {
 
 	public void setLogger(Logger logger) {
 		this.worldLogger = logger;
+	}
+
+	/**
+	 * Modify the current class' fields and methods to the new class' ones.
+	 * 
+	 * @param newClass
+	 */
+	public void modifyClass(DemiurgoClass oldClass, DemiurgoClass newClass) {
+		oldClass.modifyTo(newClass);
+		objects.values().stream().filter(o -> o.ownClass.inheritFrom(oldClass)).forEach(o -> o.updateClass());
 	}
 }

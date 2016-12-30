@@ -1,5 +1,6 @@
 package es.usc.rai.coego.martin.demiurgo;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -9,6 +10,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.HashMap;
 import java.util.List;
@@ -39,12 +41,14 @@ import es.usc.rai.coego.martin.demiurgo.parsing.ClassVisitor;
 import es.usc.rai.coego.martin.demiurgo.parsing.ErrorHandler;
 import es.usc.rai.coego.martin.demiurgo.parsing.ErrorListener;
 import es.usc.rai.coego.martin.demiurgo.universe.Action;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoObject;
+import es.usc.rai.coego.martin.demiurgo.universe.RootObjectClass;
 import es.usc.rai.coego.martin.demiurgo.universe.User;
-import es.usc.rai.coego.martin.demiurgo.universe.UserDefinedClass;
 import es.usc.rai.coego.martin.demiurgo.universe.World;
-import es.usc.rai.coego.martin.demiurgo.universe.WorldObject;
 import es.usc.rai.coego.martin.demiurgo.universe.WorldRoom;
 import io.jsonwebtoken.impl.crypto.MacProvider;
+import io.jsonwebtoken.lang.Strings;
 
 /**
  * 
@@ -81,7 +85,8 @@ public class Demiurgo {
 		worlds = new HashMap<>();
 		k = loadKey("demiurgo_key");
 
-		File platRoot = new File("worlds");
+		//TODO: this could be useful to start new worlds
+		/*File platRoot = new File("worlds");
 		if (!platRoot.exists()) {
 			logger.severe("ERROR: Cannot find 'worlds' folder");
 			System.exit(1);
@@ -104,6 +109,14 @@ public class Demiurgo {
 			} else {
 				logger.warning(w.getName() + " is not a folder");
 			}
+		}*/
+		
+		try {
+			//TODO: multiple worlds, world settings
+			worlds.put("mundo1", rebuildWorld(new File("mundo1")));
+		} catch (IOException e) {
+			logger.severe(e.getMessage());
+			System.exit(5);
 		}
 
 		Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -195,6 +208,42 @@ public class Demiurgo {
 		DatabaseInterface db = new MariaDBDatabase();
 		db.createConnection("plataformarol", "mysql", "mysql"); // TODO: config
 
+		List<DemiurgoClass> classes = db.readAllClasses();
+		
+		//Reading classes
+		for(DemiurgoClass cl : classes) {
+			cl.rebuild(world);
+			world.addClass(cl);
+		}
+		
+		//Rebuilding classes
+		for(DemiurgoClass cl : classes) {
+			try {
+			InputStream is = new ByteArrayInputStream(cl.getCode().getBytes(StandardCharsets.UTF_8));
+			ErrorHandler errors = new ErrorHandler();
+			ParseTree tree = parseStream(is, errors);
+			if(errors.hasErrors()) {
+				logger.severe("Class with errors: " + cl.getClassName() +
+						"\n" + Strings.collectionToDelimitedString(errors.getErrors(), "\n"));
+				world.removeClass(cl.getClassName());
+			}
+			else {
+				ClassVisitor eval = new ClassVisitor(cl);
+				eval.visit(tree);
+			}
+			} catch(IOException e) {
+				logger.severe(e.getMessage());
+			} catch (RuntimeException e) {
+				if (e.getCause() instanceof DemiurgoException) {
+					DemiurgoException ex = (DemiurgoException) e.getCause();
+					System.err.println("Error on file " + cl.getClassName() + ".coe");
+					System.err.println(ex.getMessage());
+					System.err.println("on line " + ex.getLine() + ", column " + ex.getColumn());
+				}
+			}
+			
+		}
+		
 		// Reading rooms
 		List<WorldRoom> rooms = db.readAllRooms();
 		for (WorldRoom r : rooms) {
@@ -202,8 +251,8 @@ public class Demiurgo {
 		}
 
 		// Reading objects
-		List<WorldObject> objs = db.readAllObjects();
-		for (WorldObject o : objs) {
+		List<DemiurgoObject> objs = db.readAllObjects();
+		for (DemiurgoObject o : objs) {
 			world.addObject(o);
 		}
 
@@ -213,7 +262,7 @@ public class Demiurgo {
 		}
 
 		// Rebuilding object variables
-		for (WorldObject obj : objs) {
+		for (DemiurgoObject obj : objs) {
 			obj.rebuild(world);
 		}
 
@@ -257,6 +306,8 @@ public class Demiurgo {
 		DatabaseInterface db = new MariaDBDatabase();
 		db.createConnection("plataformarol", "mysql", "mysql"); // TODO: config
 
+		db.beginTransaction();
+		
 		// Writing rooms
 		for (WorldRoom room : world.getAllRooms()) {
 			db.writeWorldRoom(room);
@@ -267,18 +318,27 @@ public class Demiurgo {
 			}
 		}
 
+		// Writing classes
+		for(DemiurgoClass cl : world.getClasses()) {
+			if(!(cl instanceof RootObjectClass))
+				db.writeDemiurgoClass(cl);
+		}
+		
 		// Writing objects
-		for (WorldObject o : world.getAllObjects()) {
-			db.writeWorldObject(o);
+		for (DemiurgoObject o : world.getAllObjects()) {
+			db.writeDemiurgoObject(o);
 		}
 
 		// Writing users
 		for (User u : world.getAllUsers()) {
 			db.writeUser(u);
 		}
+		
 
 		db.setCurrentIDs(world.getCurrentObjId(), world.getCurrentRoomId(), world.getCurrentActionId());
 
+		db.commitTransaction();
+		
 		db.stopConnection();
 	}
 
@@ -287,49 +347,18 @@ public class Demiurgo {
 		Logger wl = Logger.getLogger(World.class.getName() + "." + world.getName());
 		wl.setLevel(Level.INFO);
 		wl.setUseParentHandlers(false);
-		Handler wh = new FileHandler(new File("world.log").getAbsolutePath(), true);
+		Handler wh = new FileHandler(new File(world.getName()+".log").getAbsolutePath(), true);
 		// wh.setFormatter(new XMLFormatter()); TODO: custom formatter
 		wl.addHandler(wh);
 		world.setLogger(wl);
-		File classes = new File(w, "classes");
-		File[] list = classes.listFiles(new COEFileFilter());
-		// Declaring classes
-		for (File c : list) {
-			if (c.exists() && c.isFile()) {
-				String filename = c.getName().toLowerCase();
-				String className = filename.substring(0, filename.length() - COEFileFilter.extension.length());
-				world.addClass(new UserDefinedClass(className, world));
-			} else {
-				System.err.print(c.getName());
-			}
-		}
-		// Defining classes
-		for (File c : list) {
-			if (c.exists() && c.isFile()) {
-				String filename = c.getName().toLowerCase();
-				String className = filename.substring(0, filename.length() - COEFileFilter.extension.length());
-				ErrorHandler errors = new ErrorHandler();
-				try {
-					ParseTree tree = parseStream(new FileInputStream(c), errors);
-					ClassVisitor eval = new ClassVisitor(world.getClassFromName(className));
-					eval.visit(tree);
-
-				} catch (RuntimeException e) {
-					if (e.getCause() instanceof DemiurgoException) {
-						DemiurgoException ex = (DemiurgoException) e.getCause();
-						System.err.println("Error on file " + className);
-						System.err.println(ex.getMessage());
-						System.err.println("on line " + ex.getLine() + ", column " + ex.getColumn());
-					}
-				}
-			}
-		}
 		return world;
 	}
 
 	public static ParseTree parseStream(InputStream is, ErrorHandler errors) throws IOException {
 		ANTLRInputStream input = new ANTLRInputStream(is);
 		COELexer lexer = new COELexer(input);
+		lexer.removeErrorListeners();
+		lexer.addErrorListener(new ErrorListener(errors));
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
 		COEParser parser = new COEParser(tokens);
 		parser.setErrorHandler(new BailErrorStrategy());

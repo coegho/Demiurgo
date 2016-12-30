@@ -2,20 +2,22 @@ package es.usc.rai.coego.martin.demiurgo.universe;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import es.usc.rai.coego.martin.demiurgo.json.JsonMethod;
 import es.usc.rai.coego.martin.demiurgo.json.JsonObject;
 import es.usc.rai.coego.martin.demiurgo.json.JsonVariable;
 import es.usc.rai.coego.martin.demiurgo.values.ObjectValue;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
-public class WorldObject {
+public class DemiurgoObject {
 	protected long id;
-	protected transient UserDefinedClass ownClass;
+	protected transient DemiurgoClass ownClass;
 	protected transient WorldLocation location;
 	protected Map<String, ValueInterface> fields;
 	protected transient User user;
@@ -25,7 +27,7 @@ public class WorldObject {
 	protected long loc_id;
 	protected String username;
 
-	public WorldObject(UserDefinedClass ownClass, WorldLocation location) {
+	public DemiurgoObject(DemiurgoClass ownClass, WorldLocation location) {
 		this.id = -1;
 		this.ownClass = ownClass;
 		this.location = location;
@@ -53,7 +55,7 @@ public class WorldObject {
 	 * @param fields
 	 *            Object's fields.
 	 */
-	public WorldObject(long id, String classname, long loc_id, Map<String, ValueInterface> fields) {
+	public DemiurgoObject(long id, String classname, long loc_id, Map<String, ValueInterface> fields) {
 		this.id = id;
 		this.className = classname;
 		this.loc_id = loc_id;
@@ -68,11 +70,11 @@ public class WorldObject {
 		this.id = id;
 	}
 
-	public UserDefinedClass getUserClass() {
+	public DemiurgoClass getUserClass() {
 		return ownClass;
 	}
 
-	public void setUserClass(UserDefinedClass ownClass) {
+	public void setUserClass(DemiurgoClass ownClass) {
 		this.ownClass = ownClass;
 	}
 
@@ -125,8 +127,8 @@ public class WorldObject {
 
 	public Map<String, ValueInterface> getFields() {
 		Map<String, ValueInterface> retFields = new HashMap<>();
-		for(Entry<String, ValueInterface> e: fields.entrySet()) {
-			if(!e.getKey().equals("this")) {
+		for (Entry<String, ValueInterface> e : fields.entrySet()) {
+			if (!e.getKey().equals("this")) {
 				retFields.put(e.getKey(), e.getValue());
 			}
 		}
@@ -167,6 +169,44 @@ public class WorldObject {
 		for (Entry<String, ValueInterface> v : getFields().entrySet()) {
 			fields.add(new JsonVariable(v.getKey(), v.getValue().getValueAsString(), v.getValue().getTypeName()));
 		}
-		return new JsonObject(getId(), getClassName(), getLocId(), fields);
+		fields.sort(Comparator.comparing(JsonVariable::getName));
+		
+		List<JsonMethod> methods = new ArrayList<>();
+		
+		for(Entry<String, ClassMethod> m : ownClass.getMethods().entrySet()) {
+			methods.add(m.getValue().toJson(m.getKey()));
+		}
+		methods.sort(Comparator.comparing(JsonMethod::getName));
+		
+		return new JsonObject(getId(), getClassName(), getLocId(), fields, methods);
+	}
+
+	public void updateClass() {
+		List<String> losing = new ArrayList<String>(fields.keySet());
+		for (Entry<String, ValueInterface> e : ownClass.getFields().entrySet()) {
+			if (fields.containsKey(e.getKey())) { // Already has this variable
+				losing.remove(e.getKey());
+				if (e.getValue().canAssign(fields.get(e.getKey()))) { // Compatible
+																		// type
+					ValueInterface n = e.getValue().cloneValue(); // new
+																	// variable
+					n.assign(fields.get(e.getKey()));
+					fields.put(e.getKey(), n);
+				} else { // incompatible type, any previous value will be lost
+					ownClass.getWorld().getLogger().info("Object #" + id + " update field " + e.getKey()
+							+ ", lose previous value: " + fields.get(e.getKey()).getValueAsString());
+					fields.put(e.getKey(), e.getValue().cloneValue());
+				}
+			} else { // put directly
+				fields.put(e.getKey(), e.getValue().cloneValue());
+			}
+		}
+		
+		//Removing fields not defined on the new code
+		for(String f : losing) {
+			ownClass.getWorld().getLogger().info("Object #" + id + " lose field " + f
+			+ ", value: " + fields.get(f).getValueAsString());
+			fields.remove(f);
+		}
 	}
 }

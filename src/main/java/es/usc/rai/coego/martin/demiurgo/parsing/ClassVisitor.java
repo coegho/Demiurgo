@@ -4,15 +4,15 @@ import es.usc.rai.coego.martin.demiurgo.coe.COEParser.Class_defContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.CodeContext;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ClassFilenameMismatchException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.CodeClassInClassFileException;
-import es.usc.rai.coego.martin.demiurgo.universe.UserDefinedClass;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 import es.usc.rai.coego.martin.demiurgo.values.NullValue;
 
 public class ClassVisitor extends ExecVisitor {
 
-	private UserDefinedClass cl;
+	private DemiurgoClass cl;
 
-	public ClassVisitor(UserDefinedClass cl) {
+	public ClassVisitor(DemiurgoClass cl) {
 		this.cl = cl;
 		sm = new ScopeManager(cl);
 	}
@@ -34,6 +34,10 @@ public class ClassVisitor extends ExecVisitor {
 
 			if (ctx.SYMBOL(1) != null) { // inherit from another class
 				String parentName = ctx.SYMBOL(1).getText().toLowerCase();
+				if(parentName.equalsIgnoreCase(className)) {
+					//A class cannot inherit from itself
+					throw new RuntimeException(/*TODO: custom exception*/);
+				}
 				cl.setParentClass(getSM().getClassFromName(parentName));
 			} else {// inherit from "Object" class
 				cl.setParentClass(getSM().getCurrentWorld().getRootClass());

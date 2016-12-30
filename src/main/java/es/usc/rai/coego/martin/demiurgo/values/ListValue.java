@@ -6,7 +6,7 @@ import java.util.List;
 import es.usc.rai.coego.martin.demiurgo.exceptions.IllegalOperationException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.SizeMismatchException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ValueCastException;
-import es.usc.rai.coego.martin.demiurgo.universe.UserDefinedClass;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass;
 import es.usc.rai.coego.martin.demiurgo.universe.World;
 
 public class ListValue extends AbstractValue {
@@ -16,7 +16,7 @@ public class ListValue extends AbstractValue {
 	private static final long serialVersionUID = 1L;
 	protected List<ValueInterface> value;
 	protected ReturnValueTypes innerType;
-	protected transient UserDefinedClass classType;
+	protected transient DemiurgoClass classType;
 	protected String className;
 	protected int listDepth;
 
@@ -35,7 +35,7 @@ public class ListValue extends AbstractValue {
 		return lv;
 	}
 	
-	public static ListValue defaultValue(UserDefinedClass cl, int depth) {
+	public static ListValue defaultValue(DemiurgoClass cl, int depth) {
 		ListValue lv = new ListValue();
 		lv.setDepth(depth);
 		lv.setInnerType(ReturnValueTypes.OBJECT);
@@ -457,7 +457,11 @@ public class ListValue extends AbstractValue {
 
 	@Override
 	public String castToString() throws ValueCastException {
-		throw new ValueCastException(-1, -1, -1, getTypeName(), "STRING");
+		String content = "";
+		for (ValueInterface x : getValue()) {
+			content += " " + x.castToString() + " ";
+		}
+		return "[" + content + "]";
 	}
 
 	@Override

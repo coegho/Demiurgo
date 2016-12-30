@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -12,7 +14,6 @@ import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
-import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -23,6 +24,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
+import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.antlr.v4.runtime.tree.ParseTree;
 
@@ -30,11 +32,15 @@ import es.usc.rai.coego.martin.demiurgo.Demiurgo;
 import es.usc.rai.coego.martin.demiurgo.exceptions.DemiurgoException;
 import es.usc.rai.coego.martin.demiurgo.json.AllRoomPathsResponse;
 import es.usc.rai.coego.martin.demiurgo.json.CheckRoomResponse;
+import es.usc.rai.coego.martin.demiurgo.json.CreateClassRequest;
+import es.usc.rai.coego.martin.demiurgo.json.CreateClassResponse;
 import es.usc.rai.coego.martin.demiurgo.json.CreateRoomRequest;
 import es.usc.rai.coego.martin.demiurgo.json.ExecuteCodeRequest;
 import es.usc.rai.coego.martin.demiurgo.json.ExecuteCodeResponse;
+import es.usc.rai.coego.martin.demiurgo.json.AllClassesResponse;
 import es.usc.rai.coego.martin.demiurgo.json.GetPendingRoomsResponse;
 import es.usc.rai.coego.martin.demiurgo.json.JsonAction;
+import es.usc.rai.coego.martin.demiurgo.json.JsonClass;
 import es.usc.rai.coego.martin.demiurgo.json.MyUserResponse;
 import es.usc.rai.coego.martin.demiurgo.json.NarrateActionRequest;
 import es.usc.rai.coego.martin.demiurgo.json.NarrateActionResponse;
@@ -46,10 +52,11 @@ import es.usc.rai.coego.martin.demiurgo.parsing.ClassVisitor;
 import es.usc.rai.coego.martin.demiurgo.parsing.CodeVisitor;
 import es.usc.rai.coego.martin.demiurgo.parsing.ErrorHandler;
 import es.usc.rai.coego.martin.demiurgo.universe.Action;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoObject;
+import es.usc.rai.coego.martin.demiurgo.universe.RootObjectClass;
 import es.usc.rai.coego.martin.demiurgo.universe.User;
-import es.usc.rai.coego.martin.demiurgo.universe.UserDefinedClass;
 import es.usc.rai.coego.martin.demiurgo.universe.World;
-import es.usc.rai.coego.martin.demiurgo.universe.WorldObject;
 import es.usc.rai.coego.martin.demiurgo.universe.WorldRoom;
 import es.usc.rai.coego.martin.demiurgo.webservice.auth.DemiurgoPrincipal;
 import es.usc.rai.coego.martin.demiurgo.webservice.auth.Secured;
@@ -59,6 +66,7 @@ import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MissingClaimException;
 import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.lang.Strings;
 
 @Path("/")
 @Secured
@@ -101,7 +109,7 @@ public class WebService {
 		User u = Demiurgo.getWorld(world).getUser(username);
 
 		u.setDecision(req.getDecision());
-		WorldObject obj = u.getObj();
+		DemiurgoObject obj = u.getObj();
 		if (obj != null && obj.getLocation() instanceof WorldRoom) {
 			w.getPendingRooms().add((WorldRoom) obj.getLocation());
 		} else {
@@ -125,7 +133,9 @@ public class WebService {
 		List<String> narrations = new ArrayList<>();
 
 		// We get all actions with this user involved in them
-		List<Action> allActions = w.getActions().values().stream().filter(a -> a.getWitnesses().contains(u))
+		List<Action> actions = new ArrayList<>(w.getActions().values());
+		Collections.sort(actions);
+		List<Action> allActions = actions.stream().filter(a -> a.getWitnesses().contains(u))
 				.collect(Collectors.toList());
 
 		int f, l;
@@ -192,9 +202,9 @@ public class WebService {
 			return Response.status(Response.Status.NOT_FOUND).entity("Cannot find room '" + req.getPath() + "'")
 					.build();
 		}
-		
-		//We define witnesses before executing code
-		//This way, exiting users can see their last action before exit room
+
+		// We define witnesses before executing code
+		// This way, exiting users can see their last action before exit room
 		List<User> witnesses = room.getUsers();
 
 		InputStream is = new ByteArrayInputStream(req.getCode().getBytes(StandardCharsets.UTF_8));
@@ -211,15 +221,18 @@ public class WebService {
 			w.getLogger().info(req.getCode() + "\n###Execution complete###");
 			res.setStatus(new ResponseStatus());
 			room.appendPrenarration(eval.getPrenarration());
-			Action action = new Action(0, room, room.getPrenarration(), witnesses);
-			Demiurgo.getWorld(world).addAction(action);
-			room.clearDecisionsAndPrenarration();
-			
-			res.setAction(action.toJson());
+			if(req.isCreateAction()) {
+				Action action = new Action(0, room, room.getPrenarration(), witnesses);
+				Demiurgo.getWorld(world).addAction(action);
+				room.clearDecisionsAndPrenarration();
+	
+				res.setAction(action.toJson());
+			}
 
 		} catch (ParseCancellationException e) {
-			// Syntax error
-			res.setStatus(new ResponseStatus(false, errors.getErrors().get(0).getMessage()));
+			res.setStatus(new ResponseStatus(false,Strings.collectionToDelimitedString(
+					errors.getErrors().stream().map(
+							de -> de.getMessage()).collect(Collectors.toList()), "\n")));
 			return Response.ok(res).build();
 		} catch (RuntimeException e) {
 			if (e.getCause() instanceof DemiurgoException) {
@@ -231,7 +244,7 @@ public class WebService {
 				room.appendPrenarration(eval.getPrenarration());
 			} else {
 				// Unexpected internal error
-				Demiurgo.getLogger().severe(e.getCause().getMessage());
+				Demiurgo.getLogger().severe(e.getMessage());
 				;
 				return Response.serverError().build();
 			}
@@ -315,39 +328,149 @@ public class WebService {
 		return Response.ok(res).build();
 	}
 
-	// TODO
-	@POST
-	@Path("/newclass")
+	@GET
+	@Path("/allclasses")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String newClass(@FormParam("token") String token, @FormParam("name") String name,
-			@FormParam("code") String code) {
+	@RolesAllowed("gm")
+	public Response getAllClasses() {
+		AllClassesResponse res = new AllClassesResponse();
+		String world = ((DemiurgoPrincipal) securityContext.getUserPrincipal()).getWorld();
+		World w = Demiurgo.getWorld(world);
+		
+		List<JsonClass> l = new ArrayList<>();
+		for(DemiurgoClass cl : w.getClasses()) {
+			if(!(cl instanceof RootObjectClass))
+				l.add(cl.toJson());
+		}
+		res.setClasses(l);
+		return Response.ok(res).build();
+	}
+	
+	@GET
+	@Path("/getclass")
+	@Produces(MediaType.APPLICATION_JSON)
+	@RolesAllowed("gm")
+	public Response getDemiurgoClass(@QueryParam("classname") String classname) {
+		String world = ((DemiurgoPrincipal) securityContext.getUserPrincipal()).getWorld();
+		World w = Demiurgo.getWorld(world);
+		
+		DemiurgoClass cl = w.getClassFromName(classname.toLowerCase());
+		if(cl == null) {
+			return Response.status(Response.Status.NOT_FOUND).entity("Cannot found class " + classname).build();
+		}
+		
+		return Response.ok(cl.toJson()).build();
+	}
+	
+	@POST
+	@Path("/createclass")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@RolesAllowed("gm")
+	public Response createClass(CreateClassRequest req) {
+		CreateClassResponse res = new CreateClassResponse();
+		String world = ((DemiurgoPrincipal) securityContext.getUserPrincipal()).getWorld();
+		World w = Demiurgo.getWorld(world);
+
+		if(w.getClassFromName(req.getName().toLowerCase()) != null) {
+			//Class already exists
+			res.setStatus(new ResponseStatus(false, "Class " + req.getName() + " already exists"));
+			return Response.ok(res).build();
+		}
+		InputStream is = new ByteArrayInputStream(req.getCode().getBytes(StandardCharsets.UTF_8));
+		ParseTree tree;
+
+		ErrorHandler errors = new ErrorHandler();
 		try {
-			Jws<Claims> cl = Jwts.parser().require("role", "admin").setSigningKey(Demiurgo.getKey())
-					.parseClaimsJws(token);
-			String world = (String) cl.getBody().get("world");
-			World w = Demiurgo.getWorld(world);
-			// ErrorHandler errors = new ErrorHandler();
-			InputStream is = new ByteArrayInputStream(code.getBytes(StandardCharsets.UTF_8));
-			ParseTree tree;
-
-			ErrorHandler errors = new ErrorHandler();
 			tree = Demiurgo.parseStream(is, errors);
+		} catch (IOException e) {
+			Demiurgo.getLogger().severe(e.getMessage());
+			return Response.serverError().build();
+		}
 
-			UserDefinedClass newClass = new UserDefinedClass(name, w);
-			w.addClass(newClass);
+		if (errors.hasErrors()) {
+			res.setStatus(new ResponseStatus(false, Strings.collectionToDelimitedString(errors.getErrors(), "\n")));
+			return Response.ok(res).build();
+		}
+
+		DemiurgoClass newClass = new DemiurgoClass(req.getName().toLowerCase(), req.getCode(), w);
+		w.addClass(newClass); // TODO: add own class so it can find itself
+		try {
 			ClassVisitor eval = new ClassVisitor(newClass);
 			eval.visit(tree);
-
-			/*
-			 * if (errors.hasErrors()) { for (String e : errors.getErrors()) {
-			 * System.err.println(e); // TODO: Output this and check errors }
-			 * w.removeClass(newClass.getClassName()); }
-			 */
-			return "OK";
-		} catch (SignatureException | MissingClaimException | IncorrectClaimException | IOException e) {
-			System.err.println(e.getLocalizedMessage());
-			return "ERROR";
+		} catch (RuntimeException e) {
+			w.removeClass(newClass.getClassName());
+			if (e.getCause() instanceof DemiurgoException) {
+				DemiurgoException ex = (DemiurgoException) e.getCause();
+				res.setStatus(new ResponseStatus(false, ex.getMessage()));
+				return Response.ok(res).build();
+			} else {
+				Demiurgo.getLogger().severe(e.getMessage());
+				return Response.serverError().build();
+			}
 		}
+		res.setCreatedClass(newClass.toJson());
+		res.setStatus(new ResponseStatus());
+		return Response.ok(res).build();
+	}
+	
+	@POST
+	@Path("/modifyclass")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@RolesAllowed("gm")
+	public Response modifyClass(CreateClassRequest req) {
+		CreateClassResponse res = new CreateClassResponse();
+		String world = ((DemiurgoPrincipal) securityContext.getUserPrincipal()).getWorld();
+		World w = Demiurgo.getWorld(world);
+
+		DemiurgoClass oldClass = w.getClassFromName(req.getName().toLowerCase());
+		
+		InputStream is = new ByteArrayInputStream(req.getCode().getBytes(StandardCharsets.UTF_8));
+		ParseTree tree = null;
+
+		ErrorHandler errors = new ErrorHandler();
+		try {
+			tree = Demiurgo.parseStream(is, errors);
+		} catch (RuntimeException e) {
+			if(e.getCause() instanceof DemiurgoException) {
+				DemiurgoException ex = (DemiurgoException) e.getCause();
+				res.setStatus(new ResponseStatus(false, ex.getMessage()));
+				return Response.ok(res).build();	
+			}
+		} catch (IOException e) {
+			Demiurgo.getLogger().severe(e.getMessage());
+			return Response.serverError().build();
+		}
+
+		if (errors.hasErrors()) {
+			res.setStatus(new ResponseStatus(false, Strings.collectionToDelimitedString(errors.getErrors(), "\n")));
+			return Response.ok(res).build();
+		}
+
+		DemiurgoClass newClass = new DemiurgoClass(req.getName().toLowerCase(), req.getCode(), w);
+		w.addClass(newClass); // TODO: add own class so it can find itself
+		try {
+			ClassVisitor eval = new ClassVisitor(newClass);
+			eval.visit(tree);
+		} catch (RuntimeException e) {
+			w.addClass(oldClass);
+			if (e.getCause() instanceof DemiurgoException) {
+				DemiurgoException ex = (DemiurgoException) e.getCause();
+				res.setStatus(new ResponseStatus(false, ex.getMessage()));
+				return Response.ok(res).build();
+			} else {
+				Demiurgo.getLogger().severe(e.getMessage());
+				return Response.serverError().build();
+			}
+		}
+		
+		w.modifyClass(oldClass, newClass);
+		w.addClass(oldClass);
+		
+		res.setCreatedClass(oldClass.toJson());
+		res.setStatus(new ResponseStatus());
+		return Response.ok(res).build();
 	}
 
 	@POST
@@ -358,9 +481,9 @@ public class WebService {
 		String world = ((DemiurgoPrincipal) securityContext.getUserPrincipal()).getWorld();
 		World w = Demiurgo.getWorld(world);
 		WorldRoom room = w.newRoom(req.getPath());
-		
+
 		return Response.ok(room.toJson()).build();
-		//TODO: could this fail?
+		// TODO: could this fail?
 	}
 
 	@GET

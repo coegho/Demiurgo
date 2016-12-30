@@ -4,7 +4,8 @@ import java.util.List;
 
 import es.usc.rai.coego.martin.demiurgo.universe.Action;
 import es.usc.rai.coego.martin.demiurgo.universe.User;
-import es.usc.rai.coego.martin.demiurgo.universe.WorldObject;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoObject;
 import es.usc.rai.coego.martin.demiurgo.universe.WorldRoom;
 
 public interface DatabaseInterface {
@@ -12,6 +13,12 @@ public interface DatabaseInterface {
 	public boolean existsActiveConnection();
 
 	public boolean createConnection(String database, String username, String pass);
+	
+	public void beginTransaction();
+	
+	public void commitTransaction();
+	
+	public void rollbackTransaction();
 	
 	public void stopConnection();
 	
@@ -21,7 +28,9 @@ public interface DatabaseInterface {
 	
 	public void writeUser(User user);
 	
-	public void writeWorldObject(WorldObject obj);
+	public void writeDemiurgoObject(DemiurgoObject obj);
+	
+	public void writeDemiurgoClass(DemiurgoClass cl);
 	
 	public void writeWorldRoom(WorldRoom room);
 	
@@ -29,7 +38,9 @@ public interface DatabaseInterface {
 	
 	public List<User> readAllUsers();
 	
-	public List<WorldObject> readAllObjects();
+	public List<DemiurgoObject> readAllObjects();
+	
+	public List<DemiurgoClass> readAllClasses();
 	
 	public List<WorldRoom> readAllRooms();
 	

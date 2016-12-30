@@ -1,7 +1,12 @@
 package es.usc.rai.coego.martin.demiurgo.universe;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
+import es.usc.rai.coego.martin.demiurgo.json.JsonClass;
+import es.usc.rai.coego.martin.demiurgo.json.JsonVariable;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
 /**
@@ -10,13 +15,13 @@ import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
  * @author Martín Coego Pérez
  *
  */
-public class RootObjectClass extends UserDefinedClass {
+public class RootObjectClass extends DemiurgoClass {
 	public RootObjectClass(World world) {
-		super("object", world);
+		super("object", "", world); //TODO: this is not the correct code
 	}
 
 	@Override
-	public UserDefinedClass getParentClass() {
+	public DemiurgoClass getParentClass() {
 		return this;
 	}
 
@@ -33,5 +38,19 @@ public class RootObjectClass extends UserDefinedClass {
 	@Override
 	public ClassMethod getMethod(String methodName) {
 		return methods.get(methodName); //Doesn't look in parent class
-	}	
+	}
+	
+	@Override
+	public JsonClass toJson() {
+		JsonClass jc = new JsonClass();
+		jc.setCode(getCode());
+		jc.setClassName(getClassName());
+		List<JsonVariable> f = new ArrayList<>();
+		for(Entry<String, ValueInterface> e : fields.entrySet()) {
+			f.add(new JsonVariable(e.getKey(), e.getValue().getValueAsString(), e.getValue().getTypeName()));
+		}
+		jc.setFields(f);
+		jc.setMethods(new ArrayList<String>(methods.keySet()));
+		return jc;
+	}
 }

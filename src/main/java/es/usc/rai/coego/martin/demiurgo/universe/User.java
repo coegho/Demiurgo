@@ -7,7 +7,7 @@ import es.usc.rai.coego.martin.demiurgo.json.JsonUser;
 public class User {
 	protected String username;
 	protected UserRole role;
-	protected transient WorldObject obj;
+	protected transient DemiurgoObject obj;
 	protected String decision;
 
 	// Serializable fields
@@ -37,11 +37,11 @@ public class User {
 		this.username = username;
 	}
 
-	public WorldObject getObj() {
+	public DemiurgoObject getObj() {
 		return obj;
 	}
 
-	public void setObj(WorldObject obj) {
+	public void setObj(DemiurgoObject obj) {
 		this.obj = obj;
 	}
 

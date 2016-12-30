@@ -1,15 +1,15 @@
 package es.usc.rai.coego.martin.demiurgo.scopes;
 
 import es.usc.rai.coego.martin.demiurgo.universe.ClassMethod;
-import es.usc.rai.coego.martin.demiurgo.universe.UserDefinedClass;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
 public class ClassScope extends Scope {
 
-	protected UserDefinedClass currentClass;
+	protected DemiurgoClass currentClass;
 	protected ClassMethod definingMethod;
 	
-	public ClassScope(UserDefinedClass currentClass) {
+	public ClassScope(DemiurgoClass currentClass) {
 		this.currentClass = currentClass;
 	}
 	
@@ -23,7 +23,7 @@ public class ClassScope extends Scope {
 		currentClass.addField(name, value);
 	}
 
-	public UserDefinedClass getCurrentClass() {
+	public DemiurgoClass getCurrentClass() {
 		return currentClass;
 	}
 	

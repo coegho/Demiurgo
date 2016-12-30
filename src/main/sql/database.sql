@@ -13,6 +13,11 @@ CREATE TABLE objects (
   obj_value BLOB
 );
 
+CREATE TABLE classes (
+  classname varchar(128) NOT NULL PRIMARY KEY,
+  code TEXT NOT NULL
+);
+
 CREATE TABLE rooms (
   id bigint NOT NULL PRIMARY KEY,
   long_path varchar(256) NOT NULL,
@@ -48,9 +53,8 @@ ON DELETE SET NULL
 ON UPDATE CASCADE;
 
 ALTER TABLE objects
-ADD CONSTRAINT fk_objects_rooms FOREIGN KEY (room) REFERENCES rooms(id)
-ON DELETE RESTRICT
-ON UPDATE CASCADE;
+ADD CONSTRAINT fk_objects_rooms FOREIGN KEY (room) REFERENCES rooms(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+ADD CONSTRAINT fk_objects_classes FOREIGN KEY (classname) REFERENCES classes(classname) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 ALTER TABLE witness_action
 ADD CONSTRAINT fk_witness_action FOREIGN KEY (action) REFERENCES actions(id) ON DELETE CASCADE ON UPDATE CASCADE,

@@ -67,8 +67,8 @@ import es.usc.rai.coego.martin.demiurgo.scopes.ObjectScope;
 import es.usc.rai.coego.martin.demiurgo.scopes.Scope;
 import es.usc.rai.coego.martin.demiurgo.universe.ClassMethod;
 import es.usc.rai.coego.martin.demiurgo.universe.User;
-import es.usc.rai.coego.martin.demiurgo.universe.UserDefinedClass;
-import es.usc.rai.coego.martin.demiurgo.universe.WorldObject;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoObject;
 import es.usc.rai.coego.martin.demiurgo.universe.WorldRoom;
 import es.usc.rai.coego.martin.demiurgo.values.FloatValue;
 import es.usc.rai.coego.martin.demiurgo.values.IntegerValue;
@@ -263,7 +263,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 		try {
 			// First we get the type, in this case, a class
 			String className = ctx.SYMBOL().getText().toLowerCase();
-			UserDefinedClass itsClass = getSM().getClassFromName(className);
+			DemiurgoClass itsClass = getSM().getClassFromName(className);
 			if (itsClass == null) {
 				throw new UndefinedClassException(ctx.SYMBOL().getSymbol().getLine(),
 						ctx.SYMBOL().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex(), className);
@@ -649,7 +649,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			ValueInterface value = prev.getReference();
 			String fieldName = ctx.SYMBOL().getText().toLowerCase();
 			if (value instanceof ObjectValue) {
-				WorldObject obj = ((ObjectValue) value).getObj();
+				DemiurgoObject obj = ((ObjectValue) value).getObj();
 				if (obj.getField(fieldName) == null) {
 					throw new UndeclaredVariableException(ctx.start.getLine(), ctx.start.getCharPositionInLine(),
 							ctx.start.getStartIndex(), fieldName);
@@ -743,7 +743,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 	@Override
 	public ValueInterface visitNew_obj(New_objContext ctx) {
 		try {
-			UserDefinedClass objClass = getSM().getClassFromName(ctx.SYMBOL().getText().toLowerCase());
+			DemiurgoClass objClass = getSM().getClassFromName(ctx.SYMBOL().getText().toLowerCase());
 
 			List<ValueInterface> args = new ArrayList<>();
 			for (OperationContext x : ctx.operation()) {
@@ -763,7 +763,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 						ctx.SYMBOL().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex());
 			}
 
-			WorldObject obj = new WorldObject(objClass, getSM().getCurrentRoom());
+			DemiurgoObject obj = new DemiurgoObject(objClass, getSM().getCurrentRoom());
 
 			if (objClass.getConstructor() != null) {
 				ClassMethod constructor = objClass.getConstructor();
@@ -920,7 +920,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 	public ValueInterface visitMethod(MethodContext ctx) {
 		try {
 			// TODO: non-class methods?
-			UserDefinedClass curClass = ((ClassScope) getSM().getScope()).getCurrentClass();
+			DemiurgoClass curClass = ((ClassScope) getSM().getScope()).getCurrentClass();
 			String methodName = ctx.metname.getText().toLowerCase();
 			ClassMethod cm = new ClassMethod(ctx.code());
 
@@ -1022,7 +1022,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			ValueInterface objref = visit(ctx.operation());
 
 			if (objref instanceof ObjectValue) {
-				WorldObject obj = ((ObjectValue) objref).getObj();
+				DemiurgoObject obj = ((ObjectValue) objref).getObj();
 				User user = getSM().getCurrentWorld().getUser(username);
 				if (user == null) {
 					throw new UnexistentUserException(ctx.start.getLine(), ctx.start.getCharPositionInLine(),

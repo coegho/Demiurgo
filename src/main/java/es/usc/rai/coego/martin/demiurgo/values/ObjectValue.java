@@ -1,20 +1,21 @@
 package es.usc.rai.coego.martin.demiurgo.values;
 
-import es.usc.rai.coego.martin.demiurgo.universe.UserDefinedClass;
+import es.usc.rai.coego.martin.demiurgo.exceptions.IllegalOperationException;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass;
 import es.usc.rai.coego.martin.demiurgo.universe.World;
-import es.usc.rai.coego.martin.demiurgo.universe.WorldObject;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoObject;
 
 public class ObjectValue extends AbstractValue {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	protected transient UserDefinedClass itsClass;
-	protected transient WorldObject obj;
+	protected transient DemiurgoClass itsClass;
+	protected transient DemiurgoObject obj;
 	protected String className;
 	protected long obj_id;
 	
-	public ObjectValue(WorldObject obj) {
+	public ObjectValue(DemiurgoObject obj) {
 		this.obj = obj;
 		this.itsClass = obj.getUserClass();
 		obj_id = obj.getId();
@@ -25,9 +26,24 @@ public class ObjectValue extends AbstractValue {
 	 * Creates an empty ObjectValue with a class defined.
 	 * @param itsClass Object's class.
 	 */
-	public ObjectValue(UserDefinedClass itsClass) {
+	public ObjectValue(DemiurgoClass itsClass) {
 		this.itsClass = itsClass;
 		className = itsClass.getClassName();
+	}
+	
+	@Override
+	public ValueInterface eq(ValueInterface another) throws IllegalOperationException {
+		if(another instanceof ObjectValue) {
+			return new IntegerValue(getObj().getId() == ((ObjectValue)another).getObj().getId());
+		}
+		else {
+			throw new IllegalOperationException(-1, -1, -1, getTypeName(), another.getTypeName(), "!=");
+		}
+	}
+
+	@Override
+	public ValueInterface neq(ValueInterface another) throws IllegalOperationException {
+		return eq(another).not();
 	}
 
 	@Override
@@ -35,15 +51,15 @@ public class ObjectValue extends AbstractValue {
 		return ReturnValueTypes.OBJECT;
 	}
 	
-	public static ObjectValue defaultValue(UserDefinedClass itsClass) {
+	public static ObjectValue defaultValue(DemiurgoClass itsClass) {
 		return new ObjectValue(itsClass);
 	}
 	
-	public WorldObject getObj() {
+	public DemiurgoObject getObj() {
 		return obj;
 	}
 
-	public void setObj(WorldObject obj) {
+	public void setObj(DemiurgoObject obj) {
 		this.obj = obj;
 		obj_id = obj.getId();
 	}

@@ -1,9 +1,9 @@
 package es.usc.rai.coego.martin.demiurgo.scopes;
 
 import es.usc.rai.coego.martin.demiurgo.universe.User;
-import es.usc.rai.coego.martin.demiurgo.universe.UserDefinedClass;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass;
 import es.usc.rai.coego.martin.demiurgo.universe.World;
-import es.usc.rai.coego.martin.demiurgo.universe.WorldObject;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoObject;
 import es.usc.rai.coego.martin.demiurgo.universe.WorldRoom;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
@@ -31,20 +31,20 @@ public class WorldScope extends Scope {
 		return world;
 	}
 
-	public UserDefinedClass getClassFromName(String className) {
+	public DemiurgoClass getClassFromName(String className) {
 		return world.getClassFromName(className);
 	}
 
-	public UserDefinedClass getRootClass() {
+	public DemiurgoClass getRootClass() {
 		return world.getRootClass();
 	}
 
-	public void addClass(UserDefinedClass newClass) {
+	public void addClass(DemiurgoClass newClass) {
 		world.addClass(newClass);
 		
 	}
 
-	public WorldObject getObject(long id) {
+	public DemiurgoObject getObject(long id) {
 		return world.getObject(id);
 	}
 
@@ -56,7 +56,7 @@ public class WorldScope extends Scope {
 		return world.getRoom(roomRelativeName, currentRoom);
 	}
 
-	public void setUserObject(User user, WorldObject obj) {
+	public void setUserObject(User user, DemiurgoObject obj) {
 		world.setUserObject(user, obj);
 	}
 }

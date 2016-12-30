@@ -1,12 +1,12 @@
 package es.usc.rai.coego.martin.demiurgo.scopes;
 
-import es.usc.rai.coego.martin.demiurgo.universe.WorldObject;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoObject;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
 public class ObjectScope extends Scope {
-	protected WorldObject obj;
+	protected DemiurgoObject obj;
 	
-	public ObjectScope(WorldObject obj) {
+	public ObjectScope(DemiurgoObject obj) {
 		this.obj = obj;
 	}
 
@@ -21,7 +21,7 @@ public class ObjectScope extends Scope {
 		
 	}
 
-	public WorldObject getObject() {
+	public DemiurgoObject getObject() {
 		return obj;
 	}
 }

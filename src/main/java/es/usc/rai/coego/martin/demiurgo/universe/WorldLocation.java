@@ -7,7 +7,7 @@ public class WorldLocation {
 
 	protected long id;
 	protected transient World world;
-	protected List<WorldObject> objects;
+	protected List<DemiurgoObject> objects;
 
 	public WorldLocation(World world, long id) {
 		this.id = id;
@@ -24,11 +24,11 @@ public class WorldLocation {
 		objects = new ArrayList<>();
 	}
 
-	public void addObject(WorldObject obj) {
+	public void addObject(DemiurgoObject obj) {
 		objects.add(obj);
 	}
 
-	public void removeObject(WorldObject obj) {
+	public void removeObject(DemiurgoObject obj) {
 		objects.remove(obj);
 	}
 
@@ -36,7 +36,7 @@ public class WorldLocation {
 		return world;
 	}
 
-	public List<WorldObject> getObjects() {
+	public List<DemiurgoObject> getObjects() {
 		return objects;
 	}
 
