@@ -1,11 +1,16 @@
 package es.usc.rai.coego.martin.demiurgo.universe;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -31,7 +36,7 @@ public class World {
 	protected List<WorldRoom> pendingRooms;
 	protected Logger worldLogger;
 
-	public World(String name) {
+	public World(String name) throws SecurityException, IOException {
 		this.name = name;
 		currentObjId = 0;
 		currentRoomId = 0;
@@ -45,6 +50,13 @@ public class World {
 		rootClass = new RootObjectClass(this);
 		pendingRooms = new ArrayList<>();
 		classes.put("object", rootClass);
+		
+		worldLogger = Logger.getLogger(World.class.getName() + "." + name);
+		worldLogger.setLevel(Level.INFO);
+		worldLogger.setUseParentHandlers(false);
+		Handler wh = new FileHandler(new File(name +".log").getAbsolutePath(), true);
+		// wh.setFormatter(new XMLFormatter()); TODO: custom formatter
+		worldLogger.addHandler(wh);
 	}
 
 	public String getName() {

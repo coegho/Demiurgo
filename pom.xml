@@ -25,6 +25,11 @@
 				<artifactId>jackson-annotations</artifactId>
 				<version>${jackson.version}</version>
 			</dependency>
+			<dependency>
+			    <groupId>org.yaml</groupId>
+			    <artifactId>snakeyaml</artifactId>
+			    <version>1.17</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -52,6 +57,11 @@
 		<dependency>
 			<groupId>org.glassfish.jersey.media</groupId>
 			<artifactId>jersey-media-json-jackson</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.yaml</groupId>
+			<artifactId>snakeyaml</artifactId>
+			<version>1.17</version>
 		</dependency>
 	</dependencies>
 	<build>
@@ -89,6 +99,36 @@
 				<configuration>
 					<mainClass>es.usc.rai.coego.martin.demiurgo.Demiurgo</mainClass>
 				</configuration>
+			</plugin>
+		<!-- assembling -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.0.2</version>
+				<!-- nothing here -->
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>3.0.0</version>
+				<configuration>
+				<descriptorRefs>
+					<descriptorRef>jar-with-dependencies</descriptorRef>
+				</descriptorRefs>
+				<archive>
+					<manifest>
+					<mainClass>es.usc.rai.coego.martin.demiurgo.Demiurgo</mainClass>
+					</manifest>
+				</archive>
+				</configuration>
+				<executions>
+				<execution>
+					<phase>package</phase>
+					<goals>
+					<goal>single</goal>
+					</goals>
+				</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

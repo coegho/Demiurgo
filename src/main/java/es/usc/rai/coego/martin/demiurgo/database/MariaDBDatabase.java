@@ -27,11 +27,11 @@ public class MariaDBDatabase implements DatabaseInterface {
 	private Connection con;
 
 	@Override
-	public boolean createConnection(String database, String username, String pass) {
+	public boolean createConnection(String url, String username, String pass) {
 		if (existsDriver()) {
 			try {
 				// TODO: config
-				con = DriverManager.getConnection("jdbc:mariadb://localhost/" + database, username, pass);
+				con = DriverManager.getConnection(url, username, pass);
 				return true;
 			} catch (SQLException e) {
 				System.err.println(e.getLocalizedMessage());// TODO: send a good

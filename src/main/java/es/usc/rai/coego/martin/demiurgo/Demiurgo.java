@@ -3,6 +3,7 @@ package es.usc.rai.coego.martin.demiurgo;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -15,10 +16,8 @@ import java.security.Key;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.FileHandler;
-import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -31,11 +30,14 @@ import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
+import org.yaml.snakeyaml.Yaml;
 
 import es.usc.rai.coego.martin.demiurgo.coe.COELexer;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser;
 import es.usc.rai.coego.martin.demiurgo.database.DatabaseInterface;
 import es.usc.rai.coego.martin.demiurgo.database.MariaDBDatabase;
+import es.usc.rai.coego.martin.demiurgo.database.WorldDBData;
+import es.usc.rai.coego.martin.demiurgo.database.WorldsConfig;
 import es.usc.rai.coego.martin.demiurgo.exceptions.DemiurgoException;
 import es.usc.rai.coego.martin.demiurgo.parsing.ClassVisitor;
 import es.usc.rai.coego.martin.demiurgo.parsing.ErrorHandler;
@@ -61,6 +63,7 @@ public class Demiurgo {
 	protected static Map<String, World> worlds;
 	protected static Key k;
 	protected static Logger logger;
+	protected static WorldsConfig wc;
 
 	// Base URI the Grizzly HTTP server will listen on
 	public static final String BASE_URI;
@@ -111,9 +114,24 @@ public class Demiurgo {
 			}
 		}*/
 		
+		//Loading configuration
+		Yaml yaml = new Yaml();
 		try {
-			//TODO: multiple worlds, world settings
-			worlds.put("mundo1", rebuildWorld(new File("mundo1")));
+			InputStream yml = new Demiurgo().getClass().getResourceAsStream("/worlds.yml");
+			wc = yaml.loadAs(yml, WorldsConfig.class);
+
+			logger.info("Loading data from database...");
+			for(Entry<String, WorldDBData> e : wc.getWorlds().entrySet()) {
+				World w = new World(e.getKey());
+				worlds.put(e.getKey(), w);
+				
+				logger.info("loading " + w.getName() + "...");
+				loadFromDatabase(w, e.getValue());
+			}
+			logger.info("Data loaded");
+		} catch (FileNotFoundException e) {
+			logger.severe("ERROR: Cannot find 'worlds.yml' file");
+			System.exit(1);
 		} catch (IOException e) {
 			logger.severe(e.getMessage());
 			System.exit(5);
@@ -131,15 +149,7 @@ public class Demiurgo {
 			}
 		});
 
-		logger.info("Loading data from database...");
-		for(World w : worlds.values()) {
-			logger.info("loading " + w.getName() + "...");
-			loadFromDatabase(w);
-		}
-		logger.info("Data loaded");
-
 		server = startServer();
-		server.getHttpHandler().setAllowEncodedSlash(true);
 
 		// TODO: little eclipse hack
 
@@ -182,12 +192,12 @@ public class Demiurgo {
 	}
 
 	public static HttpServer startServer() {
-		Logger l = Logger.getLogger("org.glassfish.grizzly.http.server.HttpHandler");
+		/*Logger l = Logger.getLogger("org.glassfish.grizzly.http.server.HttpHandler");
 		l.setLevel(Level.FINE);
 		l.setUseParentHandlers(false);
 		ConsoleHandler ch = new ConsoleHandler();
 		ch.setLevel(Level.ALL);
-		l.addHandler(ch);
+		l.addHandler(ch);*/
 		// create a resource config that scans for JAX-RS resources and
 		// providers
 		// in com.example.rest package
@@ -204,9 +214,9 @@ public class Demiurgo {
 		return k;
 	}
 
-	private static synchronized void loadFromDatabase(World world) {
+	private static synchronized void loadFromDatabase(World world, WorldDBData data) {
 		DatabaseInterface db = new MariaDBDatabase();
-		db.createConnection("plataformarol", "mysql", "mysql"); // TODO: config
+		db.createConnection(data.getUrl(), data.getUser(), data.getPasswd());
 
 		List<DemiurgoClass> classes = db.readAllClasses();
 		
@@ -280,7 +290,7 @@ public class Demiurgo {
 
 		// Reading actions
 		for (WorldRoom r : rooms) {
-			List<Action> l = loadActionsFromRoom(r);
+			List<Action> l = loadActionsFromRoom(r, data);
 			r.setActions(l);
 			for (Action a : l) {
 				world.getActions().put(a.getId(), a);
@@ -296,15 +306,15 @@ public class Demiurgo {
 		db.stopConnection();
 	}
 
-	public static List<Action> loadActionsFromRoom(WorldRoom room) {
+	public static List<Action> loadActionsFromRoom(WorldRoom room, WorldDBData data) {
 		DatabaseInterface db = new MariaDBDatabase();
-		db.createConnection("plataformarol", "mysql", "mysql"); // TODO: config
+		db.createConnection(data.getUrl(), data.getUser(), data.getPasswd());
 		return db.readActionsFromRoom(room);
 	}
 
-	private static synchronized void saveWorldInDatabase(World world) {
+	private static synchronized void saveWorldInDatabase(World world, WorldDBData data) {
 		DatabaseInterface db = new MariaDBDatabase();
-		db.createConnection("plataformarol", "mysql", "mysql"); // TODO: config
+		db.createConnection(data.getUrl(), data.getUser(), data.getPasswd());
 
 		db.beginTransaction();
 		
@@ -342,18 +352,6 @@ public class Demiurgo {
 		db.stopConnection();
 	}
 
-	private static World rebuildWorld(File w) throws IOException {
-		World world = new World(w.getName().toLowerCase());
-		Logger wl = Logger.getLogger(World.class.getName() + "." + world.getName());
-		wl.setLevel(Level.INFO);
-		wl.setUseParentHandlers(false);
-		Handler wh = new FileHandler(new File(world.getName()+".log").getAbsolutePath(), true);
-		// wh.setFormatter(new XMLFormatter()); TODO: custom formatter
-		wl.addHandler(wh);
-		world.setLogger(wl);
-		return world;
-	}
-
 	public static ParseTree parseStream(InputStream is, ErrorHandler errors) throws IOException {
 		ANTLRInputStream input = new ANTLRInputStream(is);
 		COELexer lexer = new COELexer(input);
@@ -377,11 +375,9 @@ public class Demiurgo {
 	}
 
 	private static void saveAllInDatabase() {
-		/*
-		 * for(String s : worlds.keySet()) { saveWorldInDatabase(worlds.get(s));
-		 * }
-		 */
-		saveWorldInDatabase(worlds.get("mundo1")); // TODO: Example
+		for(World w : worlds.values()) {
+			saveWorldInDatabase(w, wc.getWorlds().get(w.getName()));
+		}
 	}
 
 	public static Logger getLogger() {

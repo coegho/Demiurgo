@@ -12,7 +12,7 @@ public interface DatabaseInterface {
 	
 	public boolean existsActiveConnection();
 
-	public boolean createConnection(String database, String username, String pass);
+	public boolean createConnection(String url, String username, String pass);
 	
 	public void beginTransaction();
 	
