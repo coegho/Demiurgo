@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -125,6 +126,12 @@ public class World {
 		origin.removeObject(obj);
 		obj.setLocation(destination);
 		destination.addObject(obj);
+		if(obj.getUser() != null && obj.getUser().getDecision() != null) {
+			this.addPendingRoom(destination.getRealLocation());
+			if(origin.getRealLocation().getDecidingUsers().size() == 0) {
+				this.getPendingRooms().remove(origin.getRealLocation());
+			}
+		}
 	}
 
 	/**
@@ -245,7 +252,9 @@ public class World {
 	 * @return
 	 */
 	public List<DemiurgoRoom> getAllRooms() {
-		return rooms.getAllRooms();
+		List<DemiurgoRoom> l = rooms.getAllRooms();
+		Collections.sort(l);
+		return l;
 	}
 
 	/**
@@ -253,8 +262,10 @@ public class World {
 	 * 
 	 * @return
 	 */
-	public Collection<DemiurgoClass> getClasses() {
-		return classes.values();
+	public List<DemiurgoClass> getClasses() {
+		ArrayList<DemiurgoClass> l = new ArrayList<>(classes.values());
+		Collections.sort(l);
+		return l;
 	}
 
 	public Set<String> getAllUserNames() {
@@ -399,6 +410,12 @@ public class World {
 	public void addInventory(Inventory inv) {
 		inventories.add(inv);
 		locations.put(inv.getId(), inv);
+	}
+
+	public void addPendingRoom(DemiurgoRoom location) {
+		if(!pendingRooms.contains(location)) {
+			pendingRooms.add(location);
+		}
 	}
 	
 }

@@ -1,15 +1,22 @@
 package es.usc.rai.coego.martin.demiurgo.universe;
 
+import es.usc.rai.coego.martin.demiurgo.json.JsonWitness;
+
 public class Witness {
-	protected User witness;
+	protected User user;
 	protected String decision;
 	
-	public User getWitness() {
-		return witness;
+	public Witness(User witness, String decision) {
+		this.user = witness;
+		this.decision = decision;
+	}
+
+	public User getUser() {
+		return user;
 	}
 	
-	public void setWitness(User witness) {
-		this.witness = witness;
+	public void setUser(User user) {
+		this.user = user;
 	}
 	
 	public String getDecision() {
@@ -18,5 +25,9 @@ public class Witness {
 	
 	public void setDecision(String decision) {
 		this.decision = decision;
+	}
+
+	public JsonWitness toJson() {
+		return new JsonWitness(user.getUsername(), decision);
 	}
 }

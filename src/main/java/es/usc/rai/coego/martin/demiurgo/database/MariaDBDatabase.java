@@ -18,6 +18,7 @@ import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoObject;
 import es.usc.rai.coego.martin.demiurgo.universe.User;
 import es.usc.rai.coego.martin.demiurgo.universe.UserRole;
+import es.usc.rai.coego.martin.demiurgo.universe.Witness;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoRoom;
 import es.usc.rai.coego.martin.demiurgo.universe.Inventory;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
@@ -236,7 +237,7 @@ public class MariaDBDatabase implements DatabaseInterface {
 			PreparedStatement std = con.prepareStatement("DELETE FROM witness_action WHERE action = ?");
 			std.setLong(1, action.getId());
 			std.executeUpdate();
-			for (User w : action.getWitnesses()) {
+			for (Witness w : action.getWitnesses()) {
 				writeWitness(action, w);
 			}
 		} catch (SQLException e) {
@@ -244,11 +245,12 @@ public class MariaDBDatabase implements DatabaseInterface {
 		}
 	}
 
-	private void writeWitness(Action action, User witness) {
+	private void writeWitness(Action action, Witness w) {
 		try {
-			PreparedStatement stm = con.prepareStatement("INSERT witness_action (action, username) VALUES (?, ?)");
+			PreparedStatement stm = con.prepareStatement("INSERT witness_action (action, username, decision) VALUES (?, ?, ?)");
 			stm.setLong(1, action.getId());
-			stm.setString(2, witness.getUsername());
+			stm.setString(2, w.getUser().getUsername());
+			stm.setString(3, w.getDecision());
 			stm.executeUpdate();
 
 		} catch (SQLException e) {
@@ -377,7 +379,7 @@ public class MariaDBDatabase implements DatabaseInterface {
 		try {
 			PreparedStatement stm = con
 					.prepareStatement("SELECT id, narration, publish_date, published FROM actions WHERE room = ? ORDER BY publish_date");
-			PreparedStatement wtns = con.prepareStatement("SELECT username FROM witness_action WHERE action = ?");
+			PreparedStatement wtns = con.prepareStatement("SELECT username, decision FROM witness_action WHERE action = ?");
 			stm.setLong(1, room.getId());
 			ResultSet rs = stm.executeQuery();
 			while (rs.next()) {
@@ -390,9 +392,10 @@ public class MariaDBDatabase implements DatabaseInterface {
 				// Looking for witnesses
 				wtns.setLong(1, id);
 				ResultSet rsw = wtns.executeQuery();
-				List<User> witnesses = new ArrayList<>();
+				List<Witness> witnesses = new ArrayList<>();
 				while (rsw.next()) {
-					witnesses.add(room.getWorld().getUser(rsw.getString("username")));
+					User u = room.getWorld().getUser(rsw.getString("username"));
+					witnesses.add(new Witness(u, rsw.getString("decision")));
 				}
 				actions.add(new Action(id, room, narration, witnesses, date, published));
 			}

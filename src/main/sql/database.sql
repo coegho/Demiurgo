@@ -46,6 +46,7 @@ CREATE TABLE actions (
 CREATE TABLE witness_action (
   action bigint NOT NULL,
   username varchar(128) NOT NULL,
+  decision text NULL,
   PRIMARY KEY (action, username)
 );
 

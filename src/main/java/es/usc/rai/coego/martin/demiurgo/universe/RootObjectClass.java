@@ -1,11 +1,13 @@
 package es.usc.rai.coego.martin.demiurgo.universe;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import es.usc.rai.coego.martin.demiurgo.json.JsonClass;
+import es.usc.rai.coego.martin.demiurgo.json.JsonMethod;
 import es.usc.rai.coego.martin.demiurgo.json.JsonVariable;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
@@ -50,7 +52,14 @@ public class RootObjectClass extends DemiurgoClass {
 			f.add(new JsonVariable(e.getKey(), e.getValue().getValueAsString(), e.getValue().getTypeName()));
 		}
 		jc.setFields(f);
-		jc.setMethods(new ArrayList<String>(methods.keySet()));
+		
+		List<JsonMethod> m = new ArrayList<>();
+		for(Entry<String, ClassMethod> e : getMethods().entrySet()) {
+			m.add(e.getValue().toJson(e.getKey()));
+		}
+		
+		m.sort(Comparator.comparing(JsonMethod::getName));
+		jc.setMethods(m);
 		return jc;
 	}
 }

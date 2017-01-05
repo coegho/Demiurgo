@@ -97,4 +97,9 @@ public class User {
 		ju.setDecision(getDecision());
 		return ju;
 	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		return (obj instanceof User) && ((User)obj).getUsername() == getUsername();
+	}
 }

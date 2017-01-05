@@ -10,12 +10,13 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import es.usc.rai.coego.martin.demiurgo.json.JsonObject;
+import es.usc.rai.coego.martin.demiurgo.json.JsonPendingRoom;
 import es.usc.rai.coego.martin.demiurgo.json.JsonRoom;
 import es.usc.rai.coego.martin.demiurgo.json.JsonUser;
 import es.usc.rai.coego.martin.demiurgo.json.JsonVariable;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
-public class DemiurgoRoom extends WorldLocation {
+public class DemiurgoRoom extends WorldLocation implements Comparable<DemiurgoRoom> {
 	protected String longPath;
 	protected Map<String, ValueInterface> variables;
 	protected List<Action> actions;
@@ -124,21 +125,6 @@ public class DemiurgoRoom extends WorldLocation {
 		return r;
 	}
 
-	/**
-	 * Returns all users whose character is inside this room.
-	 * 
-	 * @return List of users occupying this room.
-	 */
-	public List<User> getUsers() {
-		List<User> users = new ArrayList<>();
-		for (DemiurgoObject o : getObjects()) {
-			if (o.getUser() != null) {
-				users.add(o.getUser());
-			}
-		}
-		return users;
-	}
-
 	public List<Action> getActions() {
 		return actions;
 	}
@@ -167,7 +153,7 @@ public class DemiurgoRoom extends WorldLocation {
 
 	public void clearDecisionsAndPrenarration() {
 		prenarration = null;
-		for(User u : getUsers()) {
+		for (User u : getUsers()) {
 			u.setDecision(null);
 		}
 		world.getPendingRooms().remove(this);
@@ -181,5 +167,19 @@ public class DemiurgoRoom extends WorldLocation {
 	@Override
 	public boolean isInsideOf(DemiurgoObject another) {
 		return false;
+	}
+
+	public JsonPendingRoom toJsonPendingRoom() {
+		return new JsonPendingRoom(getLongPath(), getObjects().size(), getUsers().size(),
+				getDecidingUsers().stream().map(u -> u.getUsername()).collect(Collectors.toList()));
+	}
+
+	@Override
+	public int compareTo(DemiurgoRoom another) {
+		return getLongPath().compareTo(another.getLongPath());
+	}
+
+	public void removeVariable(String varName) {
+		variables.remove(varName);
 	}
 }

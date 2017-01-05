@@ -301,7 +301,7 @@ public class Demiurgo {
 				world.setUserObject(u, (world.getObject(u.getObjId())));
 			world.addUser(u);
 			if (u.getDecision() != null && u.getObj() != null && u.getObj().getLocation() instanceof DemiurgoRoom) {
-				world.getPendingRooms().add((DemiurgoRoom) u.getObj().getLocation());
+				world.addPendingRoom((DemiurgoRoom) u.getObj().getLocation());
 				// TODO: characters without room
 			}
 		}

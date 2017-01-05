@@ -735,6 +735,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 				}
 			} else {
 				// TODO: non-class functions
+				// TODO: Calling method inside of another method
 			}
 		} catch (ArgumentMismatchException | ConstructorCalledAsMethodException e) {
 			throw new RuntimeException(e);

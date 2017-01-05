@@ -41,7 +41,7 @@ public class DemiurgoObject {
 				fields.put(var.getKey(), new InventoryValue(inv));
 			}
 			else {
-				fields.put(var.getKey(), var.getValue());
+				fields.put(var.getKey(), var.getValue().cloneValue());
 			}
 		}
 		ObjectValue v = new ObjectValue(this);

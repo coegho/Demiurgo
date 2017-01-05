@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import es.usc.rai.coego.martin.demiurgo.json.JsonClass;
+import es.usc.rai.coego.martin.demiurgo.json.JsonMethod;
 import es.usc.rai.coego.martin.demiurgo.json.JsonVariable;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
@@ -19,7 +20,7 @@ import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
  * @since 1.0
  *
  */
-public class DemiurgoClass {
+public class DemiurgoClass implements Comparable<DemiurgoClass> {
 	protected String className;
 	protected DemiurgoClass parentClass;
 	protected Map<String, ValueInterface> fields;
@@ -136,14 +137,22 @@ public class DemiurgoClass {
 		jc.setClassName(getClassName());
 		jc.setParent(getParentClass().toJson());
 		List<JsonVariable> f = new ArrayList<>();
+		for(Entry<String, ValueInterface> e : getParentClass().getFields().entrySet()) {
+			f.add(new JsonVariable(e.getKey(), e.getValue().getValueAsString(), e.getValue().getTypeName()));
+		}
 		for(Entry<String, ValueInterface> e : fields.entrySet()) {
+			f.removeIf(v -> v.getName().equalsIgnoreCase(e.getKey()));
 			f.add(new JsonVariable(e.getKey(), e.getValue().getValueAsString(), e.getValue().getTypeName()));
 		}
 		f.sort(Comparator.comparing(JsonVariable::getName));
 		jc.setFields(f);
 		
-		List<String> m = new ArrayList<String>(methods.keySet());
-		m.sort(Comparator.naturalOrder());
+		List<JsonMethod> m = new ArrayList<>();
+		for(Entry<String, ClassMethod> e : getMethods().entrySet()) {
+			m.add(e.getValue().toJson(e.getKey()));
+		}
+		
+		m.sort(Comparator.comparing(JsonMethod::getName));
 		jc.setMethods(m);
 		return jc;
 	}
@@ -167,5 +176,10 @@ public class DemiurgoClass {
 		}
 		methods.putAll(this.methods);
 		return methods;
+	}
+
+	@Override
+	public int compareTo(DemiurgoClass another) {
+		return getClassName().compareTo(another.getClassName());
 	}
 }

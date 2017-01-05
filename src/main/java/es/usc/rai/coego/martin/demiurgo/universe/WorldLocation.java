@@ -2,6 +2,10 @@ package es.usc.rai.coego.martin.demiurgo.universe;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
+
+import es.usc.rai.coego.martin.demiurgo.values.InventoryValue;
+import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
 public abstract class WorldLocation {
 
@@ -55,4 +59,25 @@ public abstract class WorldLocation {
 	public abstract DemiurgoRoom getRealLocation();
 
 	public abstract boolean isInsideOf(DemiurgoObject another);
+
+	/**
+	 * Returns all users whose character is inside this room.
+	 * 
+	 * @return List of users occupying this room.
+	 */
+	public List<User> getUsers() {
+		List<User> users = new ArrayList<>();
+		for (DemiurgoObject o : getObjects()) {
+			if (o.getUser() != null) {
+				users.add(o.getUser());
+			}
+			//Looking for users in inventories
+			for(Entry<String, ValueInterface> e : o.getFields().entrySet()) {
+				if(e.getValue() instanceof InventoryValue) {
+					users.addAll(((InventoryValue)e.getValue()).getLocation().getUsers());
+				}
+			}
+		}
+		return users;
+	}
 }
