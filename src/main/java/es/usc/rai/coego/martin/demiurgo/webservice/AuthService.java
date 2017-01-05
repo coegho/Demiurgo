@@ -21,6 +21,7 @@ import javax.xml.bind.DatatypeConverter;
 import es.usc.rai.coego.martin.demiurgo.Demiurgo;
 import es.usc.rai.coego.martin.demiurgo.database.DatabaseInterface;
 import es.usc.rai.coego.martin.demiurgo.database.MariaDBDatabase;
+import es.usc.rai.coego.martin.demiurgo.database.WorldDBData;
 import es.usc.rai.coego.martin.demiurgo.json.LoginRequest;
 import es.usc.rai.coego.martin.demiurgo.json.RegisterUserRequest;
 import es.usc.rai.coego.martin.demiurgo.json.RegisterUserResponse;
@@ -61,12 +62,16 @@ public class AuthService {
 			e.printStackTrace();
 			System.exit(1);
 		}
-
+		World w = Demiurgo.getWorld(req.getWorld().toLowerCase());
+		if(w == null) {
+			return Response.status(Response.Status.BAD_REQUEST).entity("Cannot find world "+ req.getWorld()).build();
+		}
 		DatabaseInterface db = new MariaDBDatabase();
-		db.createConnection("plataformarol", "mysql", "mysql"); // TODO:
+		WorldDBData dbData = Demiurgo.getWorldsConfig().getWorlds().get(w.getName());
+		db.createConnection(dbData.getUrl(), dbData.getUser(), dbData.getPasswd());
 
 		if (db.login(req.getName(), hashedPass)) {
-			User user = Demiurgo.getWorld(req.getWorld()).getUser(req.getName().toLowerCase());
+			User user = w.getUser(req.getName().toLowerCase());
 			if (user != null) {
 
 				String token = issueToken(user.getUsername(), req.getWorld().toLowerCase(), Demiurgo.getKey());
@@ -107,7 +112,8 @@ public class AuthService {
 		}
 		
 		DatabaseInterface db = new MariaDBDatabase();
-		db.createConnection("plataformarol", "mysql", "mysql"); // TODO:
+		WorldDBData dbData = Demiurgo.getWorldsConfig().getWorlds().get(w.getName());
+		db.createConnection(dbData.getUrl(), dbData.getUser(), dbData.getPasswd());
 		
 		String hashedPass = null;
 		try {

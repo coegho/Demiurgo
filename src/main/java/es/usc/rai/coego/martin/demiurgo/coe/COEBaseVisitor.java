@@ -1,6 +1,5 @@
-// Generated from COE.g4 by ANTLR 4.5
+// Generated from COE.g4 by ANTLR 4.5.3
 package es.usc.rai.coego.martin.demiurgo.coe;
-import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 
 /**
@@ -362,6 +361,13 @@ public class COEBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements CO
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitFloatType(COEParser.FloatTypeContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitInventoryType(COEParser.InventoryTypeContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *

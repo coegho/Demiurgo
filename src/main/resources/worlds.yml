@@ -1,5 +1,5 @@
-worlds:
-  mundo1:
-    url: jdbc:mariadb://localhost/plataformarol
-    user: mysql
-    passwd: mysql
+#worlds:
+#  mundo1:
+#    url: jdbc:mariadb://localhost/demiurgo
+#    user: mysql
+#    passwd: mysql

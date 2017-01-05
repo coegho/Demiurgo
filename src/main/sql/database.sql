@@ -18,6 +18,10 @@ CREATE TABLE classes (
   code TEXT NOT NULL
 );
 
+CREATE TABLE locations (
+  id bigint NOT NULL PRIMARY KEY
+);
+
 CREATE TABLE rooms (
   id bigint NOT NULL PRIMARY KEY,
   long_path varchar(256) NOT NULL,
@@ -25,11 +29,17 @@ CREATE TABLE rooms (
   prenarration TEXT NULL DEFAULT NULL
 );
 
+CREATE TABLE inventories (
+  id bigint NOT NULL PRIMARY KEY,
+  varname varchar(128) NOT NULL,
+  obj_id bigint NOT NULL
+);
+
 CREATE TABLE actions (
   id bigint NOT NULL PRIMARY KEY,
-  room bigint NOT NULL,
+  room bigint NULL,
   narration TEXT NULL DEFAULT NULL,
-  publish_date datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  publish_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   published boolean NOT NULL DEFAULT FALSE
 );
 
@@ -45,17 +55,27 @@ CREATE TABLE current_ids (
   action bigint NOT NULL DEFAULT 0
 );
 
-INSERT current_ids (obj, room) VALUES (0,0);
+INSERT current_ids (obj) VALUES (0);
 
 ALTER TABLE users
 ADD CONSTRAINT fk_users_objects FOREIGN KEY (obj_id) REFERENCES objects(obj_id)
 ON DELETE SET NULL
 ON UPDATE CASCADE;
 
+ALTER TABLE rooms
+ADD CONSTRAINT fk_rooms_locations FOREIGN KEY (id) REFERENCES locations(id) ON DELETE CASCADE ON UPDATE CASCADE;
+
 ALTER TABLE objects
-ADD CONSTRAINT fk_objects_rooms FOREIGN KEY (room) REFERENCES rooms(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+ADD CONSTRAINT fk_objects_rooms FOREIGN KEY (location) REFERENCES locations(id) ON DELETE RESTRICT ON UPDATE CASCADE,
 ADD CONSTRAINT fk_objects_classes FOREIGN KEY (classname) REFERENCES classes(classname) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 ALTER TABLE witness_action
 ADD CONSTRAINT fk_witness_action FOREIGN KEY (action) REFERENCES actions(id) ON DELETE CASCADE ON UPDATE CASCADE,
 ADD CONSTRAINT fk_witness_user FOREIGN KEY (username) REFERENCES users(username) ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE inventories
+ADD CONSTRAINT fk_inventories_locations FOREIGN KEY (id) REFERENCES locations(id) ON DELETE CASCADE ON UPDATE CASCADE,
+ADD CONSTRAINT fk_inventories_objects FOREIGN KEY (obj_id) REFERENCES objects(obj_id) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+ALTER TABLE actions
+ADD CONSTRAINT fk_actions_locations FOREIGN KEY (room) REFERENCES locations(id) ON DELETE SET NULL ON UPDATE CASCADE;

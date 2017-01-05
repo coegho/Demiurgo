@@ -10,12 +10,12 @@ import es.usc.rai.coego.martin.demiurgo.json.JsonAction;
 public class Action implements Comparable<Action> {
 	protected long id;
 	protected String narration;
-	protected WorldRoom room;
+	protected DemiurgoRoom room;
 	protected List<User> witnesses;
 	protected Date date;
 	protected boolean published;
 
-	public Action(int i, WorldRoom room, String prenarration) {
+	public Action(int i, DemiurgoRoom room, String prenarration) {
 		this.id = -1;
 		this.room = room;
 		this.narration = prenarration;
@@ -24,7 +24,7 @@ public class Action implements Comparable<Action> {
 		this.published = false;
 	}
 	
-	public Action(int i, WorldRoom room, String prenarration, List<User> witnesses) {
+	public Action(DemiurgoRoom room, String prenarration, List<User> witnesses) {
 		this.id = -1;
 		this.room = room;
 		this.narration = prenarration;
@@ -33,7 +33,7 @@ public class Action implements Comparable<Action> {
 		this.published = false;
 	}
 
-	public Action(long id, WorldRoom room, String narration, List<User> witnesses, Date date, boolean published) {
+	public Action(long id, DemiurgoRoom room, String narration, List<User> witnesses, Date date, boolean published) {
 		this.id = id;
 		this.room = room;
 		this.narration = narration;
@@ -58,11 +58,11 @@ public class Action implements Comparable<Action> {
 		this.narration = narration;
 	}
 
-	public WorldRoom getRoom() {
+	public DemiurgoRoom getRoom() {
 		return room;
 	}
 
-	public void setRoom(WorldRoom room) {
+	public void setRoom(DemiurgoRoom room) {
 		this.room = room;
 	}
 

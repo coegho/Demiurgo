@@ -3,10 +3,12 @@ package es.usc.rai.coego.martin.demiurgo.database;
 import java.util.List;
 
 import es.usc.rai.coego.martin.demiurgo.universe.Action;
-import es.usc.rai.coego.martin.demiurgo.universe.User;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoObject;
-import es.usc.rai.coego.martin.demiurgo.universe.WorldRoom;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoRoom;
+import es.usc.rai.coego.martin.demiurgo.universe.Inventory;
+import es.usc.rai.coego.martin.demiurgo.universe.User;
+import es.usc.rai.coego.martin.demiurgo.universe.WorldLocation;
 
 public interface DatabaseInterface {
 	
@@ -32,7 +34,11 @@ public interface DatabaseInterface {
 	
 	public void writeDemiurgoClass(DemiurgoClass cl);
 	
-	public void writeWorldRoom(WorldRoom room);
+	public void writeLocationId(WorldLocation location);
+	
+	public void writeWorldRoom(DemiurgoRoom room);
+
+	void writeInventory(Inventory inv);
 	
 	public void writeAction(Action action);
 	
@@ -42,9 +48,11 @@ public interface DatabaseInterface {
 	
 	public List<DemiurgoClass> readAllClasses();
 	
-	public List<WorldRoom> readAllRooms();
+	public List<DemiurgoRoom> readAllRooms();
 	
-	public List<Action> readActionsFromRoom(WorldRoom room);
+	List<Inventory> readAllInventories();
+	
+	public List<Action> readActionsFromRoom(DemiurgoRoom room);
 
 	public long[] readCurrentIDs();
 

@@ -1,11 +1,9 @@
 package es.usc.rai.coego.martin.demiurgo.values;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import es.usc.rai.coego.martin.demiurgo.universe.World;
 import es.usc.rai.coego.martin.demiurgo.universe.WorldLocation;
 
-public class LocationValue extends AbstractValue {
+public abstract class LocationValue extends AbstractValue {
 	/**
 	 * 
 	 */
@@ -15,41 +13,30 @@ public class LocationValue extends AbstractValue {
 
 	public LocationValue(WorldLocation location) {
 		this.location = location;
-		loc_id = location.getId();
-	}
-	
-	public static LocationValue defaultValue(World world) {
-		return new LocationValue(world.getRoom("."));
+		if(location != null)
+			loc_id = location.getId();
+		else
+			loc_id = -1;
 	}
 
-	@Override
-	public ReturnValueTypes getType() {
-		return ReturnValueTypes.LOCATION;
-	}
 
 	public WorldLocation getLocation() {
 		return location;
 	}
 
-	@Override
-	public boolean canAssign(ValueInterface newRValue) {
-		return (newRValue instanceof LocationValue);
-	}
 	
 	@Override
 	public boolean assign(ValueInterface newRValue) {
-		if(newRValue instanceof LocationValue) {
-			location = ((LocationValue)newRValue).getLocation();
-			loc_id = location.getId();
+		if(canAssign(newRValue)) {
+			if(((LocationValue)newRValue).getLocation() != null) {
+				location = ((LocationValue)newRValue).getLocation();
+				loc_id = location.getId();
+			}
 			return true;
 		}
 		return false;
 	}
 
-	@Override
-	public ValueInterface cloneValue() {
-		return new LocationValue(getLocation());
-	}
 	
 	@Override
 	public String toString() {

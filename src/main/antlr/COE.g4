@@ -91,6 +91,7 @@ data_type : INT_TYPE										#intType
 	| STRING_TYPE											#stringType
 	| SYMBOL												#symbolType
 	| ROOM													#roomType
+	| INVENTORY												#inventoryType
 	| data_type '[]'										#listType
 	;
 
@@ -138,3 +139,4 @@ MOVE: '>>' ;
 INHERIT: ':' ;
 ROOM: '@' ;
 USEROBJ: '->' ;
+INVENTORY: '%' ;

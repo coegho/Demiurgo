@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,12 +23,12 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
-import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.antlr.v4.runtime.tree.ParseTree;
 
 import es.usc.rai.coego.martin.demiurgo.Demiurgo;
 import es.usc.rai.coego.martin.demiurgo.exceptions.DemiurgoException;
+import es.usc.rai.coego.martin.demiurgo.json.AllClassesResponse;
 import es.usc.rai.coego.martin.demiurgo.json.AllRoomPathsResponse;
 import es.usc.rai.coego.martin.demiurgo.json.CheckRoomResponse;
 import es.usc.rai.coego.martin.demiurgo.json.CreateClassRequest;
@@ -37,7 +36,6 @@ import es.usc.rai.coego.martin.demiurgo.json.CreateClassResponse;
 import es.usc.rai.coego.martin.demiurgo.json.CreateRoomRequest;
 import es.usc.rai.coego.martin.demiurgo.json.ExecuteCodeRequest;
 import es.usc.rai.coego.martin.demiurgo.json.ExecuteCodeResponse;
-import es.usc.rai.coego.martin.demiurgo.json.AllClassesResponse;
 import es.usc.rai.coego.martin.demiurgo.json.GetPendingRoomsResponse;
 import es.usc.rai.coego.martin.demiurgo.json.JsonAction;
 import es.usc.rai.coego.martin.demiurgo.json.JsonClass;
@@ -54,10 +52,10 @@ import es.usc.rai.coego.martin.demiurgo.parsing.ErrorHandler;
 import es.usc.rai.coego.martin.demiurgo.universe.Action;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoObject;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoRoom;
 import es.usc.rai.coego.martin.demiurgo.universe.RootObjectClass;
 import es.usc.rai.coego.martin.demiurgo.universe.User;
 import es.usc.rai.coego.martin.demiurgo.universe.World;
-import es.usc.rai.coego.martin.demiurgo.universe.WorldRoom;
 import es.usc.rai.coego.martin.demiurgo.webservice.auth.DemiurgoPrincipal;
 import es.usc.rai.coego.martin.demiurgo.webservice.auth.Secured;
 import io.jsonwebtoken.Claims;
@@ -110,8 +108,8 @@ public class WebService {
 
 		u.setDecision(req.getDecision());
 		DemiurgoObject obj = u.getObj();
-		if (obj != null && obj.getLocation() instanceof WorldRoom) {
-			w.getPendingRooms().add((WorldRoom) obj.getLocation());
+		if (obj != null && obj.getLocation() instanceof DemiurgoRoom) {
+			w.getPendingRooms().add((DemiurgoRoom) obj.getLocation());
 		} else {
 			// TODO: characters without room
 		}
@@ -150,7 +148,7 @@ public class WebService {
 
 		List<Action> someActions = allActions.subList(f, l);
 		for (Action a : someActions) {
-			narrations.add(a.getNarration()); // TODO: filter content
+			narrations.add(Demiurgo.filterActionToUser(a.getNarration(), username));
 		}
 		res.setStatus(new ResponseStatus());
 		res.setActions(narrations);
@@ -167,7 +165,7 @@ public class WebService {
 		CheckRoomResponse res = new CheckRoomResponse();
 
 		String world = ((DemiurgoPrincipal) securityContext.getUserPrincipal()).getWorld();
-		WorldRoom room = Demiurgo.getWorld(world).getRoom(path);
+		DemiurgoRoom room = Demiurgo.getWorld(world).getRoom(path);
 
 		if (room != null) {
 			res.setRoom(room.toJson());
@@ -197,7 +195,7 @@ public class WebService {
 
 		String world = ((DemiurgoPrincipal) securityContext.getUserPrincipal()).getWorld();
 		World w = Demiurgo.getWorld(world);
-		WorldRoom room = w.getRoom(req.getPath());
+		DemiurgoRoom room = w.getRoom(req.getPath());
 		if (room == null) {
 			return Response.status(Response.Status.NOT_FOUND).entity("Cannot find room '" + req.getPath() + "'")
 					.build();
@@ -222,7 +220,7 @@ public class WebService {
 			res.setStatus(new ResponseStatus());
 			room.appendPrenarration(eval.getPrenarration());
 			if(req.isCreateAction()) {
-				Action action = new Action(0, room, room.getPrenarration(), witnesses);
+				Action action = new Action(room, room.getPrenarration(), witnesses);
 				Demiurgo.getWorld(world).addAction(action);
 				room.clearDecisionsAndPrenarration();
 	
@@ -244,7 +242,8 @@ public class WebService {
 				room.appendPrenarration(eval.getPrenarration());
 			} else {
 				// Unexpected internal error
-				Demiurgo.getLogger().severe(e.getMessage());
+				e.printStackTrace();
+				//Demiurgo.getLogger().severe(e.getMessage());
 				;
 				return Response.serverError().build();
 			}
@@ -303,7 +302,7 @@ public class WebService {
 		RoomHistoryResponse res = new RoomHistoryResponse();
 		String world = ((DemiurgoPrincipal) securityContext.getUserPrincipal()).getWorld();
 		World w = Demiurgo.getWorld(world);
-		WorldRoom room = w.getRoom(path);
+		DemiurgoRoom room = w.getRoom(path);
 		if (room == null) {
 			return Response.status(Response.Status.NOT_FOUND).entity("Cannot find room " + path).build();
 		}
@@ -394,12 +393,10 @@ public class WebService {
 		}
 
 		DemiurgoClass newClass = new DemiurgoClass(req.getName().toLowerCase(), req.getCode(), w);
-		w.addClass(newClass); // TODO: add own class so it can find itself
 		try {
 			ClassVisitor eval = new ClassVisitor(newClass);
 			eval.visit(tree);
 		} catch (RuntimeException e) {
-			w.removeClass(newClass.getClassName());
 			if (e.getCause() instanceof DemiurgoException) {
 				DemiurgoException ex = (DemiurgoException) e.getCause();
 				res.setStatus(new ResponseStatus(false, ex.getMessage()));
@@ -409,6 +406,7 @@ public class WebService {
 				return Response.serverError().build();
 			}
 		}
+		w.addClass(newClass);
 		res.setCreatedClass(newClass.toJson());
 		res.setStatus(new ResponseStatus());
 		return Response.ok(res).build();
@@ -449,24 +447,21 @@ public class WebService {
 		}
 
 		DemiurgoClass newClass = new DemiurgoClass(req.getName().toLowerCase(), req.getCode(), w);
-		w.addClass(newClass); // TODO: add own class so it can find itself
 		try {
 			ClassVisitor eval = new ClassVisitor(newClass);
 			eval.visit(tree);
 		} catch (RuntimeException e) {
-			w.addClass(oldClass);
 			if (e.getCause() instanceof DemiurgoException) {
 				DemiurgoException ex = (DemiurgoException) e.getCause();
 				res.setStatus(new ResponseStatus(false, ex.getMessage()));
 				return Response.ok(res).build();
 			} else {
-				Demiurgo.getLogger().severe(e.getMessage());
+				e.printStackTrace();//Demiurgo.getLogger().severe(e.getMessage());
 				return Response.serverError().build();
 			}
 		}
 		
 		w.modifyClass(oldClass, newClass);
-		w.addClass(oldClass);
 		
 		res.setCreatedClass(oldClass.toJson());
 		res.setStatus(new ResponseStatus());
@@ -480,7 +475,7 @@ public class WebService {
 	public Response createRoom(CreateRoomRequest req) {
 		String world = ((DemiurgoPrincipal) securityContext.getUserPrincipal()).getWorld();
 		World w = Demiurgo.getWorld(world);
-		WorldRoom room = w.newRoom(req.getPath());
+		DemiurgoRoom room = w.newRoom(req.getPath());
 
 		return Response.ok(room.toJson()).build();
 		// TODO: could this fail?
@@ -500,7 +495,7 @@ public class WebService {
 				return res;
 			}
 			List<String> pendingRooms = new ArrayList<>();
-			for (WorldRoom r : w.getPendingRooms()) {
+			for (DemiurgoRoom r : w.getPendingRooms()) {
 				pendingRooms.add(r.getLongPath());
 			}
 			res.setPendingRooms(pendingRooms);
@@ -546,7 +541,7 @@ public class WebService {
 				res.setStatus(new ResponseStatus(false, "invalid world"));
 			} else {
 				List<String> paths = new ArrayList<>();
-				for (WorldRoom r : w.getAllRooms()) {
+				for (DemiurgoRoom r : w.getAllRooms()) {
 					paths.add(r.getLongPath());
 				}
 				res.setPaths(paths);

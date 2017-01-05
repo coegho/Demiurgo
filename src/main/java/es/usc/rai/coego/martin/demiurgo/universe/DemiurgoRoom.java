@@ -15,13 +15,13 @@ import es.usc.rai.coego.martin.demiurgo.json.JsonUser;
 import es.usc.rai.coego.martin.demiurgo.json.JsonVariable;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
-public class WorldRoom extends WorldLocation {
+public class DemiurgoRoom extends WorldLocation {
 	protected String longPath;
 	protected Map<String, ValueInterface> variables;
 	protected List<Action> actions;
 	protected String prenarration;
 
-	public WorldRoom(String longName, World world, long id) {
+	public DemiurgoRoom(String longName, World world, long id) {
 		super(world, id);
 		variables = new HashMap<>();
 		this.actions = new ArrayList<Action>();
@@ -34,7 +34,7 @@ public class WorldRoom extends WorldLocation {
 	 * 
 	 * @param narration
 	 */
-	public WorldRoom(long id, String long_path, Map<String, ValueInterface> variables, String prenarration) {
+	public DemiurgoRoom(long id, String long_path, Map<String, ValueInterface> variables, String prenarration) {
 		super(id);
 		this.longPath = long_path;
 		this.variables = variables;
@@ -171,5 +171,15 @@ public class WorldRoom extends WorldLocation {
 			u.setDecision(null);
 		}
 		world.getPendingRooms().remove(this);
+	}
+
+	@Override
+	public DemiurgoRoom getRealLocation() {
+		return this;
+	}
+
+	@Override
+	public boolean isInsideOf(DemiurgoObject another) {
+		return false;
 	}
 }

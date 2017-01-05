@@ -12,14 +12,18 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.Key;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.BailErrorStrategy;
@@ -48,7 +52,9 @@ import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoObject;
 import es.usc.rai.coego.martin.demiurgo.universe.RootObjectClass;
 import es.usc.rai.coego.martin.demiurgo.universe.User;
 import es.usc.rai.coego.martin.demiurgo.universe.World;
-import es.usc.rai.coego.martin.demiurgo.universe.WorldRoom;
+import es.usc.rai.coego.martin.demiurgo.universe.WorldLocation;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoRoom;
+import es.usc.rai.coego.martin.demiurgo.universe.Inventory;
 import io.jsonwebtoken.impl.crypto.MacProvider;
 import io.jsonwebtoken.lang.Strings;
 
@@ -117,7 +123,24 @@ public class Demiurgo {
 		//Loading configuration
 		Yaml yaml = new Yaml();
 		try {
-			InputStream yml = new Demiurgo().getClass().getResourceAsStream("/worlds.yml");
+			InputStream yml;
+			if(args.length > 1) {
+				yml = new FileInputStream(args[1]);
+			} else {
+				if(Files.isReadable(Paths.get("worlds.yml"))) {
+					yml = new FileInputStream("worlds.yml");
+				}
+				else {
+					logger.info("Cannot find 'worlds.yml', loading default values...");
+					yml = new Demiurgo().getClass().getResourceAsStream("/worlds.yml");
+					byte[] buffer = new byte[yml.available()];
+					yml.read(buffer);
+					FileOutputStream out = new FileOutputStream("worlds.yml");
+					out.write(buffer);
+					out.close();
+					System.exit(0);
+				}
+			}
 			wc = yaml.loadAs(yml, WorldsConfig.class);
 
 			logger.info("Loading data from database...");
@@ -150,16 +173,6 @@ public class Demiurgo {
 		});
 
 		server = startServer();
-
-		// TODO: little eclipse hack
-
-		try {
-			System.in.read();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		System.exit(0);
 	}
 
 	//TODO: better method of handle keys
@@ -192,12 +205,12 @@ public class Demiurgo {
 	}
 
 	public static HttpServer startServer() {
-		/*Logger l = Logger.getLogger("org.glassfish.grizzly.http.server.HttpHandler");
+		Logger l = Logger.getLogger("org.glassfish.grizzly.http.server.HttpHandler");
 		l.setLevel(Level.FINE);
 		l.setUseParentHandlers(false);
 		ConsoleHandler ch = new ConsoleHandler();
 		ch.setLevel(Level.ALL);
-		l.addHandler(ch);*/
+		l.addHandler(ch);
 		// create a resource config that scans for JAX-RS resources and
 		// providers
 		// in com.example.rest package
@@ -251,14 +264,19 @@ public class Demiurgo {
 					System.err.println("on line " + ex.getLine() + ", column " + ex.getColumn());
 				}
 			}
-			
 		}
 		
 		// Reading rooms
-		List<WorldRoom> rooms = db.readAllRooms();
-		for (WorldRoom r : rooms) {
+		List<DemiurgoRoom> rooms = db.readAllRooms();
+		for (DemiurgoRoom r : rooms) {
 			world.newRoom(r);
 		}
+		
+		// Reading inventories
+			List<Inventory> invs = db.readAllInventories();
+			for (Inventory inv : invs) {
+				world.addInventory(inv);
+			}
 
 		// Reading objects
 		List<DemiurgoObject> objs = db.readAllObjects();
@@ -267,7 +285,7 @@ public class Demiurgo {
 		}
 
 		// Rebuilding room variables
-		for (WorldRoom r : rooms) {
+		for (DemiurgoRoom r : rooms) {
 			r.rebuild(world);
 		}
 
@@ -282,31 +300,36 @@ public class Demiurgo {
 			if (u.getObjId() != -1)
 				world.setUserObject(u, (world.getObject(u.getObjId())));
 			world.addUser(u);
-			if (u.getDecision() != null && u.getObj() != null && u.getObj().getLocation() instanceof WorldRoom) {
-				world.getPendingRooms().add((WorldRoom) u.getObj().getLocation());
+			if (u.getDecision() != null && u.getObj() != null && u.getObj().getLocation() instanceof DemiurgoRoom) {
+				world.getPendingRooms().add((DemiurgoRoom) u.getObj().getLocation());
 				// TODO: characters without room
 			}
 		}
 
 		// Reading actions
-		for (WorldRoom r : rooms) {
+		for (DemiurgoRoom r : rooms) {
 			List<Action> l = loadActionsFromRoom(r, data);
 			r.setActions(l);
 			for (Action a : l) {
 				world.getActions().put(a.getId(), a);
 			}
 		}
+		
+		// rebuilding inventories
+		for (Inventory inv : invs) {
+			inv.rebuild(world);
+		}
 
 		long[] ids = db.readCurrentIDs();
 
 		world.setCurrentObjId(ids[0]);
-		world.setCurrentRoomId(ids[1]);
+		world.setCurrentLocationId(ids[1]);
 		world.setCurrentActionId(ids[2]);
 
 		db.stopConnection();
 	}
 
-	public static List<Action> loadActionsFromRoom(WorldRoom room, WorldDBData data) {
+	public static List<Action> loadActionsFromRoom(DemiurgoRoom room, WorldDBData data) {
 		DatabaseInterface db = new MariaDBDatabase();
 		db.createConnection(data.getUrl(), data.getUser(), data.getPasswd());
 		return db.readActionsFromRoom(room);
@@ -318,8 +341,13 @@ public class Demiurgo {
 
 		db.beginTransaction();
 		
+		// Writing location ids
+		for(WorldLocation l : world.getLocations()) {
+			db.writeLocationId(l);
+		}
+		
 		// Writing rooms
-		for (WorldRoom room : world.getAllRooms()) {
+		for (DemiurgoRoom room : world.getAllRooms()) {
 			db.writeWorldRoom(room);
 			if (room.areActionsInCache()) {
 				for (Action a : room.getActions()) {
@@ -344,8 +372,13 @@ public class Demiurgo {
 			db.writeUser(u);
 		}
 		
+		// Writing inventories
+		for (Inventory inv : world.getInventories()) {
+			db.writeInventory(inv);
+		}
+		
 
-		db.setCurrentIDs(world.getCurrentObjId(), world.getCurrentRoomId(), world.getCurrentActionId());
+		db.setCurrentIDs(world.getCurrentObjId(), world.getCurrentLocationId(), world.getCurrentActionId());
 
 		db.commitTransaction();
 		
@@ -382,6 +415,20 @@ public class Demiurgo {
 
 	public static Logger getLogger() {
 		return logger;
+	}
+	
+	public static WorldsConfig getWorldsConfig() {
+		return wc;
+	}
+
+	public static String filterActionToUser(String narration, String username) {
+		Pattern visPat = Pattern.compile("\\[o=[\\s\\w]*" + username + "[\\s\\w]*\\](.*?)\\[\\/o\\]",
+				Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+		Pattern hidPat = Pattern.compile("\\[o=[\\s\\w]*\\](.*?)\\[\\/o\\]",
+				Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+		narration = visPat.matcher(narration).replaceAll("$1");
+		narration = hidPat.matcher(narration).replaceAll("");
+		return narration;
 	}
 }
 

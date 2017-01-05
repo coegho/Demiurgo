@@ -1,4 +1,4 @@
-// Generated from COE.g4 by ANTLR 4.5
+// Generated from COE.g4 by ANTLR 4.5.3
 package es.usc.rai.coego.martin.demiurgo.coe;
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
@@ -11,7 +11,7 @@ import java.util.ArrayList;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast"})
 public class COEParser extends Parser {
-	static { RuntimeMetaData.checkVersion("4.5", RuntimeMetaData.VERSION); }
+	static { RuntimeMetaData.checkVersion("4.5.3", RuntimeMetaData.VERSION); }
 
 	protected static final DFA[] _decisionToDFA;
 	protected static final PredictionContextCache _sharedContextCache =
@@ -23,7 +23,7 @@ public class COEParser extends Parser {
 		INT_NUMBER=25, FLOAT_NUMBER=26, BOOLEAN=27, TEXT_STRING=28, WS=29, COMMENT=30, 
 		COMMENT2=31, MUL=32, DIV=33, ADD=34, SUB=35, EQ=36, NEQ=37, GREQ=38, LESEQ=39, 
 		GREAT=40, LESS=41, AND=42, OR=43, ASSIGN=44, MOVE=45, INHERIT=46, ROOM=47, 
-		USEROBJ=48;
+		USEROBJ=48, INVENTORY=49;
 	public static final int
 		RULE_s = 0, RULE_class_def = 1, RULE_fields = 2, RULE_var_decl = 3, RULE_methods = 4, 
 		RULE_method = 5, RULE_args = 6, RULE_code = 7, RULE_line = 8, RULE_variable = 9, 
@@ -43,7 +43,7 @@ public class COEParser extends Parser {
 		"'#'", "'[]'", "'\n'", null, null, null, null, "'!'", null, null, null, 
 		null, null, null, null, null, null, null, null, null, null, null, "'*'", 
 		"'/'", "'+'", "'-'", "'=='", "'!='", "'>='", "'<='", "'>'", "'<'", "'&'", 
-		"'|'", "'='", "'>>'", "':'", "'@'", "'->'"
+		"'|'", "'='", "'>>'", "':'", "'@'", "'->'", "'%'"
 	};
 	private static final String[] _SYMBOLIC_NAMES = {
 		null, null, null, null, null, null, null, null, null, null, null, null, 
@@ -51,7 +51,7 @@ public class COEParser extends Parser {
 		"TRUE", "FALSE", "SYMBOL", "USERNAME", "INT_NUMBER", "FLOAT_NUMBER", "BOOLEAN", 
 		"TEXT_STRING", "WS", "COMMENT", "COMMENT2", "MUL", "DIV", "ADD", "SUB", 
 		"EQ", "NEQ", "GREQ", "LESEQ", "GREAT", "LESS", "AND", "OR", "ASSIGN", 
-		"MOVE", "INHERIT", "ROOM", "USEROBJ"
+		"MOVE", "INHERIT", "ROOM", "USEROBJ", "INVENTORY"
 	};
 	public static final Vocabulary VOCABULARY = new VocabularyImpl(_LITERAL_NAMES, _SYMBOLIC_NAMES);
 
@@ -162,6 +162,7 @@ public class COEParser extends Parser {
 		int _la;
 		try {
 			setState(63);
+			_errHandler.sync(this);
 			switch ( getInterpreter().adaptivePredict(_input,4,_ctx) ) {
 			case 1:
 				_localctx = new ClassDefContext(_localctx);
@@ -304,6 +305,7 @@ public class COEParser extends Parser {
 			}
 
 			setState(78);
+			_errHandler.sync(this);
 			switch ( getInterpreter().adaptivePredict(_input,8,_ctx) ) {
 			case 1:
 				{
@@ -314,7 +316,7 @@ public class COEParser extends Parser {
 			}
 			setState(81);
 			_la = _input.LA(1);
-			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << INT_TYPE) | (1L << FLOAT_TYPE) | (1L << STRING_TYPE) | (1L << SYMBOL) | (1L << ROOM))) != 0)) {
+			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << INT_TYPE) | (1L << FLOAT_TYPE) | (1L << STRING_TYPE) | (1L << SYMBOL) | (1L << ROOM) | (1L << INVENTORY))) != 0)) {
 				{
 				setState(80);
 				methods();
@@ -510,7 +512,7 @@ public class COEParser extends Parser {
 				setState(104); 
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << INT_TYPE) | (1L << FLOAT_TYPE) | (1L << STRING_TYPE) | (1L << SYMBOL) | (1L << ROOM))) != 0) );
+			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << INT_TYPE) | (1L << FLOAT_TYPE) | (1L << STRING_TYPE) | (1L << SYMBOL) | (1L << ROOM) | (1L << INVENTORY))) != 0) );
 			}
 		}
 		catch (RecognitionException re) {
@@ -565,6 +567,7 @@ public class COEParser extends Parser {
 			enterOuterAlt(_localctx, 1);
 			{
 			setState(110);
+			_errHandler.sync(this);
 			switch ( getInterpreter().adaptivePredict(_input,14,_ctx) ) {
 			case 1:
 				{
@@ -583,7 +586,7 @@ public class COEParser extends Parser {
 			match(T__2);
 			setState(115);
 			_la = _input.LA(1);
-			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << INT_TYPE) | (1L << FLOAT_TYPE) | (1L << STRING_TYPE) | (1L << SYMBOL) | (1L << ROOM))) != 0)) {
+			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << INT_TYPE) | (1L << FLOAT_TYPE) | (1L << STRING_TYPE) | (1L << SYMBOL) | (1L << ROOM) | (1L << INVENTORY))) != 0)) {
 				{
 				setState(114);
 				args();
@@ -604,6 +607,7 @@ public class COEParser extends Parser {
 			setState(121);
 			match(T__0);
 			setState(123);
+			_errHandler.sync(this);
 			switch ( getInterpreter().adaptivePredict(_input,17,_ctx) ) {
 			case 1:
 				{
@@ -614,7 +618,7 @@ public class COEParser extends Parser {
 			}
 			setState(126);
 			_la = _input.LA(1);
-			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << T__0) | (1L << T__2) | (1L << T__8) | (1L << T__9) | (1L << D) | (1L << IF) | (1L << FOR) | (1L << ECHO) | (1L << INT_TYPE) | (1L << FLOAT_TYPE) | (1L << STRING_TYPE) | (1L << SYMBOL) | (1L << USERNAME) | (1L << INT_NUMBER) | (1L << FLOAT_NUMBER) | (1L << BOOLEAN) | (1L << TEXT_STRING) | (1L << SUB) | (1L << ROOM))) != 0)) {
+			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << T__0) | (1L << T__2) | (1L << T__8) | (1L << T__9) | (1L << D) | (1L << IF) | (1L << FOR) | (1L << ECHO) | (1L << INT_TYPE) | (1L << FLOAT_TYPE) | (1L << STRING_TYPE) | (1L << SYMBOL) | (1L << USERNAME) | (1L << INT_NUMBER) | (1L << FLOAT_NUMBER) | (1L << BOOLEAN) | (1L << TEXT_STRING) | (1L << SUB) | (1L << ROOM) | (1L << INVENTORY))) != 0)) {
 				{
 				setState(125);
 				code();
@@ -808,6 +812,7 @@ public class COEParser extends Parser {
 		enterRule(_localctx, 16, RULE_line);
 		try {
 			setState(159);
+			_errHandler.sync(this);
 			switch ( getInterpreter().adaptivePredict(_input,22,_ctx) ) {
 			case 1:
 				enterOuterAlt(_localctx, 1);
@@ -1015,6 +1020,7 @@ public class COEParser extends Parser {
 			enterOuterAlt(_localctx, 1);
 			{
 			setState(177);
+			_errHandler.sync(this);
 			switch ( getInterpreter().adaptivePredict(_input,25,_ctx) ) {
 			case 1:
 				{
@@ -1386,50 +1392,51 @@ public class COEParser extends Parser {
 			enterOuterAlt(_localctx, 1);
 			{
 			setState(231);
+			_errHandler.sync(this);
 			switch ( getInterpreter().adaptivePredict(_input,30,_ctx) ) {
 			case 1:
-				{
-				_localctx = new NegativeContext(_localctx);
-				_ctx = _localctx;
-				_prevctx = _localctx;
-
-				setState(194);
-				match(SUB);
-				setState(195);
-				operation(21);
-				}
-				break;
-			case 2:
-				{
-				_localctx = new DiceContext(_localctx);
-				_ctx = _localctx;
-				_prevctx = _localctx;
-				setState(196);
-				match(D);
-				setState(197);
-				operation(20);
-				}
-				break;
-			case 3:
-				{
-				_localctx = new AssignContext(_localctx);
-				_ctx = _localctx;
-				_prevctx = _localctx;
-				setState(198);
-				variable(0);
-				setState(199);
-				match(ASSIGN);
-				setState(200);
-				operation(14);
-				}
-				break;
-			case 4:
 				{
 				_localctx = new FunctionOpContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
-				setState(202);
+
+				setState(194);
 				function_call();
+				}
+				break;
+			case 2:
+				{
+				_localctx = new NegativeContext(_localctx);
+				_ctx = _localctx;
+				_prevctx = _localctx;
+				setState(195);
+				match(SUB);
+				setState(196);
+				operation(21);
+				}
+				break;
+			case 3:
+				{
+				_localctx = new DiceContext(_localctx);
+				_ctx = _localctx;
+				_prevctx = _localctx;
+				setState(197);
+				match(D);
+				setState(198);
+				operation(20);
+				}
+				break;
+			case 4:
+				{
+				_localctx = new AssignContext(_localctx);
+				_ctx = _localctx;
+				_prevctx = _localctx;
+				setState(199);
+				variable(0);
+				setState(200);
+				match(ASSIGN);
+				setState(201);
+				operation(14);
 				}
 				break;
 			case 5:
@@ -1579,6 +1586,7 @@ public class COEParser extends Parser {
 					_prevctx = _localctx;
 					{
 					setState(256);
+					_errHandler.sync(this);
 					switch ( getInterpreter().adaptivePredict(_input,31,_ctx) ) {
 					case 1:
 						{
@@ -1954,6 +1962,7 @@ public class COEParser extends Parser {
 			enterOuterAlt(_localctx, 1);
 			{
 			setState(289);
+			_errHandler.sync(this);
 			switch ( getInterpreter().adaptivePredict(_input,35,_ctx) ) {
 			case 1:
 				{
@@ -2048,6 +2057,7 @@ public class COEParser extends Parser {
 		int _la;
 		try {
 			setState(339);
+			_errHandler.sync(this);
 			switch ( getInterpreter().adaptivePredict(_input,47,_ctx) ) {
 			case 1:
 				enterOuterAlt(_localctx, 1);
@@ -2072,6 +2082,7 @@ public class COEParser extends Parser {
 				setState(306);
 				match(T__0);
 				setState(308);
+				_errHandler.sync(this);
 				switch ( getInterpreter().adaptivePredict(_input,38,_ctx) ) {
 				case 1:
 					{
@@ -2082,7 +2093,7 @@ public class COEParser extends Parser {
 				}
 				setState(311);
 				_la = _input.LA(1);
-				if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << T__0) | (1L << T__2) | (1L << T__8) | (1L << T__9) | (1L << D) | (1L << IF) | (1L << FOR) | (1L << ECHO) | (1L << INT_TYPE) | (1L << FLOAT_TYPE) | (1L << STRING_TYPE) | (1L << SYMBOL) | (1L << USERNAME) | (1L << INT_NUMBER) | (1L << FLOAT_NUMBER) | (1L << BOOLEAN) | (1L << TEXT_STRING) | (1L << SUB) | (1L << ROOM))) != 0)) {
+				if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << T__0) | (1L << T__2) | (1L << T__8) | (1L << T__9) | (1L << D) | (1L << IF) | (1L << FOR) | (1L << ECHO) | (1L << INT_TYPE) | (1L << FLOAT_TYPE) | (1L << STRING_TYPE) | (1L << SYMBOL) | (1L << USERNAME) | (1L << INT_NUMBER) | (1L << FLOAT_NUMBER) | (1L << BOOLEAN) | (1L << TEXT_STRING) | (1L << SUB) | (1L << ROOM) | (1L << INVENTORY))) != 0)) {
 					{
 					setState(310);
 					code();
@@ -2101,6 +2112,7 @@ public class COEParser extends Parser {
 				setState(316);
 				match(T__1);
 				setState(318);
+				_errHandler.sync(this);
 				switch ( getInterpreter().adaptivePredict(_input,41,_ctx) ) {
 				case 1:
 					{
@@ -2123,6 +2135,7 @@ public class COEParser extends Parser {
 				setState(323);
 				match(T__3);
 				setState(325);
+				_errHandler.sync(this);
 				switch ( getInterpreter().adaptivePredict(_input,42,_ctx) ) {
 				case 1:
 					{
@@ -2132,6 +2145,7 @@ public class COEParser extends Parser {
 					break;
 				}
 				setState(328);
+				_errHandler.sync(this);
 				switch ( getInterpreter().adaptivePredict(_input,43,_ctx) ) {
 				case 1:
 					{
@@ -2142,7 +2156,7 @@ public class COEParser extends Parser {
 				}
 				setState(331);
 				_la = _input.LA(1);
-				if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << T__0) | (1L << T__2) | (1L << T__8) | (1L << T__9) | (1L << D) | (1L << IF) | (1L << FOR) | (1L << ECHO) | (1L << INT_TYPE) | (1L << FLOAT_TYPE) | (1L << STRING_TYPE) | (1L << SYMBOL) | (1L << USERNAME) | (1L << INT_NUMBER) | (1L << FLOAT_NUMBER) | (1L << BOOLEAN) | (1L << TEXT_STRING) | (1L << SUB) | (1L << ROOM))) != 0)) {
+				if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << T__0) | (1L << T__2) | (1L << T__8) | (1L << T__9) | (1L << D) | (1L << IF) | (1L << FOR) | (1L << ECHO) | (1L << INT_TYPE) | (1L << FLOAT_TYPE) | (1L << STRING_TYPE) | (1L << SYMBOL) | (1L << USERNAME) | (1L << INT_NUMBER) | (1L << FLOAT_NUMBER) | (1L << BOOLEAN) | (1L << TEXT_STRING) | (1L << SUB) | (1L << ROOM) | (1L << INVENTORY))) != 0)) {
 					{
 					setState(330);
 					line();
@@ -2150,6 +2164,7 @@ public class COEParser extends Parser {
 				}
 
 				setState(334);
+				_errHandler.sync(this);
 				switch ( getInterpreter().adaptivePredict(_input,45,_ctx) ) {
 				case 1:
 					{
@@ -2159,6 +2174,7 @@ public class COEParser extends Parser {
 					break;
 				}
 				setState(337);
+				_errHandler.sync(this);
 				switch ( getInterpreter().adaptivePredict(_input,46,_ctx) ) {
 				case 1:
 					{
@@ -2213,6 +2229,7 @@ public class COEParser extends Parser {
 		int _la;
 		try {
 			setState(375);
+			_errHandler.sync(this);
 			switch ( getInterpreter().adaptivePredict(_input,58,_ctx) ) {
 			case 1:
 				enterOuterAlt(_localctx, 1);
@@ -2240,6 +2257,7 @@ public class COEParser extends Parser {
 				setState(348);
 				match(T__0);
 				setState(350);
+				_errHandler.sync(this);
 				switch ( getInterpreter().adaptivePredict(_input,50,_ctx) ) {
 				case 1:
 					{
@@ -2250,7 +2268,7 @@ public class COEParser extends Parser {
 				}
 				setState(353);
 				_la = _input.LA(1);
-				if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << T__0) | (1L << T__2) | (1L << T__8) | (1L << T__9) | (1L << D) | (1L << IF) | (1L << FOR) | (1L << ECHO) | (1L << INT_TYPE) | (1L << FLOAT_TYPE) | (1L << STRING_TYPE) | (1L << SYMBOL) | (1L << USERNAME) | (1L << INT_NUMBER) | (1L << FLOAT_NUMBER) | (1L << BOOLEAN) | (1L << TEXT_STRING) | (1L << SUB) | (1L << ROOM))) != 0)) {
+				if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << T__0) | (1L << T__2) | (1L << T__8) | (1L << T__9) | (1L << D) | (1L << IF) | (1L << FOR) | (1L << ECHO) | (1L << INT_TYPE) | (1L << FLOAT_TYPE) | (1L << STRING_TYPE) | (1L << SYMBOL) | (1L << USERNAME) | (1L << INT_NUMBER) | (1L << FLOAT_NUMBER) | (1L << BOOLEAN) | (1L << TEXT_STRING) | (1L << SUB) | (1L << ROOM) | (1L << INVENTORY))) != 0)) {
 					{
 					setState(352);
 					code();
@@ -2285,6 +2303,7 @@ public class COEParser extends Parser {
 				setState(362);
 				match(ELSE);
 				setState(364);
+				_errHandler.sync(this);
 				switch ( getInterpreter().adaptivePredict(_input,54,_ctx) ) {
 				case 1:
 					{
@@ -2294,6 +2313,7 @@ public class COEParser extends Parser {
 					break;
 				}
 				setState(367);
+				_errHandler.sync(this);
 				switch ( getInterpreter().adaptivePredict(_input,55,_ctx) ) {
 				case 1:
 					{
@@ -2304,7 +2324,7 @@ public class COEParser extends Parser {
 				}
 				setState(370);
 				_la = _input.LA(1);
-				if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << T__0) | (1L << T__2) | (1L << T__8) | (1L << T__9) | (1L << D) | (1L << IF) | (1L << FOR) | (1L << ECHO) | (1L << INT_TYPE) | (1L << FLOAT_TYPE) | (1L << STRING_TYPE) | (1L << SYMBOL) | (1L << USERNAME) | (1L << INT_NUMBER) | (1L << FLOAT_NUMBER) | (1L << BOOLEAN) | (1L << TEXT_STRING) | (1L << SUB) | (1L << ROOM))) != 0)) {
+				if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << T__0) | (1L << T__2) | (1L << T__8) | (1L << T__9) | (1L << D) | (1L << IF) | (1L << FOR) | (1L << ECHO) | (1L << INT_TYPE) | (1L << FLOAT_TYPE) | (1L << STRING_TYPE) | (1L << SYMBOL) | (1L << USERNAME) | (1L << INT_NUMBER) | (1L << FLOAT_NUMBER) | (1L << BOOLEAN) | (1L << TEXT_STRING) | (1L << SUB) | (1L << ROOM) | (1L << INVENTORY))) != 0)) {
 					{
 					setState(369);
 					line();
@@ -2312,6 +2332,7 @@ public class COEParser extends Parser {
 				}
 
 				setState(373);
+				_errHandler.sync(this);
 				switch ( getInterpreter().adaptivePredict(_input,57,_ctx) ) {
 				case 1:
 					{
@@ -2370,6 +2391,7 @@ public class COEParser extends Parser {
 		int _la;
 		try {
 			setState(414);
+			_errHandler.sync(this);
 			switch ( getInterpreter().adaptivePredict(_input,66,_ctx) ) {
 			case 1:
 				enterOuterAlt(_localctx, 1);
@@ -2398,6 +2420,7 @@ public class COEParser extends Parser {
 				setState(386);
 				match(T__0);
 				setState(388);
+				_errHandler.sync(this);
 				switch ( getInterpreter().adaptivePredict(_input,60,_ctx) ) {
 				case 1:
 					{
@@ -2408,7 +2431,7 @@ public class COEParser extends Parser {
 				}
 				setState(391);
 				_la = _input.LA(1);
-				if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << T__0) | (1L << T__2) | (1L << T__8) | (1L << T__9) | (1L << D) | (1L << IF) | (1L << FOR) | (1L << ECHO) | (1L << INT_TYPE) | (1L << FLOAT_TYPE) | (1L << STRING_TYPE) | (1L << SYMBOL) | (1L << USERNAME) | (1L << INT_NUMBER) | (1L << FLOAT_NUMBER) | (1L << BOOLEAN) | (1L << TEXT_STRING) | (1L << SUB) | (1L << ROOM))) != 0)) {
+				if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << T__0) | (1L << T__2) | (1L << T__8) | (1L << T__9) | (1L << D) | (1L << IF) | (1L << FOR) | (1L << ECHO) | (1L << INT_TYPE) | (1L << FLOAT_TYPE) | (1L << STRING_TYPE) | (1L << SYMBOL) | (1L << USERNAME) | (1L << INT_NUMBER) | (1L << FLOAT_NUMBER) | (1L << BOOLEAN) | (1L << TEXT_STRING) | (1L << SUB) | (1L << ROOM) | (1L << INVENTORY))) != 0)) {
 					{
 					setState(390);
 					code();
@@ -2444,6 +2467,7 @@ public class COEParser extends Parser {
 				setState(403);
 				match(T__3);
 				setState(405);
+				_errHandler.sync(this);
 				switch ( getInterpreter().adaptivePredict(_input,63,_ctx) ) {
 				case 1:
 					{
@@ -2464,6 +2488,7 @@ public class COEParser extends Parser {
 				setState(410);
 				line();
 				setState(412);
+				_errHandler.sync(this);
 				switch ( getInterpreter().adaptivePredict(_input,65,_ctx) ) {
 				case 1:
 					{
@@ -2588,6 +2613,15 @@ public class COEParser extends Parser {
 			else return visitor.visitChildren(this);
 		}
 	}
+	public static class InventoryTypeContext extends Data_typeContext {
+		public TerminalNode INVENTORY() { return getToken(COEParser.INVENTORY, 0); }
+		public InventoryTypeContext(Data_typeContext ctx) { copyFrom(ctx); }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof COEVisitor ) return ((COEVisitor<? extends T>)visitor).visitInventoryType(this);
+			else return visitor.visitChildren(this);
+		}
+	}
 	public static class IntTypeContext extends Data_typeContext {
 		public TerminalNode INT_TYPE() { return getToken(COEParser.INT_TYPE, 0); }
 		public IntTypeContext(Data_typeContext ctx) { copyFrom(ctx); }
@@ -2651,7 +2685,7 @@ public class COEParser extends Parser {
 			int _alt;
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(429);
+			setState(430);
 			switch (_input.LA(1)) {
 			case INT_TYPE:
 				{
@@ -2699,11 +2733,20 @@ public class COEParser extends Parser {
 				match(ROOM);
 				}
 				break;
+			case INVENTORY:
+				{
+				_localctx = new InventoryTypeContext(_localctx);
+				_ctx = _localctx;
+				_prevctx = _localctx;
+				setState(429);
+				match(INVENTORY);
+				}
+				break;
 			default:
 				throw new NoViableAltException(this);
 			}
 			_ctx.stop = _input.LT(-1);
-			setState(435);
+			setState(436);
 			_errHandler.sync(this);
 			_alt = getInterpreter().adaptivePredict(_input,68,_ctx);
 			while ( _alt!=2 && _alt!=org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER ) {
@@ -2714,14 +2757,14 @@ public class COEParser extends Parser {
 					{
 					_localctx = new ListTypeContext(new Data_typeContext(_parentctx, _parentState));
 					pushNewRecursionContext(_localctx, _startState, RULE_data_type);
-					setState(431);
-					if (!(precpred(_ctx, 1))) throw new FailedPredicateException(this, "precpred(_ctx, 1)");
 					setState(432);
+					if (!(precpred(_ctx, 1))) throw new FailedPredicateException(this, "precpred(_ctx, 1)");
+					setState(433);
 					match(T__10);
 					}
 					} 
 				}
-				setState(437);
+				setState(438);
 				_errHandler.sync(this);
 				_alt = getInterpreter().adaptivePredict(_input,68,_ctx);
 			}
@@ -2757,7 +2800,7 @@ public class COEParser extends Parser {
 			int _alt;
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(439); 
+			setState(440); 
 			_errHandler.sync(this);
 			_alt = 1;
 			do {
@@ -2765,7 +2808,7 @@ public class COEParser extends Parser {
 				case 1:
 					{
 					{
-					setState(438);
+					setState(439);
 					match(T__11);
 					}
 					}
@@ -2773,7 +2816,7 @@ public class COEParser extends Parser {
 				default:
 					throw new NoViableAltException(this);
 				}
-				setState(441); 
+				setState(442); 
 				_errHandler.sync(this);
 				_alt = getInterpreter().adaptivePredict(_input,69,_ctx);
 			} while ( _alt!=2 && _alt!=org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER );
@@ -2845,7 +2888,7 @@ public class COEParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3\62\u01be\4\2\t\2"+
+		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3\63\u01bf\4\2\t\2"+
 		"\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13"+
 		"\t\13\4\f\t\f\4\r\t\r\4\16\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22"+
 		"\4\23\t\23\4\24\t\24\4\25\t\25\4\26\t\26\4\27\t\27\4\30\t\30\4\31\t\31"+
@@ -2878,30 +2921,30 @@ public class COEParser extends Parser {
 		"\3\25\5\25\u0187\n\25\3\25\5\25\u018a\n\25\3\25\5\25\u018d\n\25\3\25\3"+
 		"\25\3\25\3\25\3\25\3\25\3\25\3\25\3\25\5\25\u0198\n\25\3\25\5\25\u019b"+
 		"\n\25\3\25\3\25\5\25\u019f\n\25\5\25\u01a1\n\25\3\26\3\26\3\26\3\26\3"+
-		"\27\3\27\3\27\3\30\3\30\3\30\3\30\3\30\3\30\5\30\u01b0\n\30\3\30\3\30"+
-		"\7\30\u01b4\n\30\f\30\16\30\u01b7\13\30\3\31\6\31\u01ba\n\31\r\31\16\31"+
-		"\u01bb\3\31\2\6\24\30\".\32\2\4\6\b\n\f\16\20\22\24\26\30\32\34\36 \""+
-		"$&(*,.\60\2\6\3\2\"#\3\2$%\3\2&+\3\2,-\u0205\2A\3\2\2\2\4C\3\2\2\2\6Z"+
-		"\3\2\2\2\b^\3\2\2\2\nh\3\2\2\2\fp\3\2\2\2\16\u0087\3\2\2\2\20\u0092\3"+
-		"\2\2\2\22\u00a1\3\2\2\2\24\u00a6\3\2\2\2\26\u00b3\3\2\2\2\30\u00e9\3\2"+
-		"\2\2\32\u0107\3\2\2\2\34\u010b\3\2\2\2\36\u011a\3\2\2\2 \u011d\3\2\2\2"+
-		"\"\u0123\3\2\2\2$\u0155\3\2\2\2&\u0179\3\2\2\2(\u01a0\3\2\2\2*\u01a2\3"+
-		"\2\2\2,\u01a6\3\2\2\2.\u01af\3\2\2\2\60\u01b9\3\2\2\2\62\64\5\60\31\2"+
-		"\63\62\3\2\2\2\63\64\3\2\2\2\64\65\3\2\2\2\65\67\5\4\3\2\668\5\60\31\2"+
-		"\67\66\3\2\2\2\678\3\2\2\28B\3\2\2\29;\5\60\31\2:9\3\2\2\2:;\3\2\2\2;"+
-		"<\3\2\2\2<>\5\20\t\2=?\5\60\31\2>=\3\2\2\2>?\3\2\2\2?B\3\2\2\2@B\3\2\2"+
-		"\2A\63\3\2\2\2A:\3\2\2\2A@\3\2\2\2B\3\3\2\2\2CF\7\31\2\2DE\7\60\2\2EG"+
-		"\7\31\2\2FD\3\2\2\2FG\3\2\2\2GI\3\2\2\2HJ\5\60\31\2IH\3\2\2\2IJ\3\2\2"+
-		"\2JK\3\2\2\2KM\7\3\2\2LN\5\60\31\2ML\3\2\2\2MN\3\2\2\2NP\3\2\2\2OQ\5\6"+
-		"\4\2PO\3\2\2\2PQ\3\2\2\2QS\3\2\2\2RT\5\n\6\2SR\3\2\2\2ST\3\2\2\2TU\3\2"+
-		"\2\2UV\7\4\2\2V\5\3\2\2\2WX\5\b\5\2XY\5\60\31\2Y[\3\2\2\2ZW\3\2\2\2[\\"+
-		"\3\2\2\2\\Z\3\2\2\2\\]\3\2\2\2]\7\3\2\2\2^_\5.\30\2_b\7\31\2\2`a\7.\2"+
-		"\2ac\5\30\r\2b`\3\2\2\2bc\3\2\2\2c\t\3\2\2\2df\5\f\7\2eg\5\60\31\2fe\3"+
-		"\2\2\2fg\3\2\2\2gi\3\2\2\2hd\3\2\2\2ij\3\2\2\2jh\3\2\2\2jk\3\2\2\2k\13"+
-		"\3\2\2\2lm\5.\30\2mn\7\31\2\2no\7.\2\2oq\3\2\2\2pl\3\2\2\2pq\3\2\2\2q"+
-		"r\3\2\2\2rs\7\31\2\2su\7\5\2\2tv\5\16\b\2ut\3\2\2\2uv\3\2\2\2vw\3\2\2"+
-		"\2wy\7\6\2\2xz\5\60\31\2yx\3\2\2\2yz\3\2\2\2z{\3\2\2\2{}\7\3\2\2|~\5\60"+
-		"\31\2}|\3\2\2\2}~\3\2\2\2~\u0080\3\2\2\2\177\u0081\5\20\t\2\u0080\177"+
+		"\27\3\27\3\27\3\30\3\30\3\30\3\30\3\30\3\30\3\30\5\30\u01b1\n\30\3\30"+
+		"\3\30\7\30\u01b5\n\30\f\30\16\30\u01b8\13\30\3\31\6\31\u01bb\n\31\r\31"+
+		"\16\31\u01bc\3\31\2\6\24\30\".\32\2\4\6\b\n\f\16\20\22\24\26\30\32\34"+
+		"\36 \"$&(*,.\60\2\6\3\2\"#\3\2$%\3\2&+\3\2,-\u0207\2A\3\2\2\2\4C\3\2\2"+
+		"\2\6Z\3\2\2\2\b^\3\2\2\2\nh\3\2\2\2\fp\3\2\2\2\16\u0087\3\2\2\2\20\u0092"+
+		"\3\2\2\2\22\u00a1\3\2\2\2\24\u00a6\3\2\2\2\26\u00b3\3\2\2\2\30\u00e9\3"+
+		"\2\2\2\32\u0107\3\2\2\2\34\u010b\3\2\2\2\36\u011a\3\2\2\2 \u011d\3\2\2"+
+		"\2\"\u0123\3\2\2\2$\u0155\3\2\2\2&\u0179\3\2\2\2(\u01a0\3\2\2\2*\u01a2"+
+		"\3\2\2\2,\u01a6\3\2\2\2.\u01b0\3\2\2\2\60\u01ba\3\2\2\2\62\64\5\60\31"+
+		"\2\63\62\3\2\2\2\63\64\3\2\2\2\64\65\3\2\2\2\65\67\5\4\3\2\668\5\60\31"+
+		"\2\67\66\3\2\2\2\678\3\2\2\28B\3\2\2\29;\5\60\31\2:9\3\2\2\2:;\3\2\2\2"+
+		";<\3\2\2\2<>\5\20\t\2=?\5\60\31\2>=\3\2\2\2>?\3\2\2\2?B\3\2\2\2@B\3\2"+
+		"\2\2A\63\3\2\2\2A:\3\2\2\2A@\3\2\2\2B\3\3\2\2\2CF\7\31\2\2DE\7\60\2\2"+
+		"EG\7\31\2\2FD\3\2\2\2FG\3\2\2\2GI\3\2\2\2HJ\5\60\31\2IH\3\2\2\2IJ\3\2"+
+		"\2\2JK\3\2\2\2KM\7\3\2\2LN\5\60\31\2ML\3\2\2\2MN\3\2\2\2NP\3\2\2\2OQ\5"+
+		"\6\4\2PO\3\2\2\2PQ\3\2\2\2QS\3\2\2\2RT\5\n\6\2SR\3\2\2\2ST\3\2\2\2TU\3"+
+		"\2\2\2UV\7\4\2\2V\5\3\2\2\2WX\5\b\5\2XY\5\60\31\2Y[\3\2\2\2ZW\3\2\2\2"+
+		"[\\\3\2\2\2\\Z\3\2\2\2\\]\3\2\2\2]\7\3\2\2\2^_\5.\30\2_b\7\31\2\2`a\7"+
+		".\2\2ac\5\30\r\2b`\3\2\2\2bc\3\2\2\2c\t\3\2\2\2df\5\f\7\2eg\5\60\31\2"+
+		"fe\3\2\2\2fg\3\2\2\2gi\3\2\2\2hd\3\2\2\2ij\3\2\2\2jh\3\2\2\2jk\3\2\2\2"+
+		"k\13\3\2\2\2lm\5.\30\2mn\7\31\2\2no\7.\2\2oq\3\2\2\2pl\3\2\2\2pq\3\2\2"+
+		"\2qr\3\2\2\2rs\7\31\2\2su\7\5\2\2tv\5\16\b\2ut\3\2\2\2uv\3\2\2\2vw\3\2"+
+		"\2\2wy\7\6\2\2xz\5\60\31\2yx\3\2\2\2yz\3\2\2\2z{\3\2\2\2{}\7\3\2\2|~\5"+
+		"\60\31\2}|\3\2\2\2}~\3\2\2\2~\u0080\3\2\2\2\177\u0081\5\20\t\2\u0080\177"+
 		"\3\2\2\2\u0080\u0081\3\2\2\2\u0081\u0083\3\2\2\2\u0082\u0084\5\60\31\2"+
 		"\u0083\u0082\3\2\2\2\u0083\u0084\3\2\2\2\u0084\u0085\3\2\2\2\u0085\u0086"+
 		"\7\4\2\2\u0086\r\3\2\2\2\u0087\u0088\5.\30\2\u0088\u008f\7\31\2\2\u0089"+
@@ -2925,9 +2968,9 @@ public class COEParser extends Parser {
 		"\u00be\3\2\2\2\u00bc\u00ba\3\2\2\2\u00bc\u00bd\3\2\2\2\u00bd\u00c0\3\2"+
 		"\2\2\u00be\u00bc\3\2\2\2\u00bf\u00b7\3\2\2\2\u00bf\u00c0\3\2\2\2\u00c0"+
 		"\u00c1\3\2\2\2\u00c1\u00c2\7\6\2\2\u00c2\27\3\2\2\2\u00c3\u00c4\b\r\1"+
-		"\2\u00c4\u00c5\7%\2\2\u00c5\u00ea\5\30\r\27\u00c6\u00c7\7\17\2\2\u00c7"+
-		"\u00ea\5\30\r\26\u00c8\u00c9\5\24\13\2\u00c9\u00ca\7.\2\2\u00ca\u00cb"+
-		"\5\30\r\20\u00cb\u00ea\3\2\2\2\u00cc\u00ea\5\26\f\2\u00cd\u00ce\5\24\13"+
+		"\2\u00c4\u00ea\5\26\f\2\u00c5\u00c6\7%\2\2\u00c6\u00ea\5\30\r\27\u00c7"+
+		"\u00c8\7\17\2\2\u00c8\u00ea\5\30\r\26\u00c9\u00ca\5\24\13\2\u00ca\u00cb"+
+		"\7.\2\2\u00cb\u00cc\5\30\r\20\u00cc\u00ea\3\2\2\2\u00cd\u00ce\5\24\13"+
 		"\2\u00ce\u00cf\7\t\2\2\u00cf\u00d0\5\30\r\2\u00d0\u00d1\7\n\2\2\u00d1"+
 		"\u00d2\7.\2\2\u00d2\u00d3\5\30\r\2\u00d3\u00ea\3\2\2\2\u00d4\u00ea\5\24"+
 		"\13\2\u00d5\u00ea\5\34\17\2\u00d6\u00ea\7\33\2\2\u00d7\u00ea\7\34\2\2"+
@@ -2936,8 +2979,8 @@ public class COEParser extends Parser {
 		"\30\r\2\u00df\u00e0\7\7\2\2\u00e0\u00e2\5\30\r\2\u00e1\u00df\3\2\2\2\u00e2"+
 		"\u00e5\3\2\2\2\u00e3\u00e1\3\2\2\2\u00e3\u00e4\3\2\2\2\u00e4\u00e7\3\2"+
 		"\2\2\u00e5\u00e3\3\2\2\2\u00e6\u00de\3\2\2\2\u00e6\u00e7\3\2\2\2\u00e7"+
-		"\u00e8\3\2\2\2\u00e8\u00ea\7\4\2\2\u00e9\u00c3\3\2\2\2\u00e9\u00c6\3\2"+
-		"\2\2\u00e9\u00c8\3\2\2\2\u00e9\u00cc\3\2\2\2\u00e9\u00cd\3\2\2\2\u00e9"+
+		"\u00e8\3\2\2\2\u00e8\u00ea\7\4\2\2\u00e9\u00c3\3\2\2\2\u00e9\u00c5\3\2"+
+		"\2\2\u00e9\u00c7\3\2\2\2\u00e9\u00c9\3\2\2\2\u00e9\u00cd\3\2\2\2\u00e9"+
 		"\u00d4\3\2\2\2\u00e9\u00d5\3\2\2\2\u00e9\u00d6\3\2\2\2\u00e9\u00d7\3\2"+
 		"\2\2\u00e9\u00d8\3\2\2\2\u00e9\u00d9\3\2\2\2\u00e9\u00da\3\2\2\2\u00e9"+
 		"\u00db\3\2\2\2\u00e9\u00dc\3\2\2\2\u00e9\u00dd\3\2\2\2\u00ea\u0104\3\2"+
@@ -3007,18 +3050,19 @@ public class COEParser extends Parser {
 		"\2\2\2\u01a0\u017b\3\2\2\2\u01a0\u0190\3\2\2\2\u01a1)\3\2\2\2\u01a2\u01a3"+
 		"\7\32\2\2\u01a3\u01a4\7\62\2\2\u01a4\u01a5\5\30\r\2\u01a5+\3\2\2\2\u01a6"+
 		"\u01a7\7\23\2\2\u01a7\u01a8\5\30\r\2\u01a8-\3\2\2\2\u01a9\u01aa\b\30\1"+
-		"\2\u01aa\u01b0\7\24\2\2\u01ab\u01b0\7\25\2\2\u01ac\u01b0\7\26\2\2\u01ad"+
-		"\u01b0\7\31\2\2\u01ae\u01b0\7\61\2\2\u01af\u01a9\3\2\2\2\u01af\u01ab\3"+
-		"\2\2\2\u01af\u01ac\3\2\2\2\u01af\u01ad\3\2\2\2\u01af\u01ae\3\2\2\2\u01b0"+
-		"\u01b5\3\2\2\2\u01b1\u01b2\f\3\2\2\u01b2\u01b4\7\r\2\2\u01b3\u01b1\3\2"+
-		"\2\2\u01b4\u01b7\3\2\2\2\u01b5\u01b3\3\2\2\2\u01b5\u01b6\3\2\2\2\u01b6"+
-		"/\3\2\2\2\u01b7\u01b5\3\2\2\2\u01b8\u01ba\7\16\2\2\u01b9\u01b8\3\2\2\2"+
-		"\u01ba\u01bb\3\2\2\2\u01bb\u01b9\3\2\2\2\u01bb\u01bc\3\2\2\2\u01bc\61"+
-		"\3\2\2\2H\63\67:>AFIMPS\\bfjpuy}\u0080\u0083\u008f\u0098\u00a1\u00a6\u00ad"+
-		"\u00b3\u00bc\u00bf\u00e3\u00e6\u00e9\u0102\u0104\u0113\u0116\u0123\u012a"+
-		"\u0132\u0136\u0139\u013c\u0140\u0147\u014a\u014d\u0150\u0153\u0155\u0158"+
-		"\u015c\u0160\u0163\u0166\u016a\u016e\u0171\u0174\u0177\u0179\u0182\u0186"+
-		"\u0189\u018c\u0197\u019a\u019e\u01a0\u01af\u01b5\u01bb";
+		"\2\u01aa\u01b1\7\24\2\2\u01ab\u01b1\7\25\2\2\u01ac\u01b1\7\26\2\2\u01ad"+
+		"\u01b1\7\31\2\2\u01ae\u01b1\7\61\2\2\u01af\u01b1\7\63\2\2\u01b0\u01a9"+
+		"\3\2\2\2\u01b0\u01ab\3\2\2\2\u01b0\u01ac\3\2\2\2\u01b0\u01ad\3\2\2\2\u01b0"+
+		"\u01ae\3\2\2\2\u01b0\u01af\3\2\2\2\u01b1\u01b6\3\2\2\2\u01b2\u01b3\f\3"+
+		"\2\2\u01b3\u01b5\7\r\2\2\u01b4\u01b2\3\2\2\2\u01b5\u01b8\3\2\2\2\u01b6"+
+		"\u01b4\3\2\2\2\u01b6\u01b7\3\2\2\2\u01b7/\3\2\2\2\u01b8\u01b6\3\2\2\2"+
+		"\u01b9\u01bb\7\16\2\2\u01ba\u01b9\3\2\2\2\u01bb\u01bc\3\2\2\2\u01bc\u01ba"+
+		"\3\2\2\2\u01bc\u01bd\3\2\2\2\u01bd\61\3\2\2\2H\63\67:>AFIMPS\\bfjpuy}"+
+		"\u0080\u0083\u008f\u0098\u00a1\u00a6\u00ad\u00b3\u00bc\u00bf\u00e3\u00e6"+
+		"\u00e9\u0102\u0104\u0113\u0116\u0123\u012a\u0132\u0136\u0139\u013c\u0140"+
+		"\u0147\u014a\u014d\u0150\u0153\u0155\u0158\u015c\u0160\u0163\u0166\u016a"+
+		"\u016e\u0171\u0174\u0177\u0179\u0182\u0186\u0189\u018c\u0197\u019a\u019e"+
+		"\u01a0\u01b0\u01b6\u01bc";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

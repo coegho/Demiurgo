@@ -13,6 +13,8 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import es.usc.rai.coego.martin.demiurgo.exceptions.ObjectInsideItselfException;
+
 /**
  * Represents a world into the system.
  * 
@@ -29,21 +31,23 @@ public class World {
 	protected Map<String, User> users;
 	protected Map<Long, Action> actions;
 	protected RoomPath rooms;
+	protected List<Inventory> inventories;
 	protected DemiurgoClass rootClass;
 	protected long currentObjId;
-	protected long currentRoomId;
+	protected long currentLocationId;
 	protected long currentActionId;
-	protected List<WorldRoom> pendingRooms;
+	protected List<DemiurgoRoom> pendingRooms;
 	protected Logger worldLogger;
 
 	public World(String name) throws SecurityException, IOException {
 		this.name = name;
 		currentObjId = 0;
-		currentRoomId = 0;
+		currentLocationId = 0;
 		currentActionId = 0;
 		classes = new HashMap<>();
 		objects = new HashMap<>();
 		locations = new HashMap<>();
+		inventories = new ArrayList<>();
 		users = new HashMap<>();
 		actions = new HashMap<>();
 		rooms = new RoomPath("/", null);
@@ -112,8 +116,12 @@ public class World {
 	 *            Future location.
 	 * @param obj
 	 *            Moved object.
+	 * @throws ObjectInsideItselfException 
 	 */
-	public void moveTo(WorldLocation origin, WorldLocation destination, DemiurgoObject obj) {
+	public void moveTo(WorldLocation origin, WorldLocation destination, DemiurgoObject obj) throws ObjectInsideItselfException {
+		if(destination.isInsideOf(obj)) {
+			throw new ObjectInsideItselfException(obj);
+		}
 		origin.removeObject(obj);
 		obj.setLocation(destination);
 		destination.addObject(obj);
@@ -164,7 +172,7 @@ public class World {
 	 *            The absolute path of the current room (ending by '/').
 	 * @return
 	 */
-	public WorldRoom newRoom(String roomRelativeName, String currentRoom) {
+	public DemiurgoRoom newRoom(String roomRelativeName, String currentRoom) {
 		return newRoom(currentRoom + roomRelativeName);
 	}
 
@@ -175,7 +183,7 @@ public class World {
 	 *            The relative path to the room.
 	 * @return
 	 */
-	public WorldRoom newRoom(WorldRoom room) {
+	public DemiurgoRoom newRoom(DemiurgoRoom room) {
 		RoomPath rg = searchRoomGroup(room.getLongPath(), true);
 		rg.setOwnRoom(room);
 		locations.put(room.getId(), room);
@@ -190,11 +198,11 @@ public class World {
 	 *            The complete path to the room.
 	 * @return
 	 */
-	public WorldRoom newRoom(String roomLongName) {
+	public DemiurgoRoom newRoom(String roomLongName) {
 		RoomPath rg = searchRoomGroup(roomLongName, true);
 		if (rg.getOwnRoom() == null) {
-			WorldRoom room = new WorldRoom(roomLongName, this, currentRoomId);
-			currentRoomId++;
+			DemiurgoRoom room = new DemiurgoRoom(roomLongName, this, currentLocationId);
+			currentLocationId++;
 			rg.setOwnRoom(room);
 			locations.put(room.getId(), room);
 		} else {
@@ -212,7 +220,7 @@ public class World {
 	 *            The absolute path of the current room (ending by '/').
 	 * @return
 	 */
-	public WorldRoom getRoom(String roomRelativeName, String currentRoom) {
+	public DemiurgoRoom getRoom(String roomRelativeName, String currentRoom) {
 		return getRoom(currentRoom + roomRelativeName);
 	}
 
@@ -223,7 +231,7 @@ public class World {
 	 *            The complete path to the room.
 	 * @return
 	 */
-	public WorldRoom getRoom(String roomLongName) {
+	public DemiurgoRoom getRoom(String roomLongName) {
 		RoomPath rg = searchRoomGroup(roomLongName, false);
 		if (rg == null)
 			return null;
@@ -236,7 +244,7 @@ public class World {
 	 * 
 	 * @return
 	 */
-	public List<WorldRoom> getAllRooms() {
+	public List<DemiurgoRoom> getAllRooms() {
 		return rooms.getAllRooms();
 	}
 
@@ -299,27 +307,29 @@ public class World {
 		this.currentObjId = objId;
 	}
 
-	public void setCurrentRoomId(long roomId) {
-		this.currentRoomId = roomId;
+	public void setCurrentLocationId(long roomId) {
+		this.currentLocationId = roomId;
 	}
 
 	public void setCurrentActionId(long currentActionId) {
 		this.currentActionId = currentActionId;
 	}
+	
 
 	public long getCurrentObjId() {
 		return currentObjId;
 	}
 
-	public long getCurrentRoomId() {
-		return currentRoomId;
+	public long getCurrentLocationId() {
+		return currentLocationId;
 	}
 
 	public long getCurrentActionId() {
 		return currentActionId;
 	}
 
-	public List<WorldRoom> getPendingRooms() {
+
+	public List<DemiurgoRoom> getPendingRooms() {
 		return pendingRooms;
 	}
 
@@ -369,4 +379,26 @@ public class World {
 		oldClass.modifyTo(newClass);
 		objects.values().stream().filter(o -> o.ownClass.inheritFrom(oldClass)).forEach(o -> o.updateClass());
 	}
+
+	public Inventory createInventory(DemiurgoObject obj, String varName) {
+		Inventory inv = new Inventory(obj, varName, currentLocationId);
+		currentLocationId++;
+		inventories.add(inv);
+		addInventory(inv);
+		return inv;
+	}
+
+	public List<Inventory> getInventories() {
+		return inventories;
+	}
+
+	public List<WorldLocation> getLocations() {
+		return new ArrayList<>(locations.values());
+	}
+
+	public void addInventory(Inventory inv) {
+		inventories.add(inv);
+		locations.put(inv.getId(), inv);
+	}
+	
 }

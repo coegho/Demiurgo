@@ -1,10 +1,10 @@
 package es.usc.rai.coego.martin.demiurgo.scopes;
 
-import es.usc.rai.coego.martin.demiurgo.universe.User;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass;
-import es.usc.rai.coego.martin.demiurgo.universe.World;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoObject;
-import es.usc.rai.coego.martin.demiurgo.universe.WorldRoom;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoRoom;
+import es.usc.rai.coego.martin.demiurgo.universe.User;
+import es.usc.rai.coego.martin.demiurgo.universe.World;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
 public class WorldScope extends Scope {
@@ -48,11 +48,11 @@ public class WorldScope extends Scope {
 		return world.getObject(id);
 	}
 
-	public WorldRoom getRoom(String roomLongName) {
+	public DemiurgoRoom getRoom(String roomLongName) {
 		return world.getRoom(roomLongName);
 	}
 
-	public WorldRoom getRoom(String roomRelativeName, String currentRoom) {
+	public DemiurgoRoom getRoom(String roomRelativeName, String currentRoom) {
 		return world.getRoom(roomRelativeName, currentRoom);
 	}
 

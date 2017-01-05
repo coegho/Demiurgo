@@ -18,8 +18,10 @@ import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoObject;
 import es.usc.rai.coego.martin.demiurgo.universe.User;
 import es.usc.rai.coego.martin.demiurgo.universe.UserRole;
-import es.usc.rai.coego.martin.demiurgo.universe.WorldRoom;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoRoom;
+import es.usc.rai.coego.martin.demiurgo.universe.Inventory;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
+import es.usc.rai.coego.martin.demiurgo.universe.WorldLocation;
 
 public class MariaDBDatabase implements DatabaseInterface {
 
@@ -30,12 +32,10 @@ public class MariaDBDatabase implements DatabaseInterface {
 	public boolean createConnection(String url, String username, String pass) {
 		if (existsDriver()) {
 			try {
-				// TODO: config
 				con = DriverManager.getConnection(url, username, pass);
 				return true;
 			} catch (SQLException e) {
-				System.err.println(e.getLocalizedMessage());// TODO: send a good
-															// error
+				throw new RuntimeException(e); //TODO
 			}
 		}
 		return false;
@@ -177,9 +177,21 @@ public class MariaDBDatabase implements DatabaseInterface {
 			System.err.println(e.getLocalizedMessage());
 		}
 	}
+	
+	public void writeLocationId(WorldLocation location) {
+		try {
+			PreparedStatement stm = con.prepareStatement(
+					"INSERT locations (id) VALUES (?) ON DUPLICATE KEY UPDATE id=VALUES(id)");
+			stm.setLong(1, location.getId());
+			stm.executeUpdate();
+
+		} catch (SQLException e) {
+			System.err.println(e.getLocalizedMessage());
+		}
+	}
 
 	@Override
-	public void writeWorldRoom(WorldRoom room) {
+	public void writeWorldRoom(DemiurgoRoom room) {
 		try {
 			PreparedStatement stm = con.prepareStatement(
 					"INSERT rooms (id, long_path, room_value, prenarration) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE long_path=VALUES(long_path), room_value=VALUES(room_value), prenarration=VALUES(prenarration)");
@@ -187,6 +199,21 @@ public class MariaDBDatabase implements DatabaseInterface {
 			stm.setString(2, room.getLongPath());
 			stm.setObject(3, room.getVariables());
 			stm.setString(4, room.getPrenarration());
+			stm.executeUpdate();
+
+		} catch (SQLException e) {
+			System.err.println(e.getLocalizedMessage());
+		}
+	}
+	
+	@Override
+	public void writeInventory(Inventory inv) {
+		try {
+			PreparedStatement stm = con.prepareStatement(
+					"INSERT inventories (id, varname, obj_id) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE obj_id=VALUES(obj_id), varname=VALUES(varname)");
+			stm.setLong(1, inv.getId());
+			stm.setLong(3, inv.getContainer().getId());
+			stm.setString(2, inv.getVarName());
 			stm.executeUpdate();
 
 		} catch (SQLException e) {
@@ -298,8 +325,8 @@ public class MariaDBDatabase implements DatabaseInterface {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<WorldRoom> readAllRooms() {
-		ArrayList<WorldRoom> rooms = new ArrayList<>();
+	public List<DemiurgoRoom> readAllRooms() {
+		ArrayList<DemiurgoRoom> rooms = new ArrayList<>();
 		try {
 			PreparedStatement stm = con.prepareStatement("SELECT id,long_path,room_value, prenarration FROM rooms");
 			ResultSet rs = stm.executeQuery();
@@ -313,7 +340,7 @@ public class MariaDBDatabase implements DatabaseInterface {
 				String prenarration = rs.getString("prenarration");
 				
 				Map<String, ValueInterface> variables = (Map<String, ValueInterface>) objectIn.readObject();
-				rooms.add(new WorldRoom(id, path, variables, prenarration));
+				rooms.add(new DemiurgoRoom(id, path, variables, prenarration));
 			}
 
 			return rooms;
@@ -322,9 +349,30 @@ public class MariaDBDatabase implements DatabaseInterface {
 			return null; // TODO throw exception
 		}
 	}
+	
+	@Override
+	public List<Inventory> readAllInventories() {
+		ArrayList<Inventory> invs = new ArrayList<>();
+		try {
+			PreparedStatement stm = con.prepareStatement("SELECT id,varname, obj_id FROM inventories");
+			ResultSet rs = stm.executeQuery();
+			while (rs.next()) {
+				long id = rs.getLong("id");
+				long obj_id = rs.getLong("obj_id");
+				String varName = rs.getString("varname");
+				
+				invs.add(new Inventory(id, varName, obj_id));
+			}
+
+			return invs;
+		} catch (SQLException e) {
+			System.err.println(e.getLocalizedMessage());
+			return null; // TODO throw exception
+		}
+	}
 
 	@Override
-	public List<Action> readActionsFromRoom(WorldRoom room) {
+	public List<Action> readActionsFromRoom(DemiurgoRoom room) {
 		List<Action> actions = new ArrayList<>();
 		try {
 			PreparedStatement stm = con

@@ -1,13 +1,13 @@
 package es.usc.rai.coego.martin.demiurgo.scopes;
 
-import es.usc.rai.coego.martin.demiurgo.universe.WorldRoom;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoRoom;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
 public class RoomScope extends Scope {
 	protected WorldScope parent;
-	protected WorldRoom room;
+	protected DemiurgoRoom room;
 
-	public RoomScope(WorldRoom room, WorldScope parent) {
+	public RoomScope(DemiurgoRoom room, WorldScope parent) {
 		this.parent = parent;
 		this.room = room;
 	}
@@ -26,7 +26,7 @@ public class RoomScope extends Scope {
 		return parent;
 	}
 
-	public WorldRoom getRoom() {
+	public DemiurgoRoom getRoom() {
 		return room;
 	}
 }

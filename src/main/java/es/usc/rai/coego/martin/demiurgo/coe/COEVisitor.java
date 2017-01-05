@@ -1,6 +1,5 @@
-// Generated from COE.g4 by ANTLR 4.5
+// Generated from COE.g4 by ANTLR 4.5.3
 package es.usc.rai.coego.martin.demiurgo.coe;
-import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
 /**
@@ -69,7 +68,7 @@ public interface COEVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitArgs(COEParser.ArgsContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link COEParser#id}.
+	 * Visit a parse tree produced by {@link COEParser#code}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
@@ -343,6 +342,13 @@ public interface COEVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitFloatType(COEParser.FloatTypeContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code inventoryType}
+	 * labeled alternative in {@link COEParser#data_type}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitInventoryType(COEParser.InventoryTypeContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code intType}
 	 * labeled alternative in {@link COEParser#data_type}.

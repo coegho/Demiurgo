@@ -5,15 +5,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import es.usc.rai.coego.martin.demiurgo.scopes.ClassScope;
 import es.usc.rai.coego.martin.demiurgo.scopes.RoomScope;
 import es.usc.rai.coego.martin.demiurgo.scopes.Scope;
 import es.usc.rai.coego.martin.demiurgo.scopes.WorldScope;
-import es.usc.rai.coego.martin.demiurgo.universe.User;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass;
-import es.usc.rai.coego.martin.demiurgo.universe.World;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoObject;
-import es.usc.rai.coego.martin.demiurgo.universe.WorldRoom;
+import es.usc.rai.coego.martin.demiurgo.universe.User;
+import es.usc.rai.coego.martin.demiurgo.universe.World;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoRoom;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
 /**
@@ -34,37 +33,15 @@ public class ScopeManager {
 	protected RoomScope roomScope;
 
 	/**
-	 * Constructor. The GM is coding ordinary code of a normal action.
-	 * 
-	 * @param world
-	 *            The world in which the parsing is being done.
-	 * @param room
-	 *            The room in which the action is happening.
+	 * Generic constructor.
+	 * @param worldScope
+	 * @param classScope 
 	 */
-	public ScopeManager(WorldRoom room) {
+	public ScopeManager(WorldScope globalScope) {
 		this.variables = new HashMap<>();
 		scopes = new ArrayList<>();
-		globals = new WorldScope(room.getWorld());
-		currentScope = roomScope = new RoomScope(room, globals);
-		scopes.add(globals);
-		scopes.add(currentScope);
-	}
-
-	/**
-	 * Constructor. The GM is coding a game's class.
-	 * 
-	 * @param world
-	 *            The world in which the parsing is being done.
-	 * @param cl
-	 *            The class which is being defined.
-	 */
-	public ScopeManager(DemiurgoClass cl) {
-		this.variables = new HashMap<>();
-		scopes = new ArrayList<>();
-		globals = new WorldScope(cl.getWorld());
-		currentScope = new ClassScope(cl);
-		scopes.add(globals);
-		scopes.add(currentScope);
+		globals = globalScope;
+		pushScope(globalScope);
 	}
 
 	public ValueInterface getVariable(String name) {
@@ -77,13 +54,13 @@ public class ScopeManager {
 
 	// Room
 	//TODO: irrelevant in class scope
-	public WorldRoom getCurrentRoom() {
+	public DemiurgoRoom getCurrentRoom() {
 		return roomScope.getRoom();
 	}
 
 	// World
 	public World getCurrentWorld() {
-		return globals.getWorld();
+		;return globals.getWorld();
 	}
 
 	public DemiurgoClass getClassFromName(String className) {
@@ -99,11 +76,11 @@ public class ScopeManager {
 		return globals.getObject(id);
 	}
 
-	public WorldRoom getRoom(String roomLongName) {
+	public DemiurgoRoom getRoom(String roomLongName) {
 		return globals.getRoom(roomLongName);
 	}
 
-	public WorldRoom getRoom(String roomRelativeName, String currentRoom) {
+	public DemiurgoRoom getRoom(String roomRelativeName, String currentRoom) {
 		return globals.getRoom(roomRelativeName, currentRoom);
 	}
 

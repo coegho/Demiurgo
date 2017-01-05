@@ -43,7 +43,6 @@ import es.usc.rai.coego.martin.demiurgo.coe.COEParser.Sharp_identifierContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.StringContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.StringTypeContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.SymbolTypeContext;
-import es.usc.rai.coego.martin.demiurgo.coe.COEParser.Var_declContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.VariableOpContext;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ArgumentMismatchException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.BadConstructorException;
@@ -53,6 +52,7 @@ import es.usc.rai.coego.martin.demiurgo.exceptions.IllegalOperationException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.IrregularListException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.NotAListException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.NotAnObjectException;
+import es.usc.rai.coego.martin.demiurgo.exceptions.ObjectInsideItselfException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.RoomNotFoundException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.UndeclaredVariableException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.UndefinedClassException;
@@ -66,10 +66,10 @@ import es.usc.rai.coego.martin.demiurgo.scopes.LoopScope;
 import es.usc.rai.coego.martin.demiurgo.scopes.ObjectScope;
 import es.usc.rai.coego.martin.demiurgo.scopes.Scope;
 import es.usc.rai.coego.martin.demiurgo.universe.ClassMethod;
-import es.usc.rai.coego.martin.demiurgo.universe.User;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoObject;
-import es.usc.rai.coego.martin.demiurgo.universe.WorldRoom;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoRoom;
+import es.usc.rai.coego.martin.demiurgo.universe.User;
 import es.usc.rai.coego.martin.demiurgo.values.FloatValue;
 import es.usc.rai.coego.martin.demiurgo.values.IntegerValue;
 import es.usc.rai.coego.martin.demiurgo.values.ListValue;
@@ -78,6 +78,7 @@ import es.usc.rai.coego.martin.demiurgo.values.NullValue;
 import es.usc.rai.coego.martin.demiurgo.values.ObjectValue;
 import es.usc.rai.coego.martin.demiurgo.values.ReferenceValue;
 import es.usc.rai.coego.martin.demiurgo.values.ReturnValueTypes;
+import es.usc.rai.coego.martin.demiurgo.values.RoomValue;
 import es.usc.rai.coego.martin.demiurgo.values.StringValue;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
@@ -275,12 +276,13 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 	}
 
 	/**
-	 * Returns a default LOCATION value (it counts as a type).
+	 * Returns a default ROOM value (it counts as a type).
 	 */
 	@Override
 	public ValueInterface visitRoomType(RoomTypeContext ctx) {
-		return LocationValue.defaultValue(getSM().getCurrentWorld());
+		return RoomValue.defaultValue(getSM().getCurrentWorld());
 	}
+	
 
 	/**
 	 * <p>
@@ -604,6 +606,11 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			}
 		} catch (WrongMovementException e) {
 			throw new RuntimeException(e);
+		} catch (ObjectInsideItselfException e) {
+			e.setLine(ctx.MOVE().getSymbol().getLine());
+			e.setColumn(ctx.MOVE().getSymbol().getCharPositionInLine());
+			e.setStartIndex(ctx.MOVE().getSymbol().getStartIndex());
+			throw new RuntimeException(e);
 		}
 		return new NullValue();
 	}
@@ -884,31 +891,6 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 		return new NullValue();
 	}
 
-	/**
-	 * Declares a new variable into the current room.
-	 * <p>
-	 * If a class is currently being defined, adds a new field to it.
-	 * <p>
-	 * var_decl : data_type SYMBOL (ASSIGN operation)? ;
-	 */
-	@Override
-	public ValueInterface visitVar_decl(Var_declContext ctx) {
-		ValueInterface type = visit(ctx.data_type());
-
-		String varName = ctx.SYMBOL().getText().toLowerCase();
-		if (ctx.operation() != null) {
-			ValueInterface v = visit(ctx.operation());
-			type.assign(v);
-
-		}
-
-		// If the Scope is a ClassScope, it will add a field to the current
-		// class
-		// if is not, it will add a normal variable
-		getSM().setVariable(varName, type);
-
-		return new NullValue();
-	}
 
 	/**
 	 * Defines a new method in the current class.
@@ -991,7 +973,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 	public ValueInterface visitRoom(RoomContext ctx) {
 		try {
 			String path = ctx.room_path().getText();
-			WorldRoom room;
+			DemiurgoRoom room;
 			if (path.startsWith("/")) { // absolute path
 				room = getSM().getRoom(path);
 			} else { // relative path
@@ -1000,7 +982,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 				room = getSM().getRoom(path, curPath);
 			}
 			if (room != null) {
-				return new LocationValue(room);
+				return new RoomValue(room);
 			} else
 				throw new RoomNotFoundException(ctx.start.getLine(), ctx.start.getCharPositionInLine(),
 						ctx.start.getStartIndex(), path);

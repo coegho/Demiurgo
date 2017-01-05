@@ -43,6 +43,10 @@ public class User {
 
 	public void setObj(DemiurgoObject obj) {
 		this.obj = obj;
+		if(obj != null)
+			this.obj_id = obj.getId();
+		else
+			this.obj_id = -1;
 	}
 
 	public void setRole(UserRole role) {

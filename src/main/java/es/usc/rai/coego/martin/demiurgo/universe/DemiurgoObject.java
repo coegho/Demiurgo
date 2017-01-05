@@ -9,9 +9,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import es.usc.rai.coego.martin.demiurgo.exceptions.ObjectInsideItselfException;
+import es.usc.rai.coego.martin.demiurgo.json.JsonInventory;
 import es.usc.rai.coego.martin.demiurgo.json.JsonMethod;
 import es.usc.rai.coego.martin.demiurgo.json.JsonObject;
 import es.usc.rai.coego.martin.demiurgo.json.JsonVariable;
+import es.usc.rai.coego.martin.demiurgo.values.InventoryValue;
 import es.usc.rai.coego.martin.demiurgo.values.ObjectValue;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
@@ -32,9 +35,14 @@ public class DemiurgoObject {
 		this.ownClass = ownClass;
 		this.location = location;
 		this.fields = new HashMap<>();
-		for (String varName : ownClass.getFields().keySet()) {
-			ValueInterface field = ownClass.getField(varName);
-			fields.put(varName, field.cloneValue());
+		for (Entry<String, ValueInterface> var : ownClass.getFields().entrySet()) {
+			if(var.getValue() instanceof InventoryValue) {
+				Inventory inv = ownClass.getWorld().createInventory(this, var.getKey());
+				fields.put(var.getKey(), new InventoryValue(inv));
+			}
+			else {
+				fields.put(var.getKey(), var.getValue());
+			}
 		}
 		ObjectValue v = new ObjectValue(this);
 		v.setWritable(false);
@@ -86,7 +94,7 @@ public class DemiurgoObject {
 		this.location = location;
 	}
 
-	public void moveTo(WorldLocation location) {
+	public void moveTo(WorldLocation location) throws ObjectInsideItselfException {
 		this.location.getWorld().moveTo(this.location, location, this);
 	}
 
@@ -166,8 +174,13 @@ public class DemiurgoObject {
 
 	public JsonObject toJson() {
 		List<JsonVariable> fields = new ArrayList<>();
+		List<JsonInventory> inventories = new ArrayList<>();
 		for (Entry<String, ValueInterface> v : getFields().entrySet()) {
 			fields.add(new JsonVariable(v.getKey(), v.getValue().getValueAsString(), v.getValue().getTypeName()));
+			if(v.getValue() instanceof InventoryValue) {
+				Inventory inv = (Inventory)((InventoryValue)v.getValue()).getLocation();
+				inventories.add(inv.toJson(v.getKey()));
+			}
 		}
 		fields.sort(Comparator.comparing(JsonVariable::getName));
 		
@@ -178,7 +191,7 @@ public class DemiurgoObject {
 		}
 		methods.sort(Comparator.comparing(JsonMethod::getName));
 		
-		return new JsonObject(getId(), getClassName(), getLocId(), fields, methods);
+		return new JsonObject(getId(), getClassName(), getLocId(), fields, methods, inventories);
 	}
 
 	public void updateClass() {
@@ -198,7 +211,12 @@ public class DemiurgoObject {
 					fields.put(e.getKey(), e.getValue().cloneValue());
 				}
 			} else { // put directly
-				fields.put(e.getKey(), e.getValue().cloneValue());
+				if(e.getValue() instanceof InventoryValue) {
+					InventoryValue v = new InventoryValue(getUserClass().getWorld().createInventory(this, e.getKey()));
+					fields.put(e.getKey(), v);
+				}
+				else
+					fields.put(e.getKey(), e.getValue().cloneValue());
 			}
 		}
 		
@@ -208,5 +226,13 @@ public class DemiurgoObject {
 			+ ", value: " + fields.get(f).getValueAsString());
 			fields.remove(f);
 		}
+	}
+	
+	public DemiurgoRoom getRealLocation() {
+		return getLocation().getRealLocation();
+	}
+	
+	public boolean isInsideOf(DemiurgoObject another) {
+		return getLocation().isInsideOf(another);
 	}
 }

@@ -3,7 +3,7 @@ package es.usc.rai.coego.martin.demiurgo.universe;
 import java.util.ArrayList;
 import java.util.List;
 
-public class WorldLocation {
+public abstract class WorldLocation {
 
 	protected long id;
 	protected transient World world;
@@ -51,4 +51,8 @@ public class WorldLocation {
 	public void rebuild(World world) {
 		this.world = world;
 	}
+
+	public abstract DemiurgoRoom getRealLocation();
+
+	public abstract boolean isInsideOf(DemiurgoObject another);
 }

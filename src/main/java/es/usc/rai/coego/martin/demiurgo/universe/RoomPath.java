@@ -4,16 +4,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class RoomPath {
 	protected String path;
 	protected RoomPath parent;
 	protected Map<String, RoomPath> children;
-	protected WorldRoom ownRoom;
+	protected DemiurgoRoom ownRoom;
 	
 	public RoomPath(String path, RoomPath parent) {
 		this.path = path;
@@ -23,11 +19,11 @@ public class RoomPath {
 		children.put("..", parent);
 	}
 	
-	public void setOwnRoom(WorldRoom ownRoom) {
+	public void setOwnRoom(DemiurgoRoom ownRoom) {
 		this.ownRoom = ownRoom;
 	}
 	
-	public WorldRoom getOwnRoom() {
+	public DemiurgoRoom getOwnRoom() {
 		return ownRoom;
 	}
 	
@@ -51,8 +47,8 @@ public class RoomPath {
 	 * Debug method. It returns all rooms in the world.
 	 * @return
 	 */
-	public List<WorldRoom> getAllRooms() {
-		List<WorldRoom> l = new ArrayList<>();
+	public List<DemiurgoRoom> getAllRooms() {
+		List<DemiurgoRoom> l = new ArrayList<>();
 		if(getOwnRoom() != null)
 			l.add(getOwnRoom());
 		for(String c : children.keySet()) {
