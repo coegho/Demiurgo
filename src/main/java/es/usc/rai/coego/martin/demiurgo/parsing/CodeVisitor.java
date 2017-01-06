@@ -16,7 +16,6 @@ public class CodeVisitor extends ExecVisitor {
 
 	public CodeVisitor(DemiurgoRoom room) {
 		sm = new CodeParsingScopeManager(room);
-		this.prenarration = new StringBuilder();
 	}
 
 	/**
@@ -37,16 +36,11 @@ public class CodeVisitor extends ExecVisitor {
 		ValueInterface v = visit(ctx.operation());
 
 		try {
-			prenarration.append(v.castToString());
-			prenarration.append("\n");
+			appendPrenarration(v.castToString());
 		} catch (ValueCastException e) {
 			throw new RuntimeException(e);
 		}
 		return null;
-	}
-
-	public String getPrenarration() {
-		return prenarration.toString();
 	}
 
 	/**
@@ -78,5 +72,16 @@ public class CodeVisitor extends ExecVisitor {
 	public ValueInterface visitInventoryType(InventoryTypeContext ctx) {
 		throw new RuntimeException(new ClassDefinitionOnCodeException(ctx.start.getLine(),
 				ctx.start.getCharPositionInLine(), ctx.start.getStartIndex()));
+	}
+	
+	public String getPrenarration() {
+		return prenarration.toString();
+	}
+	
+	public void appendPrenarration(String str) {
+		if(prenarration == null) {
+			prenarration = new StringBuilder();
+		}
+		prenarration.append(str + "\n");
 	}
 }

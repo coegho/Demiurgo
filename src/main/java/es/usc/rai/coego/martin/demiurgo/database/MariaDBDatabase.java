@@ -129,6 +129,23 @@ public class MariaDBDatabase implements DatabaseInterface {
 			return null; // TODO throw exception
 		}
 	}
+	
+	@Override
+	public boolean changePassword(String name, String oldPassword, String newPassword) {
+		try {
+			PreparedStatement stm = con.prepareStatement("UPDATE users SET passwd = ? WHERE (username = ? AND passwd = ?)");
+			stm.setString(1, newPassword);
+			stm.setString(2, name);
+			stm.setString(3, oldPassword);
+			int count = stm.executeUpdate();
+			
+			return count > 0;
+			
+		} catch (SQLException e) {
+			System.err.println(e.getLocalizedMessage());
+			return false; // TODO throw exception
+		}
+	}
 
 	@Override
 	public void writeUser(User user) {

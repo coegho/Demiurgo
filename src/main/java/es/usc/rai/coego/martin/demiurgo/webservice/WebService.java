@@ -27,9 +27,13 @@ import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.antlr.v4.runtime.tree.ParseTree;
 
 import es.usc.rai.coego.martin.demiurgo.Demiurgo;
+import es.usc.rai.coego.martin.demiurgo.database.DatabaseInterface;
+import es.usc.rai.coego.martin.demiurgo.database.MariaDBDatabase;
+import es.usc.rai.coego.martin.demiurgo.database.WorldDBData;
 import es.usc.rai.coego.martin.demiurgo.exceptions.DemiurgoException;
 import es.usc.rai.coego.martin.demiurgo.json.AllClassesResponse;
 import es.usc.rai.coego.martin.demiurgo.json.AllRoomPathsResponse;
+import es.usc.rai.coego.martin.demiurgo.json.ChangePasswordRequest;
 import es.usc.rai.coego.martin.demiurgo.json.CheckRoomResponse;
 import es.usc.rai.coego.martin.demiurgo.json.CreateClassRequest;
 import es.usc.rai.coego.martin.demiurgo.json.CreateClassResponse;
@@ -105,6 +109,32 @@ public class WebService {
 		return me;
 	}
 
+	@POST
+	@Path("changepasswd")
+	public Response changePassword(ChangePasswordRequest req) {
+		String world = ((DemiurgoPrincipal) securityContext.getUserPrincipal()).getWorld();
+		World w = Demiurgo.getWorld(world.toLowerCase());
+		if (w == null) {
+			return Response.status(Response.Status.BAD_REQUEST).entity("Cannot find world " + world).build();
+		}
+		String username = securityContext.getUserPrincipal().getName();
+
+		DatabaseInterface db = new MariaDBDatabase();
+		WorldDBData dbData = Demiurgo.getWorldsConfig().getWorlds().get(w.getName());
+		db.createConnection(dbData.getUrl(), dbData.getUser(), dbData.getPasswd());
+
+		boolean result = db.changePassword(username, AuthService.hashPassword(req.getOldPassword()),
+				AuthService.hashPassword(req.getNewPassword()));
+		
+		db.stopConnection();
+		if(result) {
+			return Response.ok(new ResponseStatus()).build();
+		}
+		else {
+			return Response.ok(new ResponseStatus(false, "The operation failed")).build();
+		}
+	}
+
 	///////////// USER SERVICES/////////////
 	@POST
 	@Path("/submitdecision")
@@ -121,8 +151,6 @@ public class WebService {
 		DemiurgoObject obj = u.getObj();
 		if (obj != null) {
 			w.addPendingRoom(obj.getLocation().getRealLocation());
-		} else {
-			// TODO: characters without room
 		}
 		return Response.ok().build();
 	}
@@ -354,7 +382,7 @@ public class WebService {
 			if (!(cl instanceof RootObjectClass))
 				l.add(cl.toJson());
 		}
-		
+
 		res.setClasses(l);
 		return Response.ok(res).build();
 	}
@@ -436,9 +464,9 @@ public class WebService {
 		World w = Demiurgo.getWorld(world);
 
 		DemiurgoClass oldClass = w.getClassFromName(req.getName().toLowerCase());
-		
-		if(oldClass instanceof RootObjectClass) {
-			res.setStatus(new ResponseStatus(false,"Cannot modify class object"));
+
+		if (oldClass instanceof RootObjectClass) {
+			res.setStatus(new ResponseStatus(false, "Cannot modify class object"));
 			return Response.ok(res).build();
 		}
 
@@ -519,7 +547,7 @@ public class WebService {
 			res.setPendingRooms(pendingRooms);
 			res.setNumUsers(w.getAllUsers().size());
 			res.setNoObjUsers(w.getAllUsers().stream().filter(u -> (u.getObj() == null && u.getRole() == UserRole.USER))
-					.map(u -> u.getUsername()).collect(Collectors.toList()));
+					.map(u -> u.toJson()).collect(Collectors.toList()));
 			return res;
 		} catch (SignatureException | MissingClaimException | IncorrectClaimException e) {
 			System.err.println(e.getLocalizedMessage());
@@ -570,7 +598,7 @@ public class WebService {
 
 		return res;
 	}
-	
+
 	@POST
 	@Path("/delvar")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -581,19 +609,17 @@ public class WebService {
 		String world = ((DemiurgoPrincipal) securityContext.getUserPrincipal()).getWorld();
 		World w = Demiurgo.getWorld(world);
 		DemiurgoRoom room = w.getRoom(req.getPath());
-		if(room == null) {
+		if (room == null) {
 			return Response.status(Response.Status.NOT_FOUND).entity("Cannot find room " + req.getPath()).build();
-		}
-		else if(room.getVariable(req.getVarName()) != null) {
+		} else if (room.getVariable(req.getVarName()) != null) {
 			room.removeVariable(req.getVarName());
 			res.setStatus(new ResponseStatus());
-		}
-		else {
+		} else {
 			res.setStatus(new ResponseStatus(false, "Cannot find variable " + req.getVarName()));
 		}
 		return Response.ok(res).build();
 	}
-	
+
 	@POST
 	@Path("destroyobj")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -606,7 +632,7 @@ public class WebService {
 		w.getObject(req.getObjId()).destroyObject(req.isDestroyContents());
 		return Response.ok(res).build();
 	}
-	
+
 	@POST
 	@Path("destroyclass")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -619,7 +645,7 @@ public class WebService {
 		w.getClassFromName(req.getClassname()).destroyClass();
 		return Response.ok(res).build();
 	}
-	
+
 	@POST
 	@Path("destroyroom")
 	@Consumes(MediaType.APPLICATION_JSON)

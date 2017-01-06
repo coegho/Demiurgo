@@ -149,7 +149,7 @@ public class Demiurgo {
 				worlds.put(e.getKey(), w);
 				
 				logger.info("loading " + w.getName() + "...");
-				loadFromDatabase(w, e.getValue());
+				loadWorldFromDatabase(w, e.getValue());
 			}
 			logger.info("Data loaded");
 		} catch (FileNotFoundException e) {
@@ -227,7 +227,7 @@ public class Demiurgo {
 		return k;
 	}
 
-	private static synchronized void loadFromDatabase(World world, WorldDBData data) {
+	private static synchronized void loadWorldFromDatabase(World world, WorldDBData data) {
 		DatabaseInterface db = new MariaDBDatabase();
 		db.createConnection(data.getUrl(), data.getUser(), data.getPasswd());
 
@@ -302,7 +302,6 @@ public class Demiurgo {
 			world.addUser(u);
 			if (u.getDecision() != null && u.getObj() != null && u.getObj().getLocation() instanceof DemiurgoRoom) {
 				world.addPendingRoom((DemiurgoRoom) u.getObj().getLocation());
-				// TODO: characters without room
 			}
 		}
 

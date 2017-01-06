@@ -50,18 +50,7 @@ public class AuthService {
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response login(LoginRequest req) {
 		// hashing
-		String hashedPass = null;
-		try {
-			MessageDigest md = MessageDigest.getInstance("SHA-256");
-			md.update(req.getPassword().getBytes("UTF-8"));
-			byte[] digest = md.digest();
-			hashedPass = DatatypeConverter.printHexBinary(digest);
-		} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			Demiurgo.getLogger().severe(e.getMessage());
-			e.printStackTrace();
-			System.exit(1);
-		}
+		String hashedPass = hashPassword(req.getPassword());
 		World w = Demiurgo.getWorld(req.getWorld().toLowerCase());
 		if(w == null) {
 			return Response.status(Response.Status.BAD_REQUEST).entity("Cannot find world "+ req.getWorld()).build();
@@ -115,18 +104,7 @@ public class AuthService {
 		WorldDBData dbData = Demiurgo.getWorldsConfig().getWorlds().get(w.getName());
 		db.createConnection(dbData.getUrl(), dbData.getUser(), dbData.getPasswd());
 		
-		String hashedPass = null;
-		try {
-			MessageDigest md = MessageDigest.getInstance("SHA-256");
-			md.update(password.getBytes("UTF-8"));
-			byte[] digest = md.digest();
-			hashedPass = DatatypeConverter.printHexBinary(digest);
-		} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			Demiurgo.getLogger().severe(e.getMessage());
-			e.printStackTrace();
-			System.exit(1);
-		}
+		String hashedPass = hashPassword(password);
 		
 		User u = db.register(username, hashedPass);
 		w.addUser(u);
@@ -149,5 +127,21 @@ public class AuthService {
 				password.length() >= 2 &&
 				pat.matcher(username).matches();
 				
+	}
+	
+	public static String hashPassword(String password) {
+		String hashedPass = null;
+		try {
+			MessageDigest md = MessageDigest.getInstance("SHA-256");
+			md.update(password.getBytes("UTF-8"));
+			byte[] digest = md.digest();
+			hashedPass = DatatypeConverter.printHexBinary(digest);
+		} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			Demiurgo.getLogger().severe(e.getMessage());
+			e.printStackTrace();
+			System.exit(1);
+		}
+		return hashedPass;
 	}
 }

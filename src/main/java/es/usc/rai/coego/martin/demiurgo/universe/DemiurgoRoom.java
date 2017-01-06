@@ -145,7 +145,8 @@ public class DemiurgoRoom extends DemiurgoLocation implements Comparable<Demiurg
 	public void appendPrenarration(String prenarration) {
 		if (this.prenarration == null)
 			this.prenarration = "";
-		this.prenarration += "\n" + prenarration;
+		if (prenarration != null)
+			this.prenarration += prenarration + "\n";
 	}
 
 	public boolean areActionsInCache() {

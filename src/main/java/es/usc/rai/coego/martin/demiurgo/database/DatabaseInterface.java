@@ -28,6 +28,8 @@ public interface DatabaseInterface {
 	
 	public User register(String name, String password);
 	
+	public boolean changePassword(String name, String oldPassword, String newPassword);
+	
 	public void writeUser(User user);
 	
 	public void writeDemiurgoObject(DemiurgoObject obj);

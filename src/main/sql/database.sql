@@ -1,6 +1,7 @@
 CREATE TABLE users (
   username varchar(128) NOT NULL PRIMARY KEY,
   passwd char(64) NULL,
+  mail varchar(256) NULL,
   role enum('GM','USER') NOT NULL default 'USER',
   obj_id bigint NULL,
   decision TEXT NULL DEFAULT NULL
@@ -80,3 +81,6 @@ ADD CONSTRAINT fk_inventories_objects FOREIGN KEY (obj_id) REFERENCES objects(ob
 
 ALTER TABLE actions
 ADD CONSTRAINT fk_actions_locations FOREIGN KEY (room) REFERENCES locations(id) ON DELETE SET NULL ON UPDATE CASCADE;
+
+/*first user, with pass: 1234*/
+INSERT INTO users VALUES('admin', '03AC674216F3E15C761EE1A5E255F067953623C8B388B4459E13F978D7C846F4', NULL, 'GM', NULL, NULL);
