@@ -43,8 +43,9 @@ public class User {
 
 	public void setObj(DemiurgoObject obj) {
 		this.obj = obj;
-		if(obj != null)
+		if(obj != null) {
 			this.obj_id = obj.getId();
+		}
 		else
 			this.obj_id = -1;
 	}
@@ -85,7 +86,7 @@ public class User {
 
 	public void rebuild(World world) {
 		if (obj_id != -1) {
-			obj = world.getObject(obj_id);
+			setObj(world.getObject(obj_id));
 		}
 	}
 	

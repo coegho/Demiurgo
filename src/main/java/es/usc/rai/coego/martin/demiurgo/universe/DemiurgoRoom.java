@@ -14,9 +14,10 @@ import es.usc.rai.coego.martin.demiurgo.json.JsonPendingRoom;
 import es.usc.rai.coego.martin.demiurgo.json.JsonRoom;
 import es.usc.rai.coego.martin.demiurgo.json.JsonUser;
 import es.usc.rai.coego.martin.demiurgo.json.JsonVariable;
+import es.usc.rai.coego.martin.demiurgo.values.ObjectValue;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
-public class DemiurgoRoom extends WorldLocation implements Comparable<DemiurgoRoom> {
+public class DemiurgoRoom extends DemiurgoLocation implements Comparable<DemiurgoRoom> {
 	protected String longPath;
 	protected Map<String, ValueInterface> variables;
 	protected List<Action> actions;
@@ -181,5 +182,23 @@ public class DemiurgoRoom extends WorldLocation implements Comparable<DemiurgoRo
 
 	public void removeVariable(String varName) {
 		variables.remove(varName);
+	}
+
+	public void clearObjectReferences(DemiurgoObject obj) {
+		for(Entry<String, ValueInterface> e : variables.entrySet()) {
+			if(e.getValue() instanceof ObjectValue && ((ObjectValue)e.getValue()).getObj() == obj) {
+				variables.remove(e.getKey());
+			}
+		}
+	}
+	
+	@Override
+	public void destroyLocation() {
+		List<DemiurgoObject> list = new ArrayList<>(getObjects());
+		for(DemiurgoObject o : list) {
+			o.destroyObject(true);
+		}
+
+		getWorld().markToDestroy(this);
 	}
 }

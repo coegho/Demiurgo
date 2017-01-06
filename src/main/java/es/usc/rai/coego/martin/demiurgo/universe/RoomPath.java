@@ -69,19 +69,5 @@ public class RoomPath {
 		return ret;
 	}
 	
-	/*public ObjectNode roomPathData() {
-		ObjectMapper om = new ObjectMapper();
-		
-		ObjectNode o = om.createObjectNode();
-		o.put("path", path);
-		o.put("hasroom", ownRoom != null);
-		ObjectNode oc = om.createObjectNode();
-		for(Entry<String, RoomPath> r : children.entrySet()) {
-			if(r.getKey() != "." && r.getKey() != "..") {
-			oc.set(r.getKey(), r.getValue().roomPathData());
-			}
-		}
-		o.set("children", oc);
-		return o;
-	}*/
+	
 }

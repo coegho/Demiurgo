@@ -21,7 +21,7 @@ import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 public class DemiurgoObject {
 	protected long id;
 	protected transient DemiurgoClass ownClass;
-	protected transient WorldLocation location;
+	protected transient DemiurgoLocation location;
 	protected Map<String, ValueInterface> fields;
 	protected transient User user;
 
@@ -30,7 +30,7 @@ public class DemiurgoObject {
 	protected long loc_id;
 	protected String username;
 
-	public DemiurgoObject(DemiurgoClass ownClass, WorldLocation location) {
+	public DemiurgoObject(DemiurgoClass ownClass, DemiurgoLocation location) {
 		this.id = -1;
 		this.ownClass = ownClass;
 		this.location = location;
@@ -86,18 +86,18 @@ public class DemiurgoObject {
 		this.ownClass = ownClass;
 	}
 
-	public WorldLocation getLocation() {
+	public DemiurgoLocation getLocation() {
 		return location;
 	}
 
-	public void setLocation(WorldLocation location) {
+	public void setLocation(DemiurgoLocation location) {
 		this.location = location;
 	}
 
-	public void moveTo(WorldLocation location) throws ObjectInsideItselfException {
+	public void moveTo(DemiurgoLocation location) throws ObjectInsideItselfException {
 		this.location.getWorld().moveTo(this.location, location, this);
 	}
-
+	
 	public ValueInterface getField(String fieldName) {
 		return fields.get(fieldName);
 	}
@@ -199,16 +199,18 @@ public class DemiurgoObject {
 		for (Entry<String, ValueInterface> e : ownClass.getFields().entrySet()) {
 			if (fields.containsKey(e.getKey())) { // Already has this variable
 				losing.remove(e.getKey());
-				if (e.getValue().canAssign(fields.get(e.getKey()))) { // Compatible
-																		// type
-					ValueInterface n = e.getValue().cloneValue(); // new
-																	// variable
-					n.assign(fields.get(e.getKey()));
-					fields.put(e.getKey(), n);
-				} else { // incompatible type, any previous value will be lost
-					ownClass.getWorld().getLogger().info("Object #" + id + " update field " + e.getKey()
-							+ ", lose previous value: " + fields.get(e.getKey()).getValueAsString());
-					fields.put(e.getKey(), e.getValue().cloneValue());
+				if(!(e.getValue() instanceof InventoryValue)) { //Cannot assign inventories
+					if (e.getValue().canAssign(fields.get(e.getKey()))) { // Compatible
+																			// type
+						ValueInterface n = e.getValue().cloneValue(); // new
+																		// variable
+						n.assign(fields.get(e.getKey()));
+						fields.put(e.getKey(), n);
+					} else { // incompatible type, any previous value will be lost
+						ownClass.getWorld().getLogger().info("Object #" + id + " update field " + e.getKey()
+								+ ", lose previous value: " + fields.get(e.getKey()).getValueAsString());
+						fields.put(e.getKey(), e.getValue().cloneValue());
+					}
 				}
 			} else { // put directly
 				if(e.getValue() instanceof InventoryValue) {
@@ -224,7 +226,12 @@ public class DemiurgoObject {
 		for(String f : losing) {
 			ownClass.getWorld().getLogger().info("Object #" + id + " lose field " + f
 			+ ", value: " + fields.get(f).getValueAsString());
+			if(fields.get(f) instanceof InventoryValue) { //previous inventories must be destroyed
+				Inventory inv = (Inventory)((InventoryValue)fields.get(f)).getLocation();
+				inv.destroyLocation();
+			}
 			fields.remove(f);
+			
 		}
 	}
 	
@@ -234,5 +241,60 @@ public class DemiurgoObject {
 	
 	public boolean isInsideOf(DemiurgoObject another) {
 		return getLocation().isInsideOf(another);
+	}
+	
+	/**
+	 * Marks this object to be destroyed. All references to this object will
+	 * be set to null, and this object will be stored in the
+	 * list of destroyed objects to tell the database to delete its tuple. 
+	 */
+	public void destroyObject(boolean destroyInventories) {
+		//evacuate or destroy all objects from inventories
+		for(Entry<String, ValueInterface> f : fields.entrySet()) {
+			if(f.getValue() instanceof InventoryValue) {
+				Inventory inv = (Inventory) ((InventoryValue)f.getValue()).getLocation();
+				if(!destroyInventories) {
+					for(DemiurgoObject o : inv.getObjects()) {
+						try {
+							o.moveTo(getRealLocation());
+						} catch (ObjectInsideItselfException e) {}
+					}
+				//destroy inventory
+				inv.destroyLocation();
+				}
+			}
+		}
+	
+		//search and clear references
+		//user
+		if(getUser() != null) {
+			getLocation().getWorld().setUserObject(getUser(), null);
+		}
+		//room variables
+		for(DemiurgoRoom r : getLocation().getWorld().getAllRooms()) {
+			r.clearObjectReferences(this);
+		}
+		//object variables
+		for(DemiurgoObject o : getLocation().getWorld().getAllObjects()) {
+			o.clearObjectReferences(this);
+		}
+		//room
+		getLocation().removeObject(this);
+		
+		getLocation().getWorld().markToDestroy(this);
+		
+	}
+	
+	public void clearObjectReferences(DemiurgoObject obj) {
+		for(Entry<String, ValueInterface> e : fields.entrySet()) {
+			if((e.getValue() instanceof ObjectValue) && ((ObjectValue)e.getValue()).getObj() == obj) {
+				((ObjectValue)e.getValue()).setObj(null);
+			}
+		}
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		return (obj instanceof DemiurgoObject) && ((DemiurgoObject)obj).getId() == getId();
 	}
 }

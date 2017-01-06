@@ -2,8 +2,8 @@ package es.usc.rai.coego.martin.demiurgo.values;
 
 import es.usc.rai.coego.martin.demiurgo.exceptions.IllegalOperationException;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass;
-import es.usc.rai.coego.martin.demiurgo.universe.World;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoObject;
+import es.usc.rai.coego.martin.demiurgo.universe.World;
 
 public class ObjectValue extends AbstractValue {
 	/**
@@ -16,7 +16,7 @@ public class ObjectValue extends AbstractValue {
 	protected long obj_id;
 	
 	public ObjectValue(DemiurgoObject obj) {
-		this.obj = obj;
+		setObj(obj);
 		this.itsClass = obj.getUserClass();
 		obj_id = obj.getId();
 		className = itsClass.getClassName();
@@ -61,7 +61,7 @@ public class ObjectValue extends AbstractValue {
 
 	public void setObj(DemiurgoObject obj) {
 		this.obj = obj;
-		obj_id = obj.getId();
+		obj_id = (obj!=null)?(obj.getId()):-1;
 	}
 	
 	@Override
@@ -101,7 +101,7 @@ public class ObjectValue extends AbstractValue {
 	@Override
 	public ValueInterface rebuild(World world) {
 		this.itsClass = world.getClassFromName(className);
-		this.obj = world.getObject(obj_id);
+		setObj(world.getObject(obj_id));
 		return this;
 	}
 	
@@ -115,11 +115,11 @@ public class ObjectValue extends AbstractValue {
 	
 	@Override
 	public String getTypeName() {
-		return super.getTypeName() + "/" + getObj().getClassName();
+		return super.getTypeName() + "/" + itsClass.getClassName();
 	}
 	
 	@Override
 	public String getValueAsString() {
-		return "#"+Long.toString(getObj().getId());
+		return "#"+Long.toString((getObj()!=null)?(getObj().getId()):null);
 	}
 }

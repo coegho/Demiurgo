@@ -28,7 +28,8 @@ public class World {
 	protected String name;
 	protected Map<String, DemiurgoClass> classes;
 	protected Map<Long, DemiurgoObject> objects;
-	protected Map<Long, WorldLocation> locations;
+	protected List<DemiurgoObject> destroyedObjects;
+	protected Map<Long, DemiurgoLocation> locations;
 	protected Map<String, User> users;
 	protected Map<Long, Action> actions;
 	protected RoomPath rooms;
@@ -39,6 +40,10 @@ public class World {
 	protected long currentActionId;
 	protected List<DemiurgoRoom> pendingRooms;
 	protected Logger worldLogger;
+	protected List<Inventory> destroyedInventories;
+	private List<DemiurgoLocation> destroyedLocations;
+	private List<DemiurgoClass> destroyedClasses;
+	private List<DemiurgoRoom> destroyedRooms;
 
 	public World(String name) throws SecurityException, IOException {
 		this.name = name;
@@ -47,6 +52,11 @@ public class World {
 		currentActionId = 0;
 		classes = new HashMap<>();
 		objects = new HashMap<>();
+		destroyedObjects = new ArrayList<>();
+		destroyedInventories = new ArrayList<>();
+		destroyedLocations = new ArrayList<>();
+		destroyedClasses = new ArrayList<>();
+		destroyedRooms = new ArrayList<>();
 		locations = new HashMap<>();
 		inventories = new ArrayList<>();
 		users = new HashMap<>();
@@ -119,7 +129,7 @@ public class World {
 	 *            Moved object.
 	 * @throws ObjectInsideItselfException 
 	 */
-	public void moveTo(WorldLocation origin, WorldLocation destination, DemiurgoObject obj) throws ObjectInsideItselfException {
+	public void moveTo(DemiurgoLocation origin, DemiurgoLocation destination, DemiurgoObject obj) throws ObjectInsideItselfException {
 		if(destination.isInsideOf(obj)) {
 			throw new ObjectInsideItselfException(obj);
 		}
@@ -135,7 +145,7 @@ public class World {
 	}
 
 	/**
-	 * Finds a RoomGroup by its absolute path.
+	 * Finds a RoomPath by its absolute path.
 	 * 
 	 * @param loc
 	 *            Absolute path to the room.
@@ -310,7 +320,7 @@ public class World {
 		return users.get(user);
 	}
 
-	public WorldLocation getLocation(long loc_id) {
+	public DemiurgoLocation getLocation(long loc_id) {
 		return locations.get(loc_id);
 	}
 
@@ -403,7 +413,7 @@ public class World {
 		return inventories;
 	}
 
-	public List<WorldLocation> getLocations() {
+	public List<DemiurgoLocation> getLocations() {
 		return new ArrayList<>(locations.values());
 	}
 
@@ -417,5 +427,48 @@ public class World {
 			pendingRooms.add(location);
 		}
 	}
+
+	public void markToDestroy(DemiurgoObject obj) {
+		destroyedObjects.add(obj);
+		objects.remove(obj.getId());
+	}
+
+	public List<DemiurgoObject> getDestroyedObjects() {
+		return destroyedObjects;
+	}
+
+	public void markToDestroy(Inventory inv) {
+		destroyedInventories.add(inv);
+		destroyedLocations.add(inv);
+		locations.remove(inv.getId());
+	}
 	
+	public void markToDestroy(DemiurgoRoom room) {
+		destroyedRooms.add(room);
+		destroyedLocations.add(room);
+		locations.remove(room.getId());
+		searchRoomGroup(room.getLongPath(), false).setOwnRoom(null);;
+		
+	}
+
+	public List<Inventory> getDestroyedInventories() {
+		return destroyedInventories;
+	}
+
+	public List<DemiurgoLocation> getDestroyedLocations() {
+		return destroyedLocations;
+	}
+	
+	public List<DemiurgoClass> getDestroyedClasses() {
+		return destroyedClasses;
+	}
+	
+	public void markToDestroy(DemiurgoClass cl) {
+		destroyedClasses.add(cl);
+		classes.remove(cl.getClassName());
+	}
+
+	public List<DemiurgoRoom> getDestroyedRooms() {
+		return destroyedRooms;
+	}
 }

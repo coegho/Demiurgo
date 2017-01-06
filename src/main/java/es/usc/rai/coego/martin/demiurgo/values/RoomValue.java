@@ -1,7 +1,7 @@
 package es.usc.rai.coego.martin.demiurgo.values;
 
 import es.usc.rai.coego.martin.demiurgo.universe.World;
-import es.usc.rai.coego.martin.demiurgo.universe.WorldLocation;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoLocation;
 
 public class RoomValue extends LocationValue {
 
@@ -10,7 +10,7 @@ public class RoomValue extends LocationValue {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public RoomValue(WorldLocation location) {
+	public RoomValue(DemiurgoLocation location) {
 		super(location);
 	}
 	

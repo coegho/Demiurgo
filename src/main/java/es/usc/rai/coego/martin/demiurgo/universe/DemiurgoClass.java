@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import es.usc.rai.coego.martin.demiurgo.json.JsonClass;
 import es.usc.rai.coego.martin.demiurgo.json.JsonMethod;
@@ -13,8 +14,9 @@ import es.usc.rai.coego.martin.demiurgo.json.JsonVariable;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
 /**
- * Represents a class in the world defined by the user. These classes will be used to create
- * new objects.
+ * Represents a class in the world defined by the user. These classes will be
+ * used to create new objects.
+ * 
  * @author Martín Coego Pérez
  * @version %I%, %G%
  * @since 1.0
@@ -51,11 +53,11 @@ public class DemiurgoClass implements Comparable<DemiurgoClass> {
 	public World getWorld() {
 		return world;
 	}
-	
+
 	public Map<String, ValueInterface> getRealFields() {
 		return fields;
 	}
-	
+
 	public Map<String, ValueInterface> getFields() {
 		Map<String, ValueInterface> map = new HashMap<>();
 		map.putAll(parentClass.getFields());
@@ -72,7 +74,7 @@ public class DemiurgoClass implements Comparable<DemiurgoClass> {
 	}
 
 	public ValueInterface getField(String fieldName) {
-		if(fields.containsKey(fieldName))
+		if (fields.containsKey(fieldName))
 			return fields.get(fieldName);
 		else
 			return parentClass.getField(fieldName);
@@ -83,16 +85,16 @@ public class DemiurgoClass implements Comparable<DemiurgoClass> {
 	}
 
 	public ClassMethod getMethod(String methodName) {
-		if(methods.containsKey(methodName))
+		if (methods.containsKey(methodName))
 			return methods.get(methodName);
 		else
 			return parentClass.getMethod(methodName);
 	}
-	
+
 	public void setConstructor(ClassMethod constructor) {
 		this.constructor = constructor;
 	}
-	
+
 	public ClassMethod getConstructor() {
 		return constructor;
 	}
@@ -104,14 +106,14 @@ public class DemiurgoClass implements Comparable<DemiurgoClass> {
 	public void setParentClass(DemiurgoClass parentClass) {
 		this.parentClass = parentClass;
 	}
-	
+
 	public boolean inheritFrom(DemiurgoClass tryParent) {
-		if(tryParent == world.getRootClass()) {
+		if (tryParent == world.getRootClass()) {
 			return true;
 		}
 		DemiurgoClass p = this;
-		while(p != world.getRootClass()) {
-			if(p == tryParent) {
+		while (p != world.getRootClass()) {
+			if (p == tryParent) {
 				return true;
 			}
 			p = p.getParentClass();
@@ -122,36 +124,36 @@ public class DemiurgoClass implements Comparable<DemiurgoClass> {
 	public String getCode() {
 		return code;
 	}
-	
+
 	public void setCode(String code) {
 		this.code = code;
 	}
-	
+
 	public void rebuild(World world) {
-		this.world =  world;
+		this.world = world;
 	}
-	
+
 	public JsonClass toJson() {
 		JsonClass jc = new JsonClass();
 		jc.setCode(getCode());
 		jc.setClassName(getClassName());
 		jc.setParent(getParentClass().toJson());
 		List<JsonVariable> f = new ArrayList<>();
-		for(Entry<String, ValueInterface> e : getParentClass().getFields().entrySet()) {
+		for (Entry<String, ValueInterface> e : getParentClass().getFields().entrySet()) {
 			f.add(new JsonVariable(e.getKey(), e.getValue().getValueAsString(), e.getValue().getTypeName()));
 		}
-		for(Entry<String, ValueInterface> e : fields.entrySet()) {
+		for (Entry<String, ValueInterface> e : fields.entrySet()) {
 			f.removeIf(v -> v.getName().equalsIgnoreCase(e.getKey()));
 			f.add(new JsonVariable(e.getKey(), e.getValue().getValueAsString(), e.getValue().getTypeName()));
 		}
 		f.sort(Comparator.comparing(JsonVariable::getName));
 		jc.setFields(f);
-		
+
 		List<JsonMethod> m = new ArrayList<>();
-		for(Entry<String, ClassMethod> e : getMethods().entrySet()) {
+		for (Entry<String, ClassMethod> e : getMethods().entrySet()) {
 			m.add(e.getValue().toJson(e.getKey()));
 		}
-		
+
 		m.sort(Comparator.comparing(JsonMethod::getName));
 		jc.setMethods(m);
 		return jc;
@@ -159,6 +161,7 @@ public class DemiurgoClass implements Comparable<DemiurgoClass> {
 
 	/**
 	 * Modify the current class' fields and methods to the new class' ones.
+	 * 
 	 * @param newClass
 	 */
 	public void modifyTo(DemiurgoClass newClass) {
@@ -171,7 +174,7 @@ public class DemiurgoClass implements Comparable<DemiurgoClass> {
 
 	public Map<String, ClassMethod> getMethods() {
 		Map<String, ClassMethod> methods = new HashMap<String, ClassMethod>();
-		if(!(this instanceof RootObjectClass)) {
+		if (!(this instanceof RootObjectClass)) {
 			methods.putAll(this.getParentClass().getMethods());
 		}
 		methods.putAll(this.methods);
@@ -181,5 +184,14 @@ public class DemiurgoClass implements Comparable<DemiurgoClass> {
 	@Override
 	public int compareTo(DemiurgoClass another) {
 		return getClassName().compareTo(another.getClassName());
+	}
+
+	public void destroyClass() {
+		List<DemiurgoObject> l = getWorld().getAllObjects().stream()
+				.filter(o -> o.getClassName().equalsIgnoreCase(getClassName())).collect(Collectors.toList());
+		for(DemiurgoObject o : l) {
+			o.destroyObject(false);
+		}
+		getWorld().markToDestroy(this);
 	}
 }

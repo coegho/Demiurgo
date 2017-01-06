@@ -4,7 +4,7 @@ package es.usc.rai.coego.martin.demiurgo.values;
 import es.usc.rai.coego.martin.demiurgo.exceptions.IllegalOperationException;
 import es.usc.rai.coego.martin.demiurgo.universe.Inventory;
 import es.usc.rai.coego.martin.demiurgo.universe.World;
-import es.usc.rai.coego.martin.demiurgo.universe.WorldLocation;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoLocation;
 
 public class InventoryValue extends LocationValue {
 
@@ -13,12 +13,13 @@ public class InventoryValue extends LocationValue {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public InventoryValue(WorldLocation location) {
+	public InventoryValue(DemiurgoLocation location) {
 		super(location);
 	}
+	
 	@Override
 	public boolean canAssign(ValueInterface newRValue) {
-		return (newRValue instanceof InventoryValue);
+		return false; //An InventoryValue cannot assign another inventory
 	}
 
 	@Override

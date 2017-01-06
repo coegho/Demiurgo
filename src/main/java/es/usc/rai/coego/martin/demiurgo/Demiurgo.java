@@ -52,7 +52,7 @@ import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoObject;
 import es.usc.rai.coego.martin.demiurgo.universe.RootObjectClass;
 import es.usc.rai.coego.martin.demiurgo.universe.User;
 import es.usc.rai.coego.martin.demiurgo.universe.World;
-import es.usc.rai.coego.martin.demiurgo.universe.WorldLocation;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoLocation;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoRoom;
 import es.usc.rai.coego.martin.demiurgo.universe.Inventory;
 import io.jsonwebtoken.impl.crypto.MacProvider;
@@ -342,7 +342,7 @@ public class Demiurgo {
 		db.beginTransaction();
 		
 		// Writing location ids
-		for(WorldLocation l : world.getLocations()) {
+		for(DemiurgoLocation l : world.getLocations()) {
 			db.writeLocationId(l);
 		}
 		
@@ -376,6 +376,36 @@ public class Demiurgo {
 		for (Inventory inv : world.getInventories()) {
 			db.writeInventory(inv);
 		}
+		
+		//Deleting inventories
+		for(Inventory i : world.getDestroyedInventories()) {
+			db.deleteInventory(i);
+		}
+		world.getDestroyedInventories().clear();
+		
+		//Deleting objects
+		for(DemiurgoObject o : world.getDestroyedObjects()) {
+			db.deleteDemiurgoObject(o);
+		}
+		world.getDestroyedObjects().clear();
+		
+		//Deleting rooms
+			for(DemiurgoRoom r : world.getDestroyedRooms()) {
+				db.deleteRoom(r);
+			}
+			world.getDestroyedRooms().clear();
+		
+		//Deleting locations
+		for(DemiurgoLocation l : world.getDestroyedLocations()) {
+			db.deleteLocation(l);
+		}
+		world.getDestroyedLocations().clear();
+		
+		//Deleting classes
+		for(DemiurgoClass cl : world.getDestroyedClasses()) {
+			db.deleteClass(cl);
+		}
+		world.getDestroyedClasses().clear();
 		
 
 		db.setCurrentIDs(world.getCurrentObjId(), world.getCurrentLocationId(), world.getCurrentActionId());

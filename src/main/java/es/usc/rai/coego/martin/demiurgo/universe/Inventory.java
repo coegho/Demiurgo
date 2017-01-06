@@ -3,9 +3,8 @@ package es.usc.rai.coego.martin.demiurgo.universe;
 import java.util.stream.Collectors;
 
 import es.usc.rai.coego.martin.demiurgo.json.JsonInventory;
-import es.usc.rai.coego.martin.demiurgo.values.InventoryValue;
 
-public class Inventory extends WorldLocation {
+public class Inventory extends DemiurgoLocation {
 	protected transient DemiurgoObject container;
 	protected long container_id;
 	protected String varName;
@@ -64,5 +63,14 @@ public class Inventory extends WorldLocation {
 	@Override
 	public boolean isInsideOf(DemiurgoObject another) {
 		return getContainer().getId() == another.getId() || getContainer().isInsideOf(another);
+	}
+
+	@Override
+	public void destroyLocation() {
+		for(DemiurgoObject o : getObjects()) {
+			o.destroyObject(true);
+		}
+
+		getWorld().markToDestroy(this);
 	}
 }

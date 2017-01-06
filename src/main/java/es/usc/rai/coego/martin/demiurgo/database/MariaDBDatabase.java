@@ -22,7 +22,7 @@ import es.usc.rai.coego.martin.demiurgo.universe.Witness;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoRoom;
 import es.usc.rai.coego.martin.demiurgo.universe.Inventory;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
-import es.usc.rai.coego.martin.demiurgo.universe.WorldLocation;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoLocation;
 
 public class MariaDBDatabase implements DatabaseInterface {
 
@@ -164,6 +164,19 @@ public class MariaDBDatabase implements DatabaseInterface {
 			System.err.println(e.getLocalizedMessage());
 		}
 	}
+
+	@Override
+	public void deleteDemiurgoObject(DemiurgoObject obj) {
+		try {
+			PreparedStatement stm = con.prepareStatement(
+					"DELETE FROM objects WHERE obj_id = ?");
+			stm.setLong(1, obj.getId());
+			stm.executeUpdate();
+
+		} catch (SQLException e) {
+			System.err.println(e.getLocalizedMessage());
+		}
+	}
 	
 	@Override
 	public void writeDemiurgoClass(DemiurgoClass cl) {
@@ -179,7 +192,7 @@ public class MariaDBDatabase implements DatabaseInterface {
 		}
 	}
 	
-	public void writeLocationId(WorldLocation location) {
+	public void writeLocationId(DemiurgoLocation location) {
 		try {
 			PreparedStatement stm = con.prepareStatement(
 					"INSERT locations (id) VALUES (?) ON DUPLICATE KEY UPDATE id=VALUES(id)");
@@ -215,6 +228,32 @@ public class MariaDBDatabase implements DatabaseInterface {
 			stm.setLong(1, inv.getId());
 			stm.setLong(3, inv.getContainer().getId());
 			stm.setString(2, inv.getVarName());
+			stm.executeUpdate();
+
+		} catch (SQLException e) {
+			System.err.println(e.getLocalizedMessage());
+		}
+	}
+	
+	@Override
+	public void deleteLocation(DemiurgoLocation loc) {
+		try {
+			PreparedStatement stm = con.prepareStatement(
+					"DELETE FROM locations WHERE id = ?");
+			stm.setLong(1, loc.getId());
+			stm.executeUpdate();
+
+		} catch (SQLException e) {
+			System.err.println(e.getLocalizedMessage());
+		}
+	}
+	
+	@Override
+	public void deleteInventory(Inventory inv) {
+		try {
+			PreparedStatement stm = con.prepareStatement(
+					"DELETE FROM inventories WHERE id = ?");
+			stm.setLong(1, inv.getId());
 			stm.executeUpdate();
 
 		} catch (SQLException e) {
@@ -433,6 +472,32 @@ public class MariaDBDatabase implements DatabaseInterface {
 			stm.setLong(1, objId);
 			stm.setLong(2, roomId);
 			stm.setLong(3, actionId);
+			stm.executeUpdate();
+
+		} catch (SQLException e) {
+			System.err.println(e.getLocalizedMessage());
+		}
+	}
+
+	@Override
+	public void deleteClass(DemiurgoClass cl) {
+		try {
+			PreparedStatement stm = con.prepareStatement(
+					"DELETE FROM classes WHERE classname = ?");
+			stm.setString(1, cl.getClassName());
+			stm.executeUpdate();
+
+		} catch (SQLException e) {
+			System.err.println(e.getLocalizedMessage());
+		}
+	}
+
+	@Override
+	public void deleteRoom(DemiurgoRoom room) {
+		try {
+			PreparedStatement stm = con.prepareStatement(
+					"DELETE FROM rooms WHERE id = ?");
+			stm.setLong(1, room.getId());
 			stm.executeUpdate();
 
 		} catch (SQLException e) {

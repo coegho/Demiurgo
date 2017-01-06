@@ -1,17 +1,17 @@
 package es.usc.rai.coego.martin.demiurgo.values;
 
 import es.usc.rai.coego.martin.demiurgo.universe.World;
-import es.usc.rai.coego.martin.demiurgo.universe.WorldLocation;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoLocation;
 
 public abstract class LocationValue extends AbstractValue {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	protected transient WorldLocation location;
+	protected transient DemiurgoLocation location;
 	protected long loc_id;
 
-	public LocationValue(WorldLocation location) {
+	public LocationValue(DemiurgoLocation location) {
 		this.location = location;
 		if(location != null)
 			loc_id = location.getId();
@@ -20,7 +20,7 @@ public abstract class LocationValue extends AbstractValue {
 	}
 
 
-	public WorldLocation getLocation() {
+	public DemiurgoLocation getLocation() {
 		return location;
 	}
 

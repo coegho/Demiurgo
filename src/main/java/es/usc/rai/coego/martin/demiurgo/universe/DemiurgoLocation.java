@@ -7,13 +7,13 @@ import java.util.Map.Entry;
 import es.usc.rai.coego.martin.demiurgo.values.InventoryValue;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
-public abstract class WorldLocation {
+public abstract class DemiurgoLocation {
 
 	protected long id;
 	protected transient World world;
 	protected List<DemiurgoObject> objects;
 
-	public WorldLocation(World world, long id) {
+	public DemiurgoLocation(World world, long id) {
 		this.id = id;
 		this.world = world;
 		objects = new ArrayList<>();
@@ -23,7 +23,7 @@ public abstract class WorldLocation {
 	 * This constructor requires a posterior call to the method 'rebuild'.
 	 * @param id
 	 */
-	public WorldLocation(long id) {
+	public DemiurgoLocation(long id) {
 		this.id = id;
 		objects = new ArrayList<>();
 	}
@@ -80,4 +80,6 @@ public abstract class WorldLocation {
 		}
 		return users;
 	}
+	
+	public abstract void destroyLocation();
 }

@@ -36,6 +36,12 @@ import es.usc.rai.coego.martin.demiurgo.json.CreateClassResponse;
 import es.usc.rai.coego.martin.demiurgo.json.CreateRoomRequest;
 import es.usc.rai.coego.martin.demiurgo.json.DeleteVariableRequest;
 import es.usc.rai.coego.martin.demiurgo.json.DeleteVariableResponse;
+import es.usc.rai.coego.martin.demiurgo.json.DestroyClassRequest;
+import es.usc.rai.coego.martin.demiurgo.json.DestroyClassResponse;
+import es.usc.rai.coego.martin.demiurgo.json.DestroyObjectRequest;
+import es.usc.rai.coego.martin.demiurgo.json.DestroyObjectResponse;
+import es.usc.rai.coego.martin.demiurgo.json.DestroyRoomRequest;
+import es.usc.rai.coego.martin.demiurgo.json.DestroyRoomResponse;
 import es.usc.rai.coego.martin.demiurgo.json.ExecuteCodeRequest;
 import es.usc.rai.coego.martin.demiurgo.json.ExecuteCodeResponse;
 import es.usc.rai.coego.martin.demiurgo.json.GetPendingRoomsResponse;
@@ -574,8 +580,56 @@ public class WebService {
 		DeleteVariableResponse res = new DeleteVariableResponse();
 		String world = ((DemiurgoPrincipal) securityContext.getUserPrincipal()).getWorld();
 		World w = Demiurgo.getWorld(world);
-		w.getRoom(req.getPath()).removeVariable(req.getVarName());
-		res.setStatus(new ResponseStatus());
+		DemiurgoRoom room = w.getRoom(req.getPath());
+		if(room == null) {
+			return Response.status(Response.Status.NOT_FOUND).entity("Cannot find room " + req.getPath()).build();
+		}
+		else if(room.getVariable(req.getVarName()) != null) {
+			room.removeVariable(req.getVarName());
+			res.setStatus(new ResponseStatus());
+		}
+		else {
+			res.setStatus(new ResponseStatus(false, "Cannot find variable " + req.getVarName()));
+		}
+		return Response.ok(res).build();
+	}
+	
+	@POST
+	@Path("destroyobj")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@RolesAllowed("gm")
+	public Response destroyObject(DestroyObjectRequest req) {
+		DestroyObjectResponse res = new DestroyObjectResponse();
+		String world = ((DemiurgoPrincipal) securityContext.getUserPrincipal()).getWorld();
+		World w = Demiurgo.getWorld(world);
+		w.getObject(req.getObjId()).destroyObject(req.isDestroyContents());
+		return Response.ok(res).build();
+	}
+	
+	@POST
+	@Path("destroyclass")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@RolesAllowed("gm")
+	public Response destroyClass(DestroyClassRequest req) {
+		DestroyClassResponse res = new DestroyClassResponse();
+		String world = ((DemiurgoPrincipal) securityContext.getUserPrincipal()).getWorld();
+		World w = Demiurgo.getWorld(world);
+		w.getClassFromName(req.getClassname()).destroyClass();
+		return Response.ok(res).build();
+	}
+	
+	@POST
+	@Path("destroyroom")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@RolesAllowed("gm")
+	public Response destroyRoom(DestroyRoomRequest req) {
+		DestroyRoomResponse res = new DestroyRoomResponse();
+		String world = ((DemiurgoPrincipal) securityContext.getUserPrincipal()).getWorld();
+		World w = Demiurgo.getWorld(world);
+		w.getRoom(req.getPath()).destroyLocation();
 		return Response.ok(res).build();
 	}
 }

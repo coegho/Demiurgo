@@ -8,7 +8,7 @@ import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoObject;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoRoom;
 import es.usc.rai.coego.martin.demiurgo.universe.Inventory;
 import es.usc.rai.coego.martin.demiurgo.universe.User;
-import es.usc.rai.coego.martin.demiurgo.universe.WorldLocation;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoLocation;
 
 public interface DatabaseInterface {
 	
@@ -32,13 +32,17 @@ public interface DatabaseInterface {
 	
 	public void writeDemiurgoObject(DemiurgoObject obj);
 	
+	public void deleteDemiurgoObject(DemiurgoObject obj);
+	
 	public void writeDemiurgoClass(DemiurgoClass cl);
 	
-	public void writeLocationId(WorldLocation location);
+	public void writeLocationId(DemiurgoLocation location);
 	
 	public void writeWorldRoom(DemiurgoRoom room);
 
 	void writeInventory(Inventory inv);
+
+	public void deleteInventory(Inventory i);
 	
 	public void writeAction(Action action);
 	
@@ -57,4 +61,11 @@ public interface DatabaseInterface {
 	public long[] readCurrentIDs();
 
 	public void setCurrentIDs(long objId, long RoomId, long actionId);
+
+	public void deleteLocation(DemiurgoLocation loc);
+
+	public void deleteClass(DemiurgoClass cl);
+
+	public void deleteRoom(DemiurgoRoom r);
+
 }
