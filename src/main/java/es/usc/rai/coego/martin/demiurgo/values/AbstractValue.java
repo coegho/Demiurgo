@@ -160,4 +160,9 @@ public abstract class AbstractValue implements ValueInterface {
 	public String getTypeName() {
 		return getType().name();
 	}
+	
+	@Override
+	public ReturnValueTypes getInnerType() {
+		return getType();
+	}
 }

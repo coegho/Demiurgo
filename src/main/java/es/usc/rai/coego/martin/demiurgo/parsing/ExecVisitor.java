@@ -13,6 +13,7 @@ import es.usc.rai.coego.martin.demiurgo.coe.COEParser.ArgsContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.AssignContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.BoolContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.CompareContext;
+import es.usc.rai.coego.martin.demiurgo.coe.COEParser.ConcatContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.DiceContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.EchoContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.Exp_elseContext;
@@ -171,7 +172,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 	 */
 	@Override
 	public ValueInterface visitBool(BoolContext ctx) {
-		switch (ctx.BOOLEAN().getSymbol().getType()) {
+		switch (ctx.v.getType()) {
 		case COEParser.TRUE:
 			return new IntegerValue(1);
 		case COEParser.FALSE:
@@ -204,9 +205,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 				}
 			}
 
-			ListValue lv = new ListValue(l);
-			lv.setDepth(depth+1);
-			lv.setInnerType(type);
+			ListValue lv = new ListValue(l, depth+1, type);
 
 			return lv;
 		} catch (IrregularListException ex) {
@@ -550,7 +549,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 	/**
 	 * Assigns the value on the right into the given position of the variable on
 	 * the left.
-	 * </p>
+	 * <p>
 	 * operation: variable '[' operation ']' ASSIGN operation
 	 */
 	@Override
@@ -586,6 +585,48 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 	}
 
 	/**
+	 * Concatenates two lists or a list and an element.
+	 * <p>
+	 * operation CONCAT operation
+	 */
+	@Override
+	public ValueInterface visitConcat(ConcatContext ctx) {
+		ValueInterface left = visit(ctx.operation(0));
+		ValueInterface right = visit(ctx.operation(1));
+
+		if (Math.abs(left.getDepth() - right.getDepth()) > 1 || left.getInnerType() != right.getInnerType()) {
+			// too different
+			throw new RuntimeException(new IllegalOperationException(ctx.CONCAT().getSymbol().getLine(),
+					ctx.CONCAT().getSymbol().getCharPositionInLine(), ctx.CONCAT().getSymbol().getStartIndex(),
+					left.getTypeName(), right.getTypeName(), "++"));
+		}
+		if (left.getDepth() < right.getDepth()) {
+			// append left to right (at first)
+			List<ValueInterface> rightList = ((ListValue) right.cloneValue()).getValue();
+			rightList.add(0, left.cloneValue());
+			return new ListValue(rightList, right.getDepth(), right.getInnerType());
+		}
+		if (left.getDepth() > right.getDepth()) {
+			// append right to left (at end)
+			List<ValueInterface> leftList = ((ListValue) left.cloneValue()).getValue();
+			leftList.add(right.cloneValue());
+			return new ListValue(leftList, left.getDepth(), left.getInnerType());
+		}
+		// concats at same depth
+		if(left.getDepth() == 0) {
+			//none of them are lists
+			ListValue list = ListValue.defaultValue(left.getType(), 1);
+			list.getValue().add(left.cloneValue());
+			list.getValue().add(right.cloneValue());
+			return list;
+		}
+		// two lists
+		List<ValueInterface> leftList = ((ListValue) left.cloneValue()).getValue();
+		leftList.addAll(((ListValue)right.cloneValue()).getValue());
+		return new ListValue(leftList, left.getDepth(), left.getInnerType());
+	}
+
+	/**
 	 * Moves a game object between rooms.
 	 * <p>
 	 * operation: operation MOVE operation
@@ -599,10 +640,10 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 
 			if (mobile instanceof ObjectValue && room instanceof LocationValue) {
 				((ObjectValue) mobile).getObj().moveTo(((LocationValue) room).getLocation());
-			} else if (mobile instanceof ListValue && (((ListValue) mobile).getInnerType() == ReturnValueTypes.OBJECT) && (((ListValue) mobile).getDepth() == 1)
-					&& room instanceof LocationValue) {
-				for(ValueInterface o : ((ListValue)mobile).getValue()) {
-					DemiurgoObject obj = ((ObjectValue)o).getObj();
+			} else if (mobile instanceof ListValue && (((ListValue) mobile).getInnerType() == ReturnValueTypes.OBJECT)
+					&& (((ListValue) mobile).getDepth() == 1) && room instanceof LocationValue) {
+				for (ValueInterface o : ((ListValue) mobile).getValue()) {
+					DemiurgoObject obj = ((ObjectValue) o).getObj();
 					obj.moveTo(((LocationValue) room).getLocation());
 				}
 			} else {

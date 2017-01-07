@@ -248,6 +248,14 @@ public interface ValueInterface extends Serializable {
 	 * @return
 	 */
 	public ReturnValueTypes getType();
+	
+	/**
+	 * Returns the inner type from a enum. It returns the same as getType,
+	 * excepts for lists.
+	 * 
+	 * @return
+	 */
+	public ReturnValueTypes getInnerType();
 
 	/**
 	 * Returns the depth of the list if the value is a list; returns 0

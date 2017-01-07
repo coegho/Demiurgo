@@ -44,6 +44,7 @@ operation : function_call										#functionOp
 	| operation op=(ADD|SUB) operation						#AddSub
 	| operation op=(NEQ|EQ|GREQ|LESEQ|LESS|GREAT) operation	#compare
 	| operation op=(OR|AND) operation						#logic
+	| operation CONCAT operation							#concat
 	| variable ASSIGN operation								#assign
 	| variable '[' operation ']' ASSIGN operation			#indexAssign
 	| operation MOVE operation								#move
@@ -52,7 +53,7 @@ operation : function_call										#functionOp
 	| new_obj												#newObj
 	| INT_NUMBER											#int
 	| FLOAT_NUMBER											#float
-	| BOOLEAN												#bool
+	| bool												    #boolean
 	| TEXT_STRING											#string
 	| sharp_identifier										#sharp
 	| room													#roomOp
@@ -95,6 +96,8 @@ data_type : INT_TYPE										#intType
 	| data_type '[]'										#listType
 	;
 
+bool : v=(TRUE | FALSE) ;
+
 nl : '\n'+;
 
 //Lexer rules
@@ -112,11 +115,11 @@ STRING_TYPE: [Ss][Tt][Rr] ;
 TRUE: [Tt][Rr][Uu][Ee] ;
 FALSE: [Ff][Aa][Ll][Ss][Ee] ;
 
+
 SYMBOL : ([dD][a-zA-Z_]|[a-cA-Ce-zE-Z_])[a-zA-Z0-9_]* ;
 USERNAME : '$'[a-zA-Z0-9_]+ ;
 INT_NUMBER: [0-9]+;
 FLOAT_NUMBER : [0-9]+'.'[0-9]+ ;
-BOOLEAN : TRUE | FALSE ;
 TEXT_STRING : '"' .*? '"' ;
 WS : [ \t\r]+ -> skip ; // skip spaces, tabs, newlines
 COMMENT : '/*' .*? '*/' -> skip ; // multiline comments
@@ -140,3 +143,4 @@ INHERIT: ':' ;
 ROOM: '@' ;
 USEROBJ: '->' ;
 INVENTORY: '%' ;
+CONCAT: '++' ;

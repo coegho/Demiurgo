@@ -20,8 +20,10 @@ public class ListValue extends AbstractValue {
 	protected String className;
 	protected int listDepth;
 
-	public ListValue(List<ValueInterface> value) {
+	public ListValue(List<ValueInterface> value, int depth, ReturnValueTypes innerType) {
 		this.value = value;
+		this.listDepth = depth;
+		this.innerType = innerType;
 	}
 	
 	public ListValue() {
@@ -49,6 +51,7 @@ public class ListValue extends AbstractValue {
 		return ReturnValueTypes.LIST;
 	}
 
+	@Override
 	public ReturnValueTypes getInnerType() {
 		return innerType;
 	}
@@ -470,18 +473,18 @@ public class ListValue extends AbstractValue {
 			ListValue lv = (ListValue)newRValue;
 			if(getInnerType() == ReturnValueTypes.OBJECT && !lv.classType.inheritFrom(classType))
 				return false;
-			return getDepth() == lv.getDepth() && getInnerType() == lv.getInnerType();
+			return getDepth() == lv.getDepth() && (lv.getInnerType() == null || getInnerType() == lv.getInnerType());
 		}
 		return false;
 	}
 	
 	@Override
 	public boolean assign(ValueInterface newRValue) {
-		if(newRValue instanceof ListValue) {
-			value = ((ListValue)newRValue).getValue();
-			return true;
+		if(!canAssign(newRValue)) {
+			return false;
 		}
-		return false;
+		value = ((ListValue)newRValue).getValue();
+		return true;
 	}
 
 	@Override
@@ -509,7 +512,7 @@ public class ListValue extends AbstractValue {
 		for (ValueInterface x : getValue()) {
 			list.add(x.cloneValue());
 		}
-		return new ListValue(list);
+		return new ListValue(list, listDepth, innerType);
 	}
 
 	@Override
@@ -544,7 +547,7 @@ public class ListValue extends AbstractValue {
 	
 	@Override
 	public String getTypeName() {
-		StringBuilder sb = new StringBuilder(getInnerType().name()); 
+		StringBuilder sb = new StringBuilder((getInnerType()!=null)?getInnerType().name():getType().name());
 		for(int i=0;i<getDepth();i++) { sb.append("[]");}
 		return sb.toString();
 	}

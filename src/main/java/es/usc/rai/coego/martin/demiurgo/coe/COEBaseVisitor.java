@@ -143,13 +143,6 @@ public class COEBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements CO
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitBool(COEParser.BoolContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
 	@Override public T visitString(COEParser.StringContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
@@ -193,6 +186,13 @@ public class COEBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements CO
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitIndex(COEParser.IndexContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitConcat(COEParser.ConcatContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -249,6 +249,13 @@ public class COEBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements CO
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitNegative(COEParser.NegativeContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitBoolean(COEParser.BooleanContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -403,6 +410,13 @@ public class COEBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements CO
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitRoomType(COEParser.RoomTypeContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitBool(COEParser.BoolContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *

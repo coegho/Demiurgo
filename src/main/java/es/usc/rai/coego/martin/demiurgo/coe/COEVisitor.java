@@ -128,13 +128,6 @@ public interface COEVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitMove(COEParser.MoveContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code bool}
-	 * labeled alternative in {@link COEParser#operation}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitBool(COEParser.BoolContext ctx);
-	/**
 	 * Visit a parse tree produced by the {@code string}
 	 * labeled alternative in {@link COEParser#operation}.
 	 * @param ctx the parse tree
@@ -183,6 +176,13 @@ public interface COEVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitIndex(COEParser.IndexContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code concat}
+	 * labeled alternative in {@link COEParser#operation}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitConcat(COEParser.ConcatContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code newObj}
 	 * labeled alternative in {@link COEParser#operation}.
@@ -239,6 +239,13 @@ public interface COEVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitNegative(COEParser.NegativeContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code boolean}
+	 * labeled alternative in {@link COEParser#operation}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitBoolean(COEParser.BooleanContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code functionOp}
 	 * labeled alternative in {@link COEParser#operation}.
@@ -384,6 +391,12 @@ public interface COEVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitRoomType(COEParser.RoomTypeContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link COEParser#bool}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitBool(COEParser.BoolContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link COEParser#nl}.
 	 * @param ctx the parse tree
