@@ -7,5 +7,5 @@ package es.usc.rai.coego.martin.demiurgo.values;
  * or stored into variables.
  */
 public enum ReturnValueTypes {
-	INT, FLOAT, STRING, ROOM, INVENTORY, OBJECT, REFERENCE, LIST;
+	INT, FLOAT, STRING, ROOM, INVENTORY, OBJECT, LIST;
 }

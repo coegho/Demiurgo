@@ -57,7 +57,11 @@ public class CodeVisitor extends ExecVisitor {
 		String varName = ctx.SYMBOL().getText().toLowerCase();
 		if (ctx.operation() != null) {
 			ValueInterface v = visit(ctx.operation());
-			type.assign(v);
+			if (!type.assign(v)) {
+				throw new RuntimeException(new ValueCastException(ctx.ASSIGN().getSymbol().getLine(),
+						ctx.ASSIGN().getSymbol().getCharPositionInLine(), ctx.ASSIGN().getSymbol().getStartIndex(),
+						v.getTypeName(), type.getTypeName()));
+			}
 
 		}
 		getSM().setVariable(varName, type);
@@ -73,16 +77,16 @@ public class CodeVisitor extends ExecVisitor {
 		throw new RuntimeException(new ClassDefinitionOnCodeException(ctx.start.getLine(),
 				ctx.start.getCharPositionInLine(), ctx.start.getStartIndex()));
 	}
-	
+
 	public String getPrenarration() {
-		if(prenarration != null)
+		if (prenarration != null)
 			return prenarration.toString();
 		else
 			return null;
 	}
-	
+
 	public void appendPrenarration(String str) {
-		if(prenarration == null) {
+		if (prenarration == null) {
 			prenarration = new StringBuilder();
 		}
 		prenarration.append(str + "\n");

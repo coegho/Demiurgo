@@ -80,7 +80,6 @@ import es.usc.rai.coego.martin.demiurgo.values.ListValue;
 import es.usc.rai.coego.martin.demiurgo.values.LocationValue;
 import es.usc.rai.coego.martin.demiurgo.values.NullValue;
 import es.usc.rai.coego.martin.demiurgo.values.ObjectValue;
-import es.usc.rai.coego.martin.demiurgo.values.ReferenceValue;
 import es.usc.rai.coego.martin.demiurgo.values.ReturnValueTypes;
 import es.usc.rai.coego.martin.demiurgo.values.RoomValue;
 import es.usc.rai.coego.martin.demiurgo.values.StringValue;
@@ -532,13 +531,12 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 	@Override
 	public ValueInterface visitAssign(AssignContext ctx) {
 		try {
-			ValueInterface l = visit(ctx.variable());
+			ValueInterface left = visit(ctx.variable());
 			ValueInterface right = visit(ctx.operation());
 
-			ReferenceValue left = (ReferenceValue) l;
-			if (left.getReference().canAssign(right)) {
-				left.getReference().assign(right);
-				return left.getReference();
+			if (left.canAssign(right)) {
+				left.assign(right);
+				return left.cloneValue();
 			} else {
 				throw new ValueCastException(ctx.ASSIGN().getSymbol().getLine(),
 						ctx.ASSIGN().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex(),
@@ -561,16 +559,15 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 		ValueInterface i = visit(ctx.operation(0));
 		ValueInterface value = visit(ctx.operation(1));
 
-		ReferenceValue ref = (ReferenceValue) r;
 		int index;
 		ValueInterface element;
 		try {
 			index = i.castToInteger();
 
-			if (!(ref.getReference() instanceof ListValue))
+			if (!(r instanceof ListValue))
 				throw new NotAListException(ctx.start.getLine(), ctx.start.getCharPositionInLine(),
-						ctx.start.getStartIndex(), ref.getReference().getTypeName());
-			element = ref.getReference().getFromIndex(index);
+						ctx.start.getStartIndex(), r.getTypeName());
+			element = r.getFromIndex(index);
 			if (element.canAssign(value)) {
 				element.assign(value);
 				return value;
@@ -631,7 +628,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			if (v == null)
 				throw new UndeclaredVariableException(ctx.start.getLine(), ctx.start.getCharPositionInLine(),
 						ctx.start.getStartIndex(), varname);
-			return new ReferenceValue(v);
+			return v;
 		} catch (UndeclaredVariableException e) {
 			throw new RuntimeException(e);
 		}
@@ -642,7 +639,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 	 */
 	@Override
 	public ValueInterface visitRootObject(RootObjectContext ctx) {
-		return new ReferenceValue(visit(ctx.sharp_identifier()));
+		return visit(ctx.sharp_identifier());
 	}
 
 	/**
@@ -652,11 +649,9 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 	 */
 	@Override
 	public ValueInterface visitIntermediateVariable(IntermediateVariableContext ctx) {
-		ValueInterface v = visit(ctx.variable());
+		ValueInterface value = visit(ctx.variable());
 
 		try {
-			ReferenceValue prev = (ReferenceValue) v;
-			ValueInterface value = prev.getReference();
 			String fieldName = ctx.SYMBOL().getText().toLowerCase();
 			if (value instanceof ObjectValue) {
 				DemiurgoObject obj = ((ObjectValue) value).getObj();
@@ -664,7 +659,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 					throw new UndeclaredVariableException(ctx.start.getLine(), ctx.start.getCharPositionInLine(),
 							ctx.start.getStartIndex(), fieldName);
 				}
-				return new ReferenceValue(obj.getField(fieldName));
+				return obj.getField(fieldName);
 			} else {
 				throw new NotAnObjectException(ctx.start.getLine(), ctx.start.getCharPositionInLine(),
 						ctx.start.getStartIndex(), value.getTypeName());
@@ -682,9 +677,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 	@Override
 	public ValueInterface visitVariableOp(VariableOpContext ctx) {
 		ValueInterface v = visit(ctx.variable());
-
-		ReferenceValue var = (ReferenceValue) v;
-		return var.getReference().cloneValue();
+		return v.cloneValue();
 	}
 
 	/**
@@ -699,9 +692,8 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 		try {
 			String methodName = ctx.SYMBOL().getText().toLowerCase();
 			if (ctx.variable() != null) {
-				ReferenceValue ref = (ReferenceValue) v;
-				if (ref.getReference() instanceof ObjectValue) {
-					ObjectValue obj = (ObjectValue) ref.getReference();
+				if (v instanceof ObjectValue) {
+					ObjectValue obj = (ObjectValue) v;
 
 					if (obj.getObj().getUserClass().getClassName().equalsIgnoreCase(methodName)) {
 						// Constructor
