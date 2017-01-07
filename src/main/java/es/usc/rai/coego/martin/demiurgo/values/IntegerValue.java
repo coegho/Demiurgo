@@ -190,24 +190,37 @@ public class IntegerValue extends AbstractValue {
 		return new IntegerValue((r.nextInt(getValue())) + 1);
 	}
 
+	/**
+	 * Performs a multiple dice roll.
+	 * <p>
+	 * Examples:
+	 * <p>
+	 * 4d6 -> {d6, d6, d6, d6}
+	 * <p>
+	 * 3d{6,10} -> {{d6, d6, d6}, {d10, d10, d10}}
+	 * <p>
+	 * 3d{{6,12},{10,20}} -> {{{d6,d6,d6}, {d12,d12,d12}}, {{d10,d10,d10}, {d20,d20,d20}}}
+	 */
 	@Override
-	public ValueInterface multDice(ValueInterface other) throws IllegalOperationException {
+	public ValueInterface multDice(ValueInterface another) throws IllegalOperationException {
 		ListValue lv = new ListValue();
-
-		if (other instanceof IntegerValue) {
+		lv.setInnerType(getType());
+		lv.setDepth(another.getDepth()+1);
+		
+		if (another instanceof IntegerValue) {
 			for (int i = 0; i < getValue(); i++) {
-				lv.getValue().add(new IntegerValue((r.nextInt(((IntegerValue) other).getValue())) + 1));
+				lv.getValue().add(new IntegerValue((r.nextInt(((IntegerValue) another).getValue())) + 1));
 			}
 			return lv;
 		}
-		if (other instanceof ListValue) {
-			for (ValueInterface x : ((ListValue) other).getValue()) {
+		if (another instanceof ListValue) {
+			for (ValueInterface x : ((ListValue) another).getValue()) {
 				lv.getValue().add(multDice(x));
 			}
 			return lv;
 		}
 
-		throw new IllegalOperationException(-1, -1, -1, getTypeName(), other.getTypeName(), "xDy");
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), another.getTypeName(), "xDy");
 	}
 
 
