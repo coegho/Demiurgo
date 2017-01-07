@@ -14,6 +14,7 @@ import es.usc.rai.coego.martin.demiurgo.json.JsonInventory;
 import es.usc.rai.coego.martin.demiurgo.json.JsonMethod;
 import es.usc.rai.coego.martin.demiurgo.json.JsonObject;
 import es.usc.rai.coego.martin.demiurgo.json.JsonVariable;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass.DefaultField;
 import es.usc.rai.coego.martin.demiurgo.values.InventoryValue;
 import es.usc.rai.coego.martin.demiurgo.values.ObjectValue;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
@@ -34,19 +35,7 @@ public class DemiurgoObject {
 		this.id = -1;
 		this.ownClass = ownClass;
 		this.location = location;
-		this.fields = new HashMap<>();
-		for (Entry<String, ValueInterface> var : ownClass.getFields().entrySet()) {
-			if(var.getValue() instanceof InventoryValue) {
-				Inventory inv = ownClass.getWorld().createInventory(this, var.getKey());
-				fields.put(var.getKey(), new InventoryValue(inv));
-			}
-			else {
-				fields.put(var.getKey(), var.getValue().cloneValue());
-			}
-		}
-		ObjectValue v = new ObjectValue(this);
-		v.setWritable(false);
-		fields.put("this", v);
+		this.fields = null;
 		location.addObject(this);
 		location.getWorld().addObject(this);
 	}
@@ -104,6 +93,10 @@ public class DemiurgoObject {
 
 	public void setField(String fieldName, ValueInterface value) {
 		fields.put(fieldName, value);
+	}
+	
+	public void setFields(Map<String, ValueInterface> fields) {
+		this.fields = fields;
 	}
 
 	public Set<String> getAllFieldNames() {
@@ -196,29 +189,29 @@ public class DemiurgoObject {
 
 	public void updateClass() {
 		List<String> losing = new ArrayList<String>(fields.keySet());
-		for (Entry<String, ValueInterface> e : ownClass.getFields().entrySet()) {
+		for (Entry<String, DefaultField> e : ownClass.getFields().entrySet()) {
 			if (fields.containsKey(e.getKey())) { // Already has this variable
 				losing.remove(e.getKey());
-				if(!(e.getValue() instanceof InventoryValue)) { //Cannot assign inventories
-					if (e.getValue().canAssign(fields.get(e.getKey()))) { // Compatible
+				if(!(e.getValue().getField() instanceof InventoryValue)) { //Cannot assign inventories
+					if (e.getValue().getField().canAssign(fields.get(e.getKey()))) { // Compatible
 																			// type
-						ValueInterface n = e.getValue().cloneValue(); // new
+						ValueInterface n = e.getValue().getField().cloneValue(); // new
 																		// variable
 						n.assign(fields.get(e.getKey()));
 						fields.put(e.getKey(), n);
 					} else { // incompatible type, any previous value will be lost
 						ownClass.getWorld().getLogger().info("Object #" + id + " update field " + e.getKey()
 								+ ", lose previous value: " + fields.get(e.getKey()).getValueAsString());
-						fields.put(e.getKey(), e.getValue().cloneValue());
+						fields.put(e.getKey(), e.getValue().getField().cloneValue());
 					}
 				}
 			} else { // put directly
-				if(e.getValue() instanceof InventoryValue) {
+				if(e.getValue().getField() instanceof InventoryValue) {
 					InventoryValue v = new InventoryValue(getUserClass().getWorld().createInventory(this, e.getKey()));
 					fields.put(e.getKey(), v);
 				}
 				else
-					fields.put(e.getKey(), e.getValue().cloneValue());
+					fields.put(e.getKey(), e.getValue().getField().cloneValue());
 			}
 		}
 		
@@ -253,15 +246,15 @@ public class DemiurgoObject {
 		for(Entry<String, ValueInterface> f : fields.entrySet()) {
 			if(f.getValue() instanceof InventoryValue) {
 				Inventory inv = (Inventory) ((InventoryValue)f.getValue()).getLocation();
-				if(!destroyInventories) {
+				if(!destroyInventories) { //Destroy all contents
 					for(DemiurgoObject o : inv.getObjects()) {
 						try {
 							o.moveTo(getRealLocation());
 						} catch (ObjectInsideItselfException e) {}
 					}
+				}
 				//destroy inventory
 				inv.destroyLocation();
-				}
 			}
 		}
 	

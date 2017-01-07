@@ -437,13 +437,13 @@ public class World {
 		return destroyedObjects;
 	}
 
-	public void markToDestroy(Inventory inv) {
+	public void markInventoryToDestroy(Inventory inv) {
 		destroyedInventories.add(inv);
 		destroyedLocations.add(inv);
 		locations.remove(inv.getId());
 	}
 	
-	public void markToDestroy(DemiurgoRoom room) {
+	public void markRoomToDestroy(DemiurgoRoom room) {
 		destroyedRooms.add(room);
 		destroyedLocations.add(room);
 		locations.remove(room.getId());

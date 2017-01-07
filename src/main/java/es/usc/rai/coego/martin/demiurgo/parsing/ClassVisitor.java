@@ -3,10 +3,14 @@ package es.usc.rai.coego.martin.demiurgo.parsing;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.Class_defContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.CodeContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.InventoryTypeContext;
+import es.usc.rai.coego.martin.demiurgo.coe.COEParser.MethodContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.New_objContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.Var_declContext;
+import es.usc.rai.coego.martin.demiurgo.exceptions.BadConstructorException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ClassFilenameMismatchException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.CodeClassInClassFileException;
+import es.usc.rai.coego.martin.demiurgo.scopes.ClassScope;
+import es.usc.rai.coego.martin.demiurgo.universe.ClassMethod;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass;
 import es.usc.rai.coego.martin.demiurgo.values.InventoryValue;
 import es.usc.rai.coego.martin.demiurgo.values.NullValue;
@@ -19,6 +23,10 @@ public class ClassVisitor extends ExecVisitor {
 	public ClassVisitor(DemiurgoClass cl) {
 		this.cl = cl;
 		sm = new ClassParsingScopeManager(cl);
+	}
+	
+	protected DemiurgoClass getCurrentClass() {
+		return cl;
 	}
 
 	/**
@@ -74,14 +82,53 @@ public class ClassVisitor extends ExecVisitor {
 
 		String varName = ctx.SYMBOL().getText().toLowerCase();
 		
-		if (ctx.operation() != null) {
-			ValueInterface v = visit(ctx.operation());
-			type.assign(v);
+		getCurrentClass().addField(varName, type, ctx.operation());
 
+		return new NullValue();
+	}
+	
+	/**
+	 * Defines a new method in the current class.
+	 * <p>
+	 * method : ( data_type SYMBOL ASSIGN )? metname=SYMBOL '(' args? ')' nl?
+	 * '{' code? '}' ;
+	 */
+	@Override
+	public ValueInterface visitMethod(MethodContext ctx) {
+		try {
+			// TODO: non-class methods?
+			DemiurgoClass curClass = ((ClassScope) getSM().getScope()).getCurrentClass();
+			String methodName = ctx.metname.getText().toLowerCase();
+			ClassMethod cm = new ClassMethod(ctx.code());
+
+			if (methodName.equals(curClass.getClassName())) { // CONSTRUCTOR
+				if (ctx.ASSIGN() != null) {
+					throw new BadConstructorException(ctx.ASSIGN().getSymbol().getLine(),
+							ctx.ASSIGN().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex());
+				}
+				curClass.setConstructor(cm); // TODO: at this moment only one
+												// constructor is allowed
+			} else {
+				// Return value
+				if (ctx.ASSIGN() != null) {
+					String returnName = ctx.SYMBOL(0).getText().toLowerCase();
+					ValueInterface t = visit(ctx.data_type());
+
+					cm.setReturnArgument(returnName, t);
+
+				}
+				curClass.addMethod(methodName, cm);
+			}
+
+			if (ctx.args() != null) {
+				// little fix to add args
+				((ClassScope) getSM().getScope()).setDefiningMethod(cm);
+				visit(ctx.args());
+				((ClassScope) getSM().getScope()).setDefiningMethod(null);
+			}
+		} catch (BadConstructorException e) {
+			throw new RuntimeException(e);
 		}
-
-		getSM().setVariable(varName, type);
-
 		return new NullValue();
 	}
 	

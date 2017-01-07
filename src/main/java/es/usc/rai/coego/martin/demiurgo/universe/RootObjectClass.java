@@ -28,13 +28,13 @@ public class RootObjectClass extends DemiurgoClass {
 	}
 
 	@Override
-	public Map<String, ValueInterface> getFields() {
+	public Map<String, DefaultField> getFields() {
 		return fields; //Doesn't look in parent class
 	}
 	
 	@Override
 	public ValueInterface getField(String fieldName) {
-		return fields.get(fieldName); //Doesn't look in parent class
+		return fields.get(fieldName).getField(); //Doesn't look in parent class
 	}
 
 	@Override
@@ -48,8 +48,8 @@ public class RootObjectClass extends DemiurgoClass {
 		jc.setCode(getCode());
 		jc.setClassName(getClassName());
 		List<JsonVariable> f = new ArrayList<>();
-		for(Entry<String, ValueInterface> e : fields.entrySet()) {
-			f.add(new JsonVariable(e.getKey(), e.getValue().getValueAsString(), e.getValue().getTypeName()));
+		for(Entry<String, DefaultField> e : fields.entrySet()) {
+			f.add(new JsonVariable(e.getKey(), e.getValue().getField().getValueAsString(), e.getValue().getField().getTypeName()));
 		}
 		jc.setFields(f);
 		

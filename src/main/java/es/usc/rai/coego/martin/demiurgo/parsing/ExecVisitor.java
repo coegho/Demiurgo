@@ -1,7 +1,10 @@
 package es.usc.rai.coego.martin.demiurgo.parsing;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import es.usc.rai.coego.martin.demiurgo.coe.COEBaseVisitor;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser;
@@ -27,7 +30,6 @@ import es.usc.rai.coego.martin.demiurgo.coe.COEParser.IntermediateVariableContex
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.ListContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.ListTypeContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.LogicContext;
-import es.usc.rai.coego.martin.demiurgo.coe.COEParser.MethodContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.MoveContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.MulDivContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.MultDiceContext;
@@ -45,7 +47,6 @@ import es.usc.rai.coego.martin.demiurgo.coe.COEParser.StringTypeContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.SymbolTypeContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.VariableOpContext;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ArgumentMismatchException;
-import es.usc.rai.coego.martin.demiurgo.exceptions.BadConstructorException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.CannotLoopException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ConstructorCalledAsMethodException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.IllegalOperationException;
@@ -67,11 +68,14 @@ import es.usc.rai.coego.martin.demiurgo.scopes.ObjectScope;
 import es.usc.rai.coego.martin.demiurgo.scopes.Scope;
 import es.usc.rai.coego.martin.demiurgo.universe.ClassMethod;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass.DefaultField;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoObject;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoRoom;
+import es.usc.rai.coego.martin.demiurgo.universe.Inventory;
 import es.usc.rai.coego.martin.demiurgo.universe.User;
 import es.usc.rai.coego.martin.demiurgo.values.FloatValue;
 import es.usc.rai.coego.martin.demiurgo.values.IntegerValue;
+import es.usc.rai.coego.martin.demiurgo.values.InventoryValue;
 import es.usc.rai.coego.martin.demiurgo.values.ListValue;
 import es.usc.rai.coego.martin.demiurgo.values.LocationValue;
 import es.usc.rai.coego.martin.demiurgo.values.NullValue;
@@ -282,7 +286,6 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 	public ValueInterface visitRoomType(RoomTypeContext ctx) {
 		return RoomValue.defaultValue(getSM().getCurrentWorld());
 	}
-	
 
 	/**
 	 * <p>
@@ -772,6 +775,30 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			}
 
 			DemiurgoObject obj = new DemiurgoObject(objClass, getSM().getCurrentRoom());
+			
+			Map<String, ValueInterface> fields = new HashMap<>();
+			for(Entry<String, DefaultField> e : objClass.getFields().entrySet()) {
+				if(e.getValue().getField() instanceof InventoryValue) {
+					Inventory inv = getSM().getCurrentWorld().createInventory(obj, e.getKey());
+					fields.put(e.getKey(), new InventoryValue(inv));
+				}
+				else {
+					ValueInterface f = e.getValue().getField().cloneValue();
+					
+					if(e.getValue().getInitialAssign() != null) {
+						ValueInterface v = visit(e.getValue().getInitialAssign());
+						if(!f.assign(v)) {
+							throw new IllegalOperationException(ctx.start.getLine(), ctx.start.getCharPositionInLine(), ctx.start.getStartIndex(), f.getTypeName(), v.getTypeName(), "=");
+						}
+					}
+					fields.put(e.getKey(), f);
+				}
+			}
+			ObjectValue v = new ObjectValue(obj);
+			v.setWritable(false);
+			fields.put("this", v);
+			
+			obj.setFields(fields);
 
 			if (objClass.getConstructor() != null) {
 				ClassMethod constructor = objClass.getConstructor();
@@ -782,7 +809,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			}
 
 			return new ObjectValue(obj);
-		} catch (ArgumentMismatchException e) {
+		} catch (ArgumentMismatchException | IllegalOperationException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -887,52 +914,6 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			getSM().popScope();
 
 		} catch (CannotLoopException e) {
-			throw new RuntimeException(e);
-		}
-		return new NullValue();
-	}
-
-
-	/**
-	 * Defines a new method in the current class.
-	 * <p>
-	 * method : ( data_type SYMBOL ASSIGN )? metname=SYMBOL '(' args? ')' nl?
-	 * '{' code? '}' ;
-	 */
-	@Override
-	public ValueInterface visitMethod(MethodContext ctx) {
-		try {
-			// TODO: non-class methods?
-			DemiurgoClass curClass = ((ClassScope) getSM().getScope()).getCurrentClass();
-			String methodName = ctx.metname.getText().toLowerCase();
-			ClassMethod cm = new ClassMethod(ctx.code());
-
-			if (methodName.equals(curClass.getClassName())) { // CONSTRUCTOR
-				if (ctx.ASSIGN() != null) {
-					throw new BadConstructorException(ctx.ASSIGN().getSymbol().getLine(),
-							ctx.ASSIGN().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex());
-				}
-				curClass.setConstructor(cm); // TODO: at this moment only one
-												// constructor is allowed
-			} else {
-				// Return value
-				if (ctx.ASSIGN() != null) {
-					String returnName = ctx.SYMBOL(0).getText().toLowerCase();
-					ValueInterface t = visit(ctx.data_type());
-
-					cm.setReturnArgument(returnName, t);
-
-				}
-				curClass.addMethod(methodName, cm);
-			}
-
-			if (ctx.args() != null) {
-				// little fix to add args
-				((ClassScope) getSM().getScope()).setDefiningMethod(cm);
-				visit(ctx.args());
-				((ClassScope) getSM().getScope()).setDefiningMethod(null);
-			}
-		} catch (BadConstructorException e) {
 			throw new RuntimeException(e);
 		}
 		return new NullValue();

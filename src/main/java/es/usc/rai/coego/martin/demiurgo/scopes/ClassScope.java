@@ -20,7 +20,7 @@ public class ClassScope extends Scope {
 
 	@Override
 	public void setVariable(String name, ValueInterface value) {
-		currentClass.addField(name, value);
+		currentClass.addField(name, value, null);
 	}
 
 	public DemiurgoClass getCurrentClass() {

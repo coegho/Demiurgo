@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import org.antlr.v4.runtime.tree.ParseTree;
+
 import es.usc.rai.coego.martin.demiurgo.json.JsonClass;
 import es.usc.rai.coego.martin.demiurgo.json.JsonMethod;
 import es.usc.rai.coego.martin.demiurgo.json.JsonVariable;
@@ -25,7 +27,7 @@ import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 public class DemiurgoClass implements Comparable<DemiurgoClass> {
 	protected String className;
 	protected DemiurgoClass parentClass;
-	protected Map<String, ValueInterface> fields;
+	protected Map<String, DefaultField> fields;
 	protected Map<String, ClassMethod> methods;
 	protected ClassMethod constructor;
 	protected World world;
@@ -54,12 +56,12 @@ public class DemiurgoClass implements Comparable<DemiurgoClass> {
 		return world;
 	}
 
-	public Map<String, ValueInterface> getRealFields() {
+	public Map<String, DefaultField> getRealFields() {
 		return fields;
 	}
 
-	public Map<String, ValueInterface> getFields() {
-		Map<String, ValueInterface> map = new HashMap<>();
+	public Map<String, DefaultField> getFields() {
+		Map<String, DefaultField> map = new HashMap<>();
 		map.putAll(parentClass.getFields());
 		map.putAll(fields);
 		return map;
@@ -68,14 +70,14 @@ public class DemiurgoClass implements Comparable<DemiurgoClass> {
 	public void setClassName(String className) {
 		this.className = className;
 	}
-
-	public void addField(String fieldName, ValueInterface defaultValue) {
-		fields.put(fieldName, defaultValue);
+	
+	public void addField(String fieldName, ValueInterface defaultValue, ParseTree initialAssign) {
+		fields.put(fieldName, new DefaultField(defaultValue, initialAssign));
 	}
 
 	public ValueInterface getField(String fieldName) {
 		if (fields.containsKey(fieldName))
-			return fields.get(fieldName);
+			return fields.get(fieldName).getField();
 		else
 			return parentClass.getField(fieldName);
 	}
@@ -139,12 +141,12 @@ public class DemiurgoClass implements Comparable<DemiurgoClass> {
 		jc.setClassName(getClassName());
 		jc.setParent(getParentClass().toJson());
 		List<JsonVariable> f = new ArrayList<>();
-		for (Entry<String, ValueInterface> e : getParentClass().getFields().entrySet()) {
-			f.add(new JsonVariable(e.getKey(), e.getValue().getValueAsString(), e.getValue().getTypeName()));
+		for (Entry<String, DefaultField> e : getParentClass().getFields().entrySet()) {
+			f.add(new JsonVariable(e.getKey(), e.getValue().getField().getValueAsString(), e.getValue().getField().getTypeName()));
 		}
-		for (Entry<String, ValueInterface> e : fields.entrySet()) {
+		for (Entry<String, DefaultField> e : fields.entrySet()) {
 			f.removeIf(v -> v.getName().equalsIgnoreCase(e.getKey()));
-			f.add(new JsonVariable(e.getKey(), e.getValue().getValueAsString(), e.getValue().getTypeName()));
+			f.add(new JsonVariable(e.getKey(), e.getValue().getField().getValueAsString(), e.getValue().getField().getTypeName()));
 		}
 		f.sort(Comparator.comparing(JsonVariable::getName));
 		jc.setFields(f);
@@ -193,5 +195,35 @@ public class DemiurgoClass implements Comparable<DemiurgoClass> {
 			o.destroyObject(false);
 		}
 		getWorld().markToDestroy(this);
+	}
+	
+	public class DefaultField {
+		private ParseTree node;
+		private ValueInterface value;
+		
+		public DefaultField(ValueInterface field, ParseTree initialAssign) {
+			this.value = field;
+			this.node = initialAssign;
+		}
+		
+		public DefaultField(ValueInterface field) {
+			this.value = field;
+		}
+
+		public ParseTree getInitialAssign() {
+			return node;
+		}
+		
+		public void setInitialAssign(ParseTree initialAssign) {
+			this.node = initialAssign;
+		}
+		
+		public ValueInterface getField() {
+			return value;
+		}
+		
+		public void setField(ValueInterface field) {
+			this.value = field;
+		}
 	}
 }

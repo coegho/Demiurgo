@@ -75,7 +75,10 @@ public class CodeVisitor extends ExecVisitor {
 	}
 	
 	public String getPrenarration() {
-		return prenarration.toString();
+		if(prenarration != null)
+			return prenarration.toString();
+		else
+			return null;
 	}
 	
 	public void appendPrenarration(String str) {

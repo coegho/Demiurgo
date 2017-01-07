@@ -200,6 +200,6 @@ public class DemiurgoRoom extends DemiurgoLocation implements Comparable<Demiurg
 			o.destroyObject(true);
 		}
 
-		getWorld().markToDestroy(this);
+		getWorld().markRoomToDestroy(this);
 	}
 }

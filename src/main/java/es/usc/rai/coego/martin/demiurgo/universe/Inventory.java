@@ -71,6 +71,6 @@ public class Inventory extends DemiurgoLocation {
 			o.destroyObject(true);
 		}
 
-		getWorld().markToDestroy(this);
+		getWorld().markInventoryToDestroy(this);
 	}
 }
