@@ -181,9 +181,9 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 	}
 
 	/**
-	 * <p>
 	 * Returns a list value found on the input.
-	 * </p>
+	 * <p>
+	 * '{' (operation (',' operation)*)? '}'
 	 */
 	@Override
 	public ValueInterface visitList(ListContext ctx) {
@@ -205,7 +205,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			}
 
 			ListValue lv = new ListValue(l);
-			lv.setDepth(depth);
+			lv.setDepth(depth+1);
 			lv.setInnerType(type);
 
 			return lv;
@@ -599,6 +599,12 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 
 			if (mobile instanceof ObjectValue && room instanceof LocationValue) {
 				((ObjectValue) mobile).getObj().moveTo(((LocationValue) room).getLocation());
+			} else if (mobile instanceof ListValue && (((ListValue) mobile).getInnerType() == ReturnValueTypes.OBJECT) && (((ListValue) mobile).getDepth() == 1)
+					&& room instanceof LocationValue) {
+				for(ValueInterface o : ((ListValue)mobile).getValue()) {
+					DemiurgoObject obj = ((ObjectValue)o).getObj();
+					obj.moveTo(((LocationValue) room).getLocation());
+				}
 			} else {
 				throw new WrongMovementException(ctx.MOVE().getSymbol().getLine(),
 						ctx.MOVE().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex(), mobile.getTypeName(),
@@ -767,20 +773,20 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			}
 
 			DemiurgoObject obj = new DemiurgoObject(objClass, getSM().getCurrentRoom());
-			
+
 			Map<String, ValueInterface> fields = new HashMap<>();
-			for(Entry<String, DefaultField> e : objClass.getFields().entrySet()) {
-				if(e.getValue().getField() instanceof InventoryValue) {
+			for (Entry<String, DefaultField> e : objClass.getFields().entrySet()) {
+				if (e.getValue().getField() instanceof InventoryValue) {
 					Inventory inv = getSM().getCurrentWorld().createInventory(obj, e.getKey());
 					fields.put(e.getKey(), new InventoryValue(inv));
-				}
-				else {
+				} else {
 					ValueInterface f = e.getValue().getField().cloneValue();
-					
-					if(e.getValue().getInitialAssign() != null) {
+
+					if (e.getValue().getInitialAssign() != null) {
 						ValueInterface v = visit(e.getValue().getInitialAssign());
-						if(!f.assign(v)) {
-							throw new IllegalOperationException(ctx.start.getLine(), ctx.start.getCharPositionInLine(), ctx.start.getStartIndex(), f.getTypeName(), v.getTypeName(), "=");
+						if (!f.assign(v)) {
+							throw new IllegalOperationException(ctx.start.getLine(), ctx.start.getCharPositionInLine(),
+									ctx.start.getStartIndex(), f.getTypeName(), v.getTypeName(), "=");
 						}
 					}
 					fields.put(e.getKey(), f);
@@ -789,7 +795,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			ObjectValue v = new ObjectValue(obj);
 			v.setWritable(false);
 			fields.put("this", v);
-			
+
 			obj.setFields(fields);
 
 			if (objClass.getConstructor() != null) {

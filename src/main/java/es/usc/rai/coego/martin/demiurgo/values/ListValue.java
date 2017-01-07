@@ -543,6 +543,13 @@ public class ListValue extends AbstractValue {
 	}
 	
 	@Override
+	public String getTypeName() {
+		StringBuilder sb = new StringBuilder(getInnerType().name()); 
+		for(int i=0;i<getDepth();i++) { sb.append("[]");}
+		return sb.toString();
+	}
+	
+	@Override
 	public String getValueAsString() {
 		List<String> strs = new ArrayList<>();
 		for(ValueInterface l : getValue()) {
