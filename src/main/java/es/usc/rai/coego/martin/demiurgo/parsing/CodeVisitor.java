@@ -52,21 +52,21 @@ public class CodeVisitor extends ExecVisitor {
 	 */
 	@Override
 	public ValueInterface visitVar_decl(Var_declContext ctx) {
-		ValueInterface type = visit(ctx.data_type());
-
-		String varName = ctx.SYMBOL().getText().toLowerCase();
-		if (ctx.operation() != null) {
-			ValueInterface v = visit(ctx.operation());
-			if (!type.assign(v)) {
-				throw new RuntimeException(new ValueCastException(ctx.ASSIGN().getSymbol().getLine(),
-						ctx.ASSIGN().getSymbol().getCharPositionInLine(), ctx.ASSIGN().getSymbol().getStartIndex(),
-						v.getTypeName(), type.getTypeName()));
+		try {
+			ValueInterface type = visit(ctx.data_type());
+	
+			String varName = ctx.SYMBOL().getText().toLowerCase();
+			if (ctx.operation() != null) {
+				ValueInterface v = visit(ctx.operation());
+				type.assign(v);
+	
 			}
-
+			getSM().setVariable(varName, type);
+	
+			return new NullValue();
+		} catch (ValueCastException e) {
+			throw new RuntimeException(e);
 		}
-		getSM().setVariable(varName, type);
-
-		return new NullValue();
 	}
 
 	/**

@@ -112,6 +112,6 @@ public class ObjectValue extends AbstractValue {
 	
 	@Override
 	public String getValueAsString() {
-		return "#"+Long.toString((getObj()!=null)?(getObj().getId()):null);
+		return ((getObj()!=null)?("#"+Long.toString(getObj().getId())):"null");
 	}
 }

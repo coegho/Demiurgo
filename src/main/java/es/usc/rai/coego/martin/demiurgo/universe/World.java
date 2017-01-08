@@ -15,7 +15,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import es.usc.rai.coego.martin.demiurgo.exceptions.ObjectInsideItselfException;
-import es.usc.rai.coego.martin.demiurgo.parsing.functions.SeqMethod;
+import es.usc.rai.coego.martin.demiurgo.parsing.functions.CountFunction;
+import es.usc.rai.coego.martin.demiurgo.parsing.functions.DestroyFunction;
+import es.usc.rai.coego.martin.demiurgo.parsing.functions.ReverseFunction;
+import es.usc.rai.coego.martin.demiurgo.parsing.functions.SeqFunction;
+import es.usc.rai.coego.martin.demiurgo.parsing.functions.SubListFunction;
+import es.usc.rai.coego.martin.demiurgo.parsing.functions.SumFunction;
+import es.usc.rai.coego.martin.demiurgo.parsing.functions.ZerosFunction;
 
 /**
  * Represents a world into the system.
@@ -35,7 +41,7 @@ public class World {
 	protected Map<Long, Action> actions;
 	protected RoomPath rooms;
 	protected List<Inventory> inventories;
-	protected DemiurgoClass rootClass;
+	protected RootObjectClass rootClass;
 	protected long currentObjId;
 	protected long currentLocationId;
 	protected long currentActionId;
@@ -75,7 +81,13 @@ public class World {
 	}
 
 	private void initBuiltinFunctions() {
-		methods.put("seq", new SeqMethod());
+		methods.put("seq", new SeqFunction());
+		methods.put("count", new CountFunction());
+		methods.put("destroy", new DestroyFunction(getRootClass()));
+		methods.put("reverse", new ReverseFunction());
+		methods.put("sub", new SubListFunction());
+		methods.put("sum", new SumFunction());
+		methods.put("zeros", new ZerosFunction());
 	}
 	
 	private void initLogger() throws SecurityException, IOException {
@@ -107,11 +119,11 @@ public class World {
 		classes.remove(className);
 	}
 
-	public DemiurgoClass getRootClass() {
+	public RootObjectClass getRootClass() {
 		return rootClass;
 	}
 
-	public void setRootClass(DemiurgoClass rootClass) {
+	public void setRootClass(RootObjectClass rootClass) {
 		this.rootClass = rootClass;
 	}
 

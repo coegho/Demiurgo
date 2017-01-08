@@ -36,7 +36,12 @@ variable : SYMBOL					#rootVariable
 
 function_call : (variable '.')? SYMBOL '(' (operation (',' operation)*)? ')' ;
 
-operation : function_call										#functionOp
+contents : variable '.' INVENTORY							#inventoryContents
+	| room '.' INVENTORY									#roomContents
+	;
+
+operation : contents										#contentsOp
+	| function_call											#functionOp
 	| '-' operation											#negative
 	| D operation											#dice
 	| operation D operation									#multDice

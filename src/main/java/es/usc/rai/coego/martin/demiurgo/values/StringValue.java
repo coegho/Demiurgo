@@ -1,5 +1,8 @@
 package es.usc.rai.coego.martin.demiurgo.values;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import es.usc.rai.coego.martin.demiurgo.exceptions.IllegalOperationException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ValueCastException;
 
@@ -91,6 +94,15 @@ public class StringValue extends AbstractValue {
 	@Override
 	public String castToString() throws ValueCastException {
 		return value;
+	}
+	
+	@Override
+	public List<ValueInterface> castToList() throws ValueCastException {
+		List<ValueInterface> output = new ArrayList<>();
+		for(char c : value.toCharArray()) {
+			output.add(new StringValue(String.valueOf(c)));
+		}
+		return output;
 	}
 
 	@Override

@@ -4,9 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 import es.usc.rai.coego.martin.demiurgo.values.ListValue;
-import es.usc.rai.coego.martin.demiurgo.values.StringValue;
+import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
 /**
  * 
@@ -26,21 +25,9 @@ public class ForScope extends LoopScope {
 		this.auxVar = auxVar;
 		originValues = new ArrayList<>();
 		for(ValueInterface v : origin.getValue()) {
-			originValues.add(v);
+			originValues.add(v.cloneValue());
 		}
 	}
-	
-	public ForScope(String auxVar, StringValue origin, Scope parent) {
-		super(parent);
-		variables = new HashMap<>();
-		this.auxVar = auxVar;
-		originValues = new ArrayList<>();
-		for(char c : origin.getValue().toCharArray()) {
-			String cc = Character.toString(c);
-			originValues.add(new StringValue(cc));
-		}
-	}
-	
 	
 	public String getAuxVar() {
 		return auxVar;

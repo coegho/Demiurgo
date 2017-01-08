@@ -188,7 +188,7 @@ public class DemiurgoRoom extends DemiurgoLocation implements Comparable<Demiurg
 	public void clearObjectReferences(DemiurgoObject obj) {
 		for(Entry<String, ValueInterface> e : variables.entrySet()) {
 			if(e.getValue() instanceof ObjectValue && ((ObjectValue)e.getValue()).getObj() == obj) {
-				variables.remove(e.getKey());
+				((ObjectValue)e.getValue()).setObj(null);
 			}
 		}
 	}

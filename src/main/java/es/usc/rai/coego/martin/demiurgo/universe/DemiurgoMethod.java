@@ -80,4 +80,12 @@ public abstract class DemiurgoMethod {
 		args.remove(retVarName);
 		return new JsonMethod(name, args, retVarName);
 	}
+	
+	public List<ValueInterface> getArgsValues() {
+		List<ValueInterface> output = new ArrayList<>();
+		for(String n : argNames) {
+			output.add(args.get(n));
+		}
+		return output;
+	}
 }

@@ -2,9 +2,9 @@ package es.usc.rai.coego.martin.demiurgo.values;
 
 
 import es.usc.rai.coego.martin.demiurgo.exceptions.IllegalOperationException;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoLocation;
 import es.usc.rai.coego.martin.demiurgo.universe.Inventory;
 import es.usc.rai.coego.martin.demiurgo.universe.World;
-import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoLocation;
 
 public class InventoryValue extends LocationValue {
 

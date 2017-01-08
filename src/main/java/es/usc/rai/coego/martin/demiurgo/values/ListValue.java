@@ -31,13 +31,26 @@ public class ListValue extends AbstractValue {
 
 	public ListValue(List<ValueInterface> value) {
 		this.value = value;
-		if(value.size() > 0) {
-			this.innerType = value.get(0).getInnerType();
-			this.listDepth = value.get(0).getDepth()+1;
-		}
-		else {
+		if (value.size() > 0) {
+			setInnerType(value.get(0).getInnerType());
+			setDepth(value.get(0).getDepth() + 1);
+			if(value.get(0).getInnerType() == ReturnValueTypes.OBJECT) {
+				classType = ((ObjectValue)value.get(0)).getObj().getUserClass();
+				
+			}
+		} else {
 			this.listDepth = 1;
 		}
+	}
+
+	/**
+	 * Completely empty list, useful for types only.
+	 * 
+	 * @return
+	 */
+	public static ListValue defaultValue() {
+		ListValue lv = new ListValue();
+		return lv;
 	}
 
 	public static ListValue defaultValue(ReturnValueTypes innerType, int depth) {
@@ -89,72 +102,100 @@ public class ListValue extends AbstractValue {
 
 	@Override
 	public ValueInterface add(ValueInterface another) throws IllegalOperationException {
-		return doListOperation(this, another, 0, (l,r) -> { return l.add(r); });
+		return doListOperation(this, another, 0, (l, r) -> {
+			return l.add(r);
+		});
 	}
 
 	@Override
 	public ValueInterface sub(ValueInterface another) throws IllegalOperationException {
-		return doListOperation(this, another, 0, (l,r) -> { return l.sub(r); });
+		return doListOperation(this, another, 0, (l, r) -> {
+			return l.sub(r);
+		});
 	}
 
 	@Override
 	public ValueInterface mul(ValueInterface another) throws IllegalOperationException {
-		return doListOperation(this, another, 0, (l,r) -> { return l.mul(r); });
+		return doListOperation(this, another, 0, (l, r) -> {
+			return l.mul(r);
+		});
 	}
 
 	@Override
 	public ValueInterface div(ValueInterface another) throws IllegalOperationException {
-		return doListOperation(this, another, 0, (l,r) -> { return l.div(r); });
+		return doListOperation(this, another, 0, (l, r) -> {
+			return l.div(r);
+		});
 	}
 
 	@Override
 	public ValueInterface negative() throws IllegalOperationException {
-		return doListOperation(this, 0, (v) -> { return v.negative(); });
+		return doListOperation(this, 0, (v) -> {
+			return v.negative();
+		});
 	}
 
 	@Override
 	public ValueInterface eq(ValueInterface another) throws IllegalOperationException {
-		return doListOperation(this, another, 0, (l,r) -> { return l.eq(r); });
+		return doListOperation(this, another, 0, (l, r) -> {
+			return l.eq(r);
+		});
 	}
 
 	@Override
 	public ValueInterface neq(ValueInterface another) throws IllegalOperationException {
-		return doListOperation(this, another, 0, (l,r) -> { return l.neq(r); });
+		return doListOperation(this, another, 0, (l, r) -> {
+			return l.neq(r);
+		});
 	}
 
 	@Override
 	public ValueInterface greq(ValueInterface another) throws IllegalOperationException {
-		return doListOperation(this, another, 0, (l,r) -> { return l.greq(r); });
+		return doListOperation(this, another, 0, (l, r) -> {
+			return l.greq(r);
+		});
 	}
 
 	@Override
 	public ValueInterface leseq(ValueInterface another) throws IllegalOperationException {
-		return doListOperation(this, another, 0, (l,r) -> { return l.leseq(r); });
+		return doListOperation(this, another, 0, (l, r) -> {
+			return l.leseq(r);
+		});
 	}
 
 	@Override
 	public ValueInterface great(ValueInterface another) throws IllegalOperationException {
-		return doListOperation(this, another, 0, (l,r) -> { return l.great(r); });
+		return doListOperation(this, another, 0, (l, r) -> {
+			return l.great(r);
+		});
 	}
 
 	@Override
 	public ValueInterface less(ValueInterface another) throws IllegalOperationException {
-		return doListOperation(this, another, 0, (l,r) -> { return l.less(r); });
+		return doListOperation(this, another, 0, (l, r) -> {
+			return l.less(r);
+		});
 	}
 
 	@Override
 	public ValueInterface and(ValueInterface another) throws IllegalOperationException {
-		return doListOperation(this, another, 0, (l,r) -> { return l.and(r); });
+		return doListOperation(this, another, 0, (l, r) -> {
+			return l.and(r);
+		});
 	}
 
 	@Override
 	public ValueInterface or(ValueInterface another) throws IllegalOperationException {
-		return doListOperation(this, another, 0, (l,r) -> { return l.or(r); });
+		return doListOperation(this, another, 0, (l, r) -> {
+			return l.or(r);
+		});
 	}
 
 	@Override
 	public ValueInterface dice() throws IllegalOperationException {
-		return doListOperation(this, 0, (l) -> { return l.dice(); });
+		return doListOperation(this, 0, (l) -> {
+			return l.dice();
+		});
 	}
 
 	/**
@@ -173,7 +214,9 @@ public class ListValue extends AbstractValue {
 	 */
 	@Override
 	public ValueInterface multDice(ValueInterface another) throws IllegalOperationException {
-		return doListOperation(this, another, 0, (l,r) -> { return l.multDice(r); });
+		return doListOperation(this, another, 0, (l, r) -> {
+			return l.multDice(r);
+		});
 	}
 
 	@Override
@@ -196,23 +239,46 @@ public class ListValue extends AbstractValue {
 	}
 
 	@Override
+	public List<ValueInterface> castToList() throws ValueCastException {
+		return ((ListValue) this.cloneValue()).getValue();
+	}
+
+	@Override
 	public boolean canAssign(ValueInterface newRValue) {
-		if (newRValue instanceof ListValue) {
-			ListValue lv = (ListValue) newRValue;
-			if (getInnerType() == ReturnValueTypes.OBJECT && !lv.classType.inheritFrom(classType))
+		try {
+			ListValue lv = new ListValue(newRValue.castToList());
+			if ((lv.getInnerType() == ReturnValueTypes.OBJECT) && (classType != null && !lv.classType.inheritFrom(classType)))
 				return false;
-			return getDepth() == lv.getDepth() && (lv.getInnerType() == null || getInnerType() == lv.getInnerType());
+			return (getDepth() == 0 || getDepth() == lv.getDepth())
+					&& (getInnerType() == null || lv.getValue().size() == 0 || getInnerType() == lv.getInnerType());
+		} catch (ValueCastException e) {
+			return false;
+		}
+	}
+
+	@Override
+	public boolean assign(ValueInterface newRValue) throws ValueCastException {
+		try {
+			if (canAssign(newRValue)) {
+				ListValue lv = new ListValue(newRValue.castToList());
+				this.setValue(lv.getValue());
+				this.setDepth(lv.getDepth());
+				this.setInnerType(lv.getInnerType());
+				this.setClassType(lv.getClassType());
+				return true;
+			}
+		} catch (ValueCastException e) {
+			throw e;
 		}
 		return false;
 	}
 
-	@Override
-	public boolean assign(ValueInterface newRValue) {
-		if (!canAssign(newRValue)) {
-			return false;
-		}
-		value = ((ListValue) newRValue).getValue();
-		return true;
+	public void setClassType(DemiurgoClass cl) {
+		this.classType = cl;
+	}
+
+	public DemiurgoClass getClassType() {
+		return classType;
 	}
 
 	@Override
@@ -220,14 +286,9 @@ public class ListValue extends AbstractValue {
 		return getValue().get(index);
 	}
 
-	public boolean set(int index, ValueInterface newRValue) {
+	/*public boolean set(int index, ValueInterface newRValue) {
 		return getValue().get(index).assign(newRValue);
-	}
-
-	@Override
-	public ValueInterface not() {
-		return new IntegerValue(isTrue() ? 0 : 1);
-	}
+	}*/
 
 	@Override
 	public boolean isTrue() {
@@ -240,7 +301,7 @@ public class ListValue extends AbstractValue {
 		for (ValueInterface x : getValue()) {
 			list.add(x.cloneValue());
 		}
-		return new ListValue(list, listDepth, innerType);
+		return new ListValue(list);
 	}
 
 	@Override
@@ -279,5 +340,4 @@ public class ListValue extends AbstractValue {
 		return "{" + String.join(", ", strs) + "}";
 	}
 
-	
 }

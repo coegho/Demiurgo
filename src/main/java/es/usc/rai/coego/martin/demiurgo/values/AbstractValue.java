@@ -127,6 +127,11 @@ public abstract class AbstractValue implements ValueInterface {
 	public String castToString() throws ValueCastException {
 		throw new ValueCastException(-1, -1, -1, getTypeName(), "STRING");
 	}
+	
+	@Override
+	public List<ValueInterface> castToList() throws ValueCastException {
+		throw new ValueCastException(-1, -1, -1, getTypeName(), "STRING");
+	}
 
 	@Override
 	public ValueInterface getFromIndex(int index) throws IllegalOperationException {

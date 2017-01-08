@@ -107,6 +107,20 @@ public interface COEVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitFunction_call(COEParser.Function_callContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code inventoryContents}
+	 * labeled alternative in {@link COEParser#contents}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitInventoryContents(COEParser.InventoryContentsContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code roomContents}
+	 * labeled alternative in {@link COEParser#contents}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitRoomContents(COEParser.RoomContentsContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code parensOp}
 	 * labeled alternative in {@link COEParser#operation}.
 	 * @param ctx the parse tree
@@ -260,6 +274,13 @@ public interface COEVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitLogic(COEParser.LogicContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code contentsOp}
+	 * labeled alternative in {@link COEParser#operation}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitContentsOp(COEParser.ContentsOpContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code assign}
 	 * labeled alternative in {@link COEParser#operation}.

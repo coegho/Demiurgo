@@ -27,6 +27,7 @@ import es.usc.rai.coego.martin.demiurgo.coe.COEParser.IndexContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.IntContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.IntTypeContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.IntermediateVariableContext;
+import es.usc.rai.coego.martin.demiurgo.coe.COEParser.InventoryContentsContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.ListContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.ListTypeContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.LogicContext;
@@ -37,6 +38,7 @@ import es.usc.rai.coego.martin.demiurgo.coe.COEParser.NegativeContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.New_objContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.OperationContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.ParensContext;
+import es.usc.rai.coego.martin.demiurgo.coe.COEParser.RoomContentsContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.RoomContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.RoomTypeContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.RootObjectContext;
@@ -61,7 +63,7 @@ import es.usc.rai.coego.martin.demiurgo.exceptions.UndefinedMethodException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.UnexistentUserException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ValueCastException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.WrongMovementException;
-import es.usc.rai.coego.martin.demiurgo.parsing.functions.BuiltinMethod;
+import es.usc.rai.coego.martin.demiurgo.parsing.functions.BuiltinFunction;
 import es.usc.rai.coego.martin.demiurgo.scopes.ForScope;
 import es.usc.rai.coego.martin.demiurgo.scopes.FunctionScope;
 import es.usc.rai.coego.martin.demiurgo.scopes.LoopScope;
@@ -206,7 +208,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 				}
 			}
 
-			ListValue lv = new ListValue(l, depth+1, type);
+			ListValue lv = new ListValue(l, depth + 1, type);
 
 			return lv;
 		} catch (IrregularListException ex) {
@@ -534,14 +536,8 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			ValueInterface left = visit(ctx.variable());
 			ValueInterface right = visit(ctx.operation());
 
-			if (left.canAssign(right)) {
-				left.assign(right);
-				return left.cloneValue();
-			} else {
-				throw new ValueCastException(ctx.ASSIGN().getSymbol().getLine(),
-						ctx.ASSIGN().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex(),
-						right.getTypeName(), left.getTypeName());
-			}
+			left.assign(right);
+			return left.cloneValue();
 		} catch (ValueCastException ex) {
 			throw new RuntimeException(ex);
 		}
@@ -614,8 +610,8 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			return new ListValue(leftList, left.getDepth(), left.getInnerType());
 		}
 		// concats at same depth
-		if(left.getDepth() == 0) {
-			//none of them are lists
+		if (left.getDepth() == 0) {
+			// none of them are lists
 			ListValue list = ListValue.defaultValue(left.getType(), 1);
 			list.getValue().add(left.cloneValue());
 			list.getValue().add(right.cloneValue());
@@ -623,7 +619,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 		}
 		// two lists
 		List<ValueInterface> leftList = ((ListValue) left.cloneValue()).getValue();
-		leftList.addAll(((ListValue)right.cloneValue()).getValue());
+		leftList.addAll(((ListValue) right.cloneValue()).getValue());
 		return new ListValue(leftList, left.getDepth(), left.getInnerType());
 	}
 
@@ -736,73 +732,77 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 	 */
 	@Override
 	public ValueInterface visitFunction_call(Function_callContext ctx) {
-		//Getting method
+		// Getting method
 		String methodName = ctx.SYMBOL().getText().toLowerCase();
 		DemiurgoMethod method;
 		Scope parentScope;
 		try {
-		if (ctx.variable() != null) {
-			ValueInterface v = visit(ctx.variable());
-			if (v instanceof ObjectValue) {
-				ObjectValue obj = (ObjectValue) v;
-				if (!obj.getObj().getUserClass().getClassName().equalsIgnoreCase(methodName)) {
-					method = obj.getObj().getUserClass().getMethod(methodName);
-					parentScope = new ObjectScope(obj.getObj()); 
+			if (ctx.variable() != null) {
+				ValueInterface v = visit(ctx.variable());
+				if (v instanceof ObjectValue) {
+					ObjectValue obj = (ObjectValue) v;
+					if (!obj.getObj().getUserClass().getClassName().equalsIgnoreCase(methodName)) {
+						method = obj.getObj().getUserClass().getMethod(methodName);
+						parentScope = new ObjectScope(obj.getObj());
+					} else {
+						// Cannot call a constructor method like an ordinary
+						// method
+						throw new ConstructorCalledLikeAMethodException(ctx.SYMBOL().getSymbol().getLine(),
+								ctx.SYMBOL().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex(),
+								methodName);
+					}
 				} else {
-					// Cannot call a constructor method like an ordinary method
-					throw new ConstructorCalledLikeAMethodException(ctx.SYMBOL().getSymbol().getLine(),
+					throw new NotAnObjectException(ctx.SYMBOL().getSymbol().getLine(),
 							ctx.SYMBOL().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex(),
-							methodName);
+							v.getTypeName());
 				}
-			} else {
-				throw new NotAnObjectException(ctx.SYMBOL().getSymbol().getLine(),
-						ctx.SYMBOL().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex(), v.getTypeName());
 			}
-		}
-		//function without object reference
-		//could be a local function or a world function (non-class)
-		else {
-			method = getSM().getMethod(methodName);
-			parentScope = getSM().getGlobalScope();
-		}
-		if(method == null) {
-			throw new UndefinedMethodException(ctx.SYMBOL().getSymbol().getLine(),
-					ctx.SYMBOL().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex(), methodName);
-		}
-		
-		//the method is selected
-		
-		// arguments
-		List<ValueInterface> args = new ArrayList<>();
-		for (OperationContext x : ctx.operation()) {
-			ValueInterface a = visit(x);
+			// function without object reference
+			// could be a local function or a world function (non-class)
+			else {
+				method = getSM().getMethod(methodName);
+				parentScope = getSM().getGlobalScope();
+			}
+			if (method == null) {
+				throw new UndefinedMethodException(ctx.SYMBOL().getSymbol().getLine(),
+						ctx.SYMBOL().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex(), methodName);
+			}
 
-			args.add(a);
-		}
+			// the method is selected
 
-		if (!method.checkArgs(args)) {
-			throw new ArgumentMismatchException(ctx.SYMBOL().getSymbol().getLine(),
-					ctx.SYMBOL().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex());
-		}
+			// arguments
+			List<ValueInterface> args = new ArrayList<>();
+			for (OperationContext x : ctx.operation()) {
+				ValueInterface a = visit(x);
 
-		// SETTING SCOPE
-		FunctionScope fs = new FunctionScope(method, args, parentScope);
-		getSM().pushScope(fs);
+				args.add(a);
+			}
 
-		if(method instanceof ClassMethod) {
-			((ClassMethod)method).execute(this);
-		} else if(method instanceof BuiltinMethod) {
-			((BuiltinMethod)method).execute(getSM().getScope());
-		}
+			if (!method.checkArgs(args)) {
+				throw new ArgumentMismatchException(ctx.SYMBOL().getSymbol().getLine(),
+						ctx.SYMBOL().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex(), args,
+						method.getArgsValues());
+			}
 
-		getSM().popScope();
+			// SETTING SCOPE
+			FunctionScope fs = new FunctionScope(method, args, parentScope);
+			getSM().pushScope(fs);
 
-		if (method.hasReturnArgument())
-			return fs.getReturnVariable();
-		else
-			return new NullValue();
-		
-		} catch(ConstructorCalledLikeAMethodException | UndefinedMethodException | ArgumentMismatchException | NotAnObjectException e) {
+			if (method instanceof ClassMethod) {
+				((ClassMethod) method).execute(this);
+			} else if (method instanceof BuiltinFunction) {
+				((BuiltinFunction) method).execute(getSM().getScope());
+			}
+
+			getSM().popScope();
+
+			if (method.hasReturnArgument())
+				return fs.getReturnVariable();
+			else
+				return new NullValue();
+
+		} catch (ConstructorCalledLikeAMethodException | UndefinedMethodException | ArgumentMismatchException
+				| NotAnObjectException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -820,19 +820,20 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			List<ValueInterface> args = new ArrayList<>();
 			for (OperationContext x : ctx.operation()) {
 				ValueInterface a = visit(x);
-
 				args.add(a);
 			}
 
 			if (objClass.getConstructor() == null && args.size() > 1) {
 				// Unnecessary arguments, there is no constructor
 				throw new ArgumentMismatchException(ctx.SYMBOL().getSymbol().getLine(),
-						ctx.SYMBOL().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex());
+						ctx.SYMBOL().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex(), args,
+						new ArrayList<>());
 			}
 			if (objClass.getConstructor() != null && !objClass.getConstructor().checkArgs(args)) {
 				// Wrong constructor arguments
 				throw new ArgumentMismatchException(ctx.SYMBOL().getSymbol().getLine(),
-						ctx.SYMBOL().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex());
+						ctx.SYMBOL().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex(), args,
+						objClass.getConstructor().getArgsValues());
 			}
 
 			DemiurgoObject obj = new DemiurgoObject(objClass, getSM().getCurrentRoom());
@@ -847,10 +848,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 
 					if (e.getValue().getInitialAssign() != null) {
 						ValueInterface v = visit(e.getValue().getInitialAssign());
-						if (!f.assign(v)) {
-							throw new IllegalOperationException(ctx.start.getLine(), ctx.start.getCharPositionInLine(),
-									ctx.start.getStartIndex(), f.getTypeName(), v.getTypeName(), "=");
-						}
+						f.assign(v);
 					}
 					fields.put(e.getKey(), f);
 				}
@@ -870,7 +868,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			}
 
 			return new ObjectValue(obj);
-		} catch (ArgumentMismatchException | IllegalOperationException e) {
+		} catch (ArgumentMismatchException | ValueCastException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -951,31 +949,26 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 
 			// SCOPE
 			Scope prevScope = getSM().getScope();
-			ForScope newScope;
-			if (origin instanceof ListValue)
-				newScope = new ForScope(auxVar, (ListValue) origin, prevScope);
-			else if (origin instanceof StringValue)
-				newScope = new ForScope(auxVar, (StringValue) origin, prevScope);
-			else
-				throw new CannotLoopException(ctx.FOR().getSymbol().getLine(),
-						ctx.FOR().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex(), origin.getTypeName());
-			// cannot walk other values
+			ForScope loopScope;
+			loopScope = new ForScope(auxVar, new ListValue(origin.castToList()), prevScope);
 
-			getSM().pushScope(newScope);
+			getSM().pushScope(loopScope);
 
-			for (ValueInterface v : newScope.getOriginValues()) {
-				ValueInterface vv = v.cloneValue();
+			for (ValueInterface v : loopScope.getOriginValues()) {
 				v.setWritable(false);
-				getSM().setVariable(auxVar, vv);
+				getSM().setVariable(auxVar, v);
 				if (ctx.code() != null) {
 					visit(ctx.code());
+				} else if (ctx.line() != null) {
+					visit(ctx.line());
 				}
 			}
 
 			getSM().popScope();
 
-		} catch (CannotLoopException e) {
-			throw new RuntimeException(e);
+		} catch (ValueCastException e) {
+			throw new RuntimeException(new CannotLoopException(ctx.FOR().getSymbol().getLine(),
+					ctx.FOR().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex(), e.getType()));
 		}
 		return new NullValue();
 	}
@@ -1042,6 +1035,38 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			return new NullValue();
 		} catch (UnexistentUserException e) {
 			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * <p>
+	 * variable '.' INVENTORY
+	 */
+	@Override
+	public ValueInterface visitInventoryContents(InventoryContentsContext ctx) {
+		ValueInterface v = visit(ctx.variable());
+		if (v instanceof InventoryValue) {
+			return new ListValue(((InventoryValue) v).getContents());
+		} else {
+			throw new RuntimeException(new IllegalOperationException(ctx.INVENTORY().getSymbol().getLine(),
+					ctx.INVENTORY().getSymbol().getCharPositionInLine(), ctx.INVENTORY().getSymbol().getStartIndex(),
+					v.getTypeName(), ReturnValueTypes.INVENTORY.name(), "%"));
+		}
+	}
+
+	/**
+	 * <p>
+	 * room '.' INVENTORY
+	 */
+	@Override
+	public ValueInterface visitRoomContents(RoomContentsContext ctx) {
+		ValueInterface v = visit(ctx.room());
+		if (v instanceof RoomValue) {
+			return new ListValue(((RoomValue) v).getContents());
+		} else {
+			throw new RuntimeException(new IllegalOperationException(ctx.INVENTORY().getSymbol().getLine(),
+					ctx.INVENTORY().getSymbol().getCharPositionInLine(), ctx.INVENTORY().getSymbol().getStartIndex(),
+					v.getTypeName(), ReturnValueTypes.ROOM.name(), "%"));
 		}
 	}
 

@@ -1,6 +1,7 @@
 package es.usc.rai.coego.martin.demiurgo.values;
 
 import java.io.Serializable;
+import java.util.List;
 
 import es.usc.rai.coego.martin.demiurgo.exceptions.IllegalOperationException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ValueCastException;
@@ -199,6 +200,9 @@ public interface ValueInterface extends Serializable {
 	 */
 	public String castToString() throws ValueCastException;
 
+
+	public List<ValueInterface> castToList() throws ValueCastException;
+	
 	/**
 	 * Returns true if the value of this object counts as true, false otherwise.
 	 * 
@@ -222,8 +226,9 @@ public interface ValueInterface extends Serializable {
 	 * 
 	 * @param value
 	 * @return False if there is not cast operation.
+	 * @throws ValueCastException 
 	 */
-	public boolean assign(ValueInterface newRValue);
+	public boolean assign(ValueInterface newRValue) throws ValueCastException;
 
 	/**
 	 * Returns the value specified by index from a list.

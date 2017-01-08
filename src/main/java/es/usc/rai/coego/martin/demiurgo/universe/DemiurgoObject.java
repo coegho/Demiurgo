@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import es.usc.rai.coego.martin.demiurgo.exceptions.ObjectInsideItselfException;
+import es.usc.rai.coego.martin.demiurgo.exceptions.ValueCastException;
 import es.usc.rai.coego.martin.demiurgo.json.JsonInventory;
 import es.usc.rai.coego.martin.demiurgo.json.JsonMethod;
 import es.usc.rai.coego.martin.demiurgo.json.JsonObject;
@@ -197,7 +198,12 @@ public class DemiurgoObject {
 																			// type
 						ValueInterface n = e.getValue().getField().cloneValue(); // new
 																		// variable
-						n.assign(fields.get(e.getKey()));
+						try {
+							n.assign(fields.get(e.getKey()));
+						} catch (ValueCastException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
 						fields.put(e.getKey(), n);
 					} else { // incompatible type, any previous value will be lost
 						ownClass.getWorld().getLogger().info("Object #" + id + " update field " + e.getKey()

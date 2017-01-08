@@ -1,6 +1,11 @@
 package es.usc.rai.coego.martin.demiurgo.values;
 
 import es.usc.rai.coego.martin.demiurgo.universe.World;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoLocation;
 
 public abstract class LocationValue extends AbstractValue {
@@ -13,23 +18,21 @@ public abstract class LocationValue extends AbstractValue {
 
 	public LocationValue(DemiurgoLocation location) {
 		this.location = location;
-		if(location != null)
+		if (location != null)
 			loc_id = location.getId();
 		else
 			loc_id = -1;
 	}
 
-
 	public DemiurgoLocation getLocation() {
 		return location;
 	}
 
-	
 	@Override
 	public boolean assign(ValueInterface newRValue) {
-		if(canAssign(newRValue)) {
-			if(((LocationValue)newRValue).getLocation() != null) {
-				location = ((LocationValue)newRValue).getLocation();
+		if (canAssign(newRValue)) {
+			if (((LocationValue) newRValue).getLocation() != null) {
+				location = ((LocationValue) newRValue).getLocation();
 				loc_id = location.getId();
 			}
 			return true;
@@ -37,20 +40,24 @@ public abstract class LocationValue extends AbstractValue {
 		return false;
 	}
 
-	
 	@Override
 	public String toString() {
 		return "LOC/" + location.getId();
 	}
-	
+
 	@Override
 	public ValueInterface rebuild(World world) {
 		this.location = world.getLocation(loc_id);
 		return this;
 	}
-	
+
 	@Override
 	public String getValueAsString() {
 		return Long.toString(getLocation().getId());
+	}
+
+	public List<ValueInterface> getContents() {
+		return new ArrayList<>(
+				getLocation().getObjects().stream().map(o -> new ObjectValue(o)).collect(Collectors.toList()));
 	}
 }
