@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import es.usc.rai.coego.martin.demiurgo.universe.ClassMethod;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoMethod;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
 /**
@@ -16,16 +16,14 @@ import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
  *
  */
 public class FunctionScope extends Scope {
-	protected ClassMethod method;
-	protected ObjectScope parent;
+	protected DemiurgoMethod method;
+	protected Scope parent;
 	protected Map<String, ValueInterface> variables;
-	protected String retVarName;
 	
-	public FunctionScope(ClassMethod method,
-			List<ValueInterface> args, String retVarName, ObjectScope parent) {
+	public FunctionScope(DemiurgoMethod method,
+			List<ValueInterface> args, Scope parent) {
 		this.method = method;
 		this.parent = parent;
-		this.retVarName = retVarName;
 		this.variables = new HashMap<>();
 		for(int i = 0; i<args.size(); i++) {
 			String argName = method.getArgumentName(i);
@@ -52,11 +50,16 @@ public class FunctionScope extends Scope {
 		
 	}
 
-	public ObjectScope getParent() {
+	public Scope getParent() {
 		return parent;
 	}
 
 	public ValueInterface getReturnVariable() {
-		return variables.get(retVarName);
+		return variables.get(method.getReturnArgumentName());
+	}
+
+	@Override
+	public DemiurgoMethod getMethod(String methodName) {
+		return parent.getMethod(methodName);
 	}
 }

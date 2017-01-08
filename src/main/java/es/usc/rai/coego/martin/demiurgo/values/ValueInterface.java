@@ -280,16 +280,6 @@ public interface ValueInterface extends Serializable {
 	public ValueInterface rebuild(World world);
 
 	/**
-	 * Returns an array of 3 strings that codifies the value of this object.
-	 * @deprecated Use getTypeName() and getValueAsString instead.
-	 * 
-	 * @return First string specifies type; 2º string specifies additional type
-	 *         info (like class name on objects); 3º string is the real value.
-	 */
-	@Deprecated
-	public String[] getValueCodes();
-
-	/**
 	 * Returns the value as a string. Useful for send it via JSON.
 	 * 
 	 * @return The value as a string

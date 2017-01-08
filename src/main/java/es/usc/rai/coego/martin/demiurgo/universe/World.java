@@ -15,6 +15,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import es.usc.rai.coego.martin.demiurgo.exceptions.ObjectInsideItselfException;
+import es.usc.rai.coego.martin.demiurgo.parsing.functions.SeqMethod;
 
 /**
  * Represents a world into the system.
@@ -44,6 +45,7 @@ public class World {
 	private List<DemiurgoLocation> destroyedLocations;
 	private List<DemiurgoClass> destroyedClasses;
 	private List<DemiurgoRoom> destroyedRooms;
+	protected Map<String, DemiurgoMethod> methods;
 
 	public World(String name) throws SecurityException, IOException {
 		this.name = name;
@@ -65,7 +67,18 @@ public class World {
 		rootClass = new RootObjectClass(this);
 		pendingRooms = new ArrayList<>();
 		classes.put("object", rootClass);
+		methods = new HashMap<>();
 		
+		initLogger();
+		
+		initBuiltinFunctions();
+	}
+
+	private void initBuiltinFunctions() {
+		methods.put("seq", new SeqMethod());
+	}
+	
+	private void initLogger() throws SecurityException, IOException {
 		worldLogger = Logger.getLogger(World.class.getName() + "." + name);
 		worldLogger.setLevel(Level.INFO);
 		worldLogger.setUseParentHandlers(false);
@@ -470,5 +483,13 @@ public class World {
 
 	public List<DemiurgoRoom> getDestroyedRooms() {
 		return destroyedRooms;
+	}
+
+	public Map<String, DemiurgoMethod> getMethods() {
+		return methods;
+	}
+	
+	public DemiurgoMethod getMethod(String methodName) {
+		return methods.get(methodName);
 	}
 }

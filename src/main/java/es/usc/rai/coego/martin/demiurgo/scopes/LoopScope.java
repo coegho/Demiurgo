@@ -3,6 +3,7 @@ package es.usc.rai.coego.martin.demiurgo.scopes;
 import java.util.HashMap;
 import java.util.Map;
 
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoMethod;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
 /**
@@ -35,6 +36,11 @@ public class LoopScope extends Scope {
 	@Override
 	public void setVariable(String name, ValueInterface value) {
 		variables.put(name, value);
+	}
+
+	@Override
+	public DemiurgoMethod getMethod(String methodName) {
+		return parent.getMethod(methodName);
 	}
 
 }

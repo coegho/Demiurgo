@@ -33,60 +33,62 @@ public class FloatValue extends AbstractValue {
 	}
 
 	@Override
-	public ValueInterface add(ValueInterface other) throws IllegalOperationException {
-		if (other instanceof IntegerValue) {
-			return new FloatValue(getValue() + ((IntegerValue) other).getValue());
+	public ValueInterface add(ValueInterface another) throws IllegalOperationException {
+		if (another instanceof IntegerValue) {
+			return new FloatValue(getValue() + ((IntegerValue) another).getValue());
 		}
-		if (other instanceof FloatValue) {
-			return new FloatValue((float) getValue() + ((FloatValue) other).getValue());
+		if (another instanceof FloatValue) {
+			return new FloatValue((float) getValue() + ((FloatValue) another).getValue());
 		}
-		if (other instanceof StringValue) {
-			return new StringValue(Float.toString(getValue()) + ((StringValue) other).getValue());
+		if (another instanceof StringValue) {
+			return new StringValue(Float.toString(getValue()) + ((StringValue) another).getValue());
 		}
-		if (other instanceof ListValue) {
-			return other.add(this);
+		if (another instanceof ListValue) {
+			return doListOperation(this, another, 0, (l,r) -> { return l.add(r); });
 		}
-		throw new IllegalOperationException(-1, -1, -1, getTypeName(), other.getTypeName(), "+");
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), another.getTypeName(), "+");
 	}
 
 	@Override
-	public ValueInterface sub(ValueInterface other) throws IllegalOperationException {
-		if (other instanceof IntegerValue || other instanceof FloatValue || other instanceof ListValue) {
-			return negative().add(other);
+	public ValueInterface sub(ValueInterface another) throws IllegalOperationException {
+		if (another instanceof IntegerValue) {
+			return new FloatValue(getValue() - ((IntegerValue) another).getValue());
 		}
-		throw new IllegalOperationException(-1, -1, -1, getTypeName(), other.getTypeName(), "-");
+		if (another instanceof FloatValue) {
+			return new FloatValue((float) getValue() - ((FloatValue) another).getValue());
+		}
+		if (another instanceof ListValue) {
+			return doListOperation(this, another, 0, (l,r) -> { return l.sub(r); });
+		}
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), another.getTypeName(), "-");
 	}
 
 	@Override
-	public ValueInterface mul(ValueInterface other) throws IllegalOperationException {
-		if (other instanceof IntegerValue) {
-			return new FloatValue(getValue() * ((IntegerValue) other).getValue());
+	public ValueInterface mul(ValueInterface another) throws IllegalOperationException {
+		if (another instanceof IntegerValue) {
+			return new FloatValue(getValue() * ((IntegerValue) another).getValue());
 		}
-		if (other instanceof FloatValue) {
-			return new FloatValue((float) getValue() * ((FloatValue) other).getValue());
+		if (another instanceof FloatValue) {
+			return new FloatValue((float) getValue() * ((FloatValue) another).getValue());
 		}
-		if (other instanceof ListValue) {
-			return other.mul(this);
+		if (another instanceof ListValue) {
+			return doListOperation(this, another, 0, (l,r) -> { return l.mul(r); });
 		}
-		throw new IllegalOperationException(-1, -1, -1, getTypeName(), other.getTypeName(), "*");
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), another.getTypeName(), "*");
 	}
 
 	@Override
-	public ValueInterface div(ValueInterface other) throws IllegalOperationException {
-		if (other instanceof IntegerValue) {
-			return new FloatValue(getValue() / ((IntegerValue) other).getValue());
+	public ValueInterface div(ValueInterface another) throws IllegalOperationException {
+		if (another instanceof IntegerValue) {
+			return new FloatValue(getValue() / ((IntegerValue) another).getValue());
 		}
-		if (other instanceof FloatValue) {
-			return new FloatValue((float) getValue() / ((FloatValue) other).getValue());
+		if (another instanceof FloatValue) {
+			return new FloatValue((float) getValue() / ((FloatValue) another).getValue());
 		}
-		if (other instanceof ListValue) {
-			ListValue av = (ListValue) other.cloneValue();
-			for (int i = 0; i < av.getValue().size(); i++) {
-				av.getValue().set(i, div(av.getValue().get(i)));
-			}
-			return av;
+		if (another instanceof ListValue) {
+			return doListOperation(this, another, 0, (l,r) -> { return l.div(r); });
 		}
-		throw new IllegalOperationException(-1, -1, -1, getTypeName(), other.getTypeName(), "/");
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), another.getTypeName(), "/");
 	}
 
 	@Override
@@ -95,87 +97,87 @@ public class FloatValue extends AbstractValue {
 	}
 
 	@Override
-	public ValueInterface eq(ValueInterface other) throws IllegalOperationException {
-		if (other instanceof IntegerValue) {
-			return new IntegerValue((getValue() == ((IntegerValue) other).getValue()) ? 1 : 0);
+	public ValueInterface eq(ValueInterface another) throws IllegalOperationException {
+		if (another instanceof IntegerValue) {
+			return new IntegerValue(getValue() == ((IntegerValue) another).getValue());
 		}
-		if (other instanceof FloatValue) {
-			return new IntegerValue((getValue() == ((FloatValue) other).getValue()) ? 1 : 0);
+		if (another instanceof FloatValue) {
+			return new IntegerValue(getValue() == ((FloatValue) another).getValue());
 		}
-		if (other instanceof ListValue) {
-			return other.eq(this);
+		if (another instanceof ListValue) {
+			return doListOperation(this, another, 0, (l,r) -> { return l.eq(r); });
 		}
-		throw new IllegalOperationException(-1, -1, -1, getTypeName(), other.getTypeName(), "==");
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), another.getTypeName(), "==");
 	}
 
 	@Override
-	public ValueInterface neq(ValueInterface other) throws IllegalOperationException {
-		if (other instanceof IntegerValue) {
-			return new IntegerValue((getValue() != ((IntegerValue) other).getValue()) ? 1 : 0);
+	public ValueInterface neq(ValueInterface another) throws IllegalOperationException {
+		if (another instanceof IntegerValue) {
+			return new IntegerValue(getValue() != ((IntegerValue) another).getValue());
 		}
-		if (other instanceof FloatValue) {
-			return new IntegerValue(((float) getValue() != ((FloatValue) other).getValue()) ? 1 : 0);
+		if (another instanceof FloatValue) {
+			return new IntegerValue((float) getValue() != ((FloatValue) another).getValue());
 		}
-		if (other instanceof ListValue) {
-			return other.neq(this);
+		if (another instanceof ListValue) {
+			return doListOperation(this, another, 0, (l,r) -> { return l.neq(r); });
 		}
-		throw new IllegalOperationException(-1, -1, -1, getTypeName(), other.getTypeName(), "!=");
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), another.getTypeName(), "!=");
 	}
 
 	@Override
-	public ValueInterface greq(ValueInterface other) throws IllegalOperationException {
-		if (other instanceof IntegerValue) {
-			return new IntegerValue((getValue() >= ((IntegerValue) other).getValue()) ? 1 : 0);
+	public ValueInterface greq(ValueInterface another) throws IllegalOperationException {
+		if (another instanceof IntegerValue) {
+			return new IntegerValue(getValue() >= ((IntegerValue) another).getValue());
 		}
-		if (other instanceof FloatValue) {
-			return new IntegerValue((getValue() >= ((FloatValue) other).getValue()) ? 1 : 0);
+		if (another instanceof FloatValue) {
+			return new IntegerValue(getValue() >= ((FloatValue) another).getValue());
 		}
-		if (other instanceof ListValue) {
-			return other.less(this);
+		if (another instanceof ListValue) {
+			return doListOperation(this, another, 0, (l,r) -> { return l.greq(r); });
 		}
-		throw new IllegalOperationException(-1, -1, -1, getTypeName(), other.getTypeName(), ">=");
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), another.getTypeName(), ">=");
 	}
 
 	@Override
-	public ValueInterface leseq(ValueInterface other) throws IllegalOperationException {
-		if (other instanceof IntegerValue) {
-			return new IntegerValue((getValue() <= ((IntegerValue) other).getValue()) ? 1 : 0);
+	public ValueInterface leseq(ValueInterface another) throws IllegalOperationException {
+		if (another instanceof IntegerValue) {
+			return new IntegerValue(getValue() <= ((IntegerValue) another).getValue());
 		}
-		if (other instanceof FloatValue) {
-			return new IntegerValue((getValue() <= ((FloatValue) other).getValue()) ? 1 : 0);
+		if (another instanceof FloatValue) {
+			return new IntegerValue(getValue() <= ((FloatValue) another).getValue());
 		}
-		if (other instanceof ListValue) {
-			return other.great(this);
+		if (another instanceof ListValue) {
+			return doListOperation(this, another, 0, (l,r) -> { return l.leseq(r); });
 		}
-		throw new IllegalOperationException(-1, -1, -1, getTypeName(), other.getTypeName(), "<=");
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), another.getTypeName(), "<=");
 	}
 
 	@Override
-	public ValueInterface great(ValueInterface other) throws IllegalOperationException {
-		if (other instanceof IntegerValue) {
-			return new IntegerValue((getValue() > ((IntegerValue) other).getValue()) ? 1 : 0);
+	public ValueInterface great(ValueInterface another) throws IllegalOperationException {
+		if (another instanceof IntegerValue) {
+			return new IntegerValue(getValue() > ((IntegerValue) another).getValue());
 		}
-		if (other instanceof FloatValue) {
-			return new IntegerValue((getValue() > ((FloatValue) other).getValue()) ? 1 : 0);
+		if (another instanceof FloatValue) {
+			return new IntegerValue(getValue() > ((FloatValue) another).getValue());
 		}
-		if (other instanceof ListValue) {
-			return other.leseq(this);
+		if (another instanceof ListValue) {
+			return doListOperation(this, another, 0, (l,r) -> { return l.great(r); });
 		}
-		throw new IllegalOperationException(-1, -1, -1, getTypeName(), other.getTypeName(), ">");
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), another.getTypeName(), ">");
 	}
 
 	@Override
-	public ValueInterface less(ValueInterface other) throws IllegalOperationException {
-		if (other instanceof IntegerValue) {
-			return new IntegerValue((getValue() < ((IntegerValue) other).getValue()) ? 1 : 0);
+	public ValueInterface less(ValueInterface another) throws IllegalOperationException {
+		if (another instanceof IntegerValue) {
+			return new IntegerValue(getValue() < ((IntegerValue) another).getValue());
 		}
-		if (other instanceof FloatValue) {
-			return new IntegerValue((getValue() < ((FloatValue) other).getValue()) ? 1 : 0);
+		if (another instanceof FloatValue) {
+			return new IntegerValue(getValue() < ((FloatValue) another).getValue());
 		}
-		if (other instanceof ListValue) {
-			return other.greq(this);
+		if (another instanceof ListValue) {
+			return doListOperation(this, another, 0, (l,r) -> { return l.less(r); });
 		}
-		throw new IllegalOperationException(-1, -1, -1, getTypeName(), other.getTypeName(), "<");
+		throw new IllegalOperationException(-1, -1, -1, getTypeName(), another.getTypeName(), "<");
 	}
 
 	
@@ -237,12 +239,6 @@ public class FloatValue extends AbstractValue {
 		return "FLOAT/" + getValue() + "}";
 	}
 	
-	@Override
-	public String[] getValueCodes() {
-		String[] r = super.getValueCodes();
-		r[2] = Float.toString(value);
-		return r;
-	}
 
 	@Override
 	public String getValueAsString() {

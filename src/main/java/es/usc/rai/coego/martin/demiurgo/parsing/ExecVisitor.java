@@ -9,7 +9,6 @@ import java.util.Map.Entry;
 import es.usc.rai.coego.martin.demiurgo.coe.COEBaseVisitor;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.AddSubContext;
-import es.usc.rai.coego.martin.demiurgo.coe.COEParser.ArgsContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.AssignContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.BoolContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.CompareContext;
@@ -49,7 +48,7 @@ import es.usc.rai.coego.martin.demiurgo.coe.COEParser.SymbolTypeContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.VariableOpContext;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ArgumentMismatchException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.CannotLoopException;
-import es.usc.rai.coego.martin.demiurgo.exceptions.ConstructorCalledAsMethodException;
+import es.usc.rai.coego.martin.demiurgo.exceptions.ConstructorCalledLikeAMethodException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.IllegalOperationException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.IrregularListException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.NotAListException;
@@ -58,10 +57,11 @@ import es.usc.rai.coego.martin.demiurgo.exceptions.ObjectInsideItselfException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.RoomNotFoundException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.UndeclaredVariableException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.UndefinedClassException;
+import es.usc.rai.coego.martin.demiurgo.exceptions.UndefinedMethodException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.UnexistentUserException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ValueCastException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.WrongMovementException;
-import es.usc.rai.coego.martin.demiurgo.scopes.ClassScope;
+import es.usc.rai.coego.martin.demiurgo.parsing.functions.BuiltinMethod;
 import es.usc.rai.coego.martin.demiurgo.scopes.ForScope;
 import es.usc.rai.coego.martin.demiurgo.scopes.FunctionScope;
 import es.usc.rai.coego.martin.demiurgo.scopes.LoopScope;
@@ -70,6 +70,7 @@ import es.usc.rai.coego.martin.demiurgo.scopes.Scope;
 import es.usc.rai.coego.martin.demiurgo.universe.ClassMethod;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass.DefaultField;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoMethod;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoObject;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoRoom;
 import es.usc.rai.coego.martin.demiurgo.universe.Inventory;
@@ -735,54 +736,75 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 	 */
 	@Override
 	public ValueInterface visitFunction_call(Function_callContext ctx) {
-		ValueInterface v = visit(ctx.variable());
+		//Getting method
+		String methodName = ctx.SYMBOL().getText().toLowerCase();
+		DemiurgoMethod method;
+		Scope parentScope;
 		try {
-			String methodName = ctx.SYMBOL().getText().toLowerCase();
-			if (ctx.variable() != null) {
-				if (v instanceof ObjectValue) {
-					ObjectValue obj = (ObjectValue) v;
-
-					if (obj.getObj().getUserClass().getClassName().equalsIgnoreCase(methodName)) {
-						// Constructor
-						throw new ConstructorCalledAsMethodException(ctx.SYMBOL().getSymbol().getLine(),
-								ctx.SYMBOL().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex(),
-								methodName);
-					}
-					// arguments
-					List<ValueInterface> args = new ArrayList<>();
-					for (OperationContext x : ctx.operation()) {
-						ValueInterface a = visit(x);
-
-						args.add(a);
-					}
-
-					ClassMethod m = obj.getObj().getUserClass().getMethod(methodName);
-
-					if (!m.checkArgs(args)) {
-						throw new ArgumentMismatchException(ctx.SYMBOL().getSymbol().getLine(),
-								ctx.SYMBOL().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex());
-					}
-
-					// SETTING SCOPE
-					ObjectScope os = new ObjectScope(obj.getObj());
-					FunctionScope fs = new FunctionScope(m, args, m.getReturnArgumentName(), os);
-					getSM().pushScope(fs);
-
-					visit(m.getNode());
-
-					getSM().popScope();
-
-					if (m.hasReturnArgument())
-						return fs.getReturnVariable();
+		if (ctx.variable() != null) {
+			ValueInterface v = visit(ctx.variable());
+			if (v instanceof ObjectValue) {
+				ObjectValue obj = (ObjectValue) v;
+				if (!obj.getObj().getUserClass().getClassName().equalsIgnoreCase(methodName)) {
+					method = obj.getObj().getUserClass().getMethod(methodName);
+					parentScope = new ObjectScope(obj.getObj()); 
+				} else {
+					// Cannot call a constructor method like an ordinary method
+					throw new ConstructorCalledLikeAMethodException(ctx.SYMBOL().getSymbol().getLine(),
+							ctx.SYMBOL().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex(),
+							methodName);
 				}
 			} else {
-				// TODO: non-class functions
-				// TODO: Calling method inside of another method
+				throw new NotAnObjectException(ctx.SYMBOL().getSymbol().getLine(),
+						ctx.SYMBOL().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex(), v.getTypeName());
 			}
-		} catch (ArgumentMismatchException | ConstructorCalledAsMethodException e) {
+		}
+		//function without object reference
+		//could be a local function or a world function (non-class)
+		else {
+			method = getSM().getMethod(methodName);
+			parentScope = getSM().getGlobalScope();
+		}
+		if(method == null) {
+			throw new UndefinedMethodException(ctx.SYMBOL().getSymbol().getLine(),
+					ctx.SYMBOL().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex(), methodName);
+		}
+		
+		//the method is selected
+		
+		// arguments
+		List<ValueInterface> args = new ArrayList<>();
+		for (OperationContext x : ctx.operation()) {
+			ValueInterface a = visit(x);
+
+			args.add(a);
+		}
+
+		if (!method.checkArgs(args)) {
+			throw new ArgumentMismatchException(ctx.SYMBOL().getSymbol().getLine(),
+					ctx.SYMBOL().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex());
+		}
+
+		// SETTING SCOPE
+		FunctionScope fs = new FunctionScope(method, args, parentScope);
+		getSM().pushScope(fs);
+
+		if(method instanceof ClassMethod) {
+			((ClassMethod)method).execute(this);
+		} else if(method instanceof BuiltinMethod) {
+			((BuiltinMethod)method).execute(getSM().getScope());
+		}
+
+		getSM().popScope();
+
+		if (method.hasReturnArgument())
+			return fs.getReturnVariable();
+		else
+			return new NullValue();
+		
+		} catch(ConstructorCalledLikeAMethodException | UndefinedMethodException | ArgumentMismatchException | NotAnObjectException e) {
 			throw new RuntimeException(e);
 		}
-		return null;
 	}
 
 	/**
@@ -842,7 +864,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			if (objClass.getConstructor() != null) {
 				ClassMethod constructor = objClass.getConstructor();
 				ObjectScope os = new ObjectScope(obj);
-				getSM().pushScope(new FunctionScope(constructor, args, constructor.getReturnArgumentName(), os));
+				getSM().pushScope(new FunctionScope(constructor, args, os));
 				visit(constructor.getNode());
 				getSM().popScope();
 			}
@@ -954,22 +976,6 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 
 		} catch (CannotLoopException e) {
 			throw new RuntimeException(e);
-		}
-		return new NullValue();
-	}
-
-	/**
-	 * Defines the arguments of the method or function.
-	 * <p>
-	 * args : data_type SYMBOL ( ',' data_type SYMBOL )* ;
-	 */
-	@Override
-	public ValueInterface visitArgs(ArgsContext ctx) {
-		for (int i = 0; i < ctx.SYMBOL().size(); i++) {
-			String argName = ctx.SYMBOL(i).getText().toLowerCase();
-			ValueInterface typeV = visit(ctx.data_type(i));
-
-			((ClassScope) getSM().getScope()).getDefiningMethod().addArgument(argName, typeV);
 		}
 		return new NullValue();
 	}

@@ -9,10 +9,11 @@ import es.usc.rai.coego.martin.demiurgo.scopes.RoomScope;
 import es.usc.rai.coego.martin.demiurgo.scopes.Scope;
 import es.usc.rai.coego.martin.demiurgo.scopes.WorldScope;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoMethod;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoObject;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoRoom;
 import es.usc.rai.coego.martin.demiurgo.universe.User;
 import es.usc.rai.coego.martin.demiurgo.universe.World;
-import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoRoom;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
 /**
@@ -102,5 +103,13 @@ public class ScopeManager {
 
 	public Scope getScope() {
 		return currentScope;
+	}
+	
+	public WorldScope getGlobalScope() {
+		return globals;
+	}
+
+	public DemiurgoMethod getMethod(String methodName) {
+		return currentScope.getMethod(methodName);
 	}
 }

@@ -30,4 +30,7 @@ public class ClassParsingScopeManager extends ScopeManager {
 		return globals.getClassFromName(className);
 	}
 
+	public ClassScope getClassScope() {
+		return classScope;
+	}
 }

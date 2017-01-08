@@ -1,5 +1,6 @@
 package es.usc.rai.coego.martin.demiurgo.parsing;
 
+import es.usc.rai.coego.martin.demiurgo.coe.COEParser.ArgsContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.Class_defContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.CodeContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.InventoryTypeContext;
@@ -9,7 +10,7 @@ import es.usc.rai.coego.martin.demiurgo.coe.COEParser.Var_declContext;
 import es.usc.rai.coego.martin.demiurgo.exceptions.BadConstructorException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ClassFilenameMismatchException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.CodeClassInClassFileException;
-import es.usc.rai.coego.martin.demiurgo.scopes.ClassScope;
+import es.usc.rai.coego.martin.demiurgo.scopes.MethodDefiningScope;
 import es.usc.rai.coego.martin.demiurgo.universe.ClassMethod;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass;
 import es.usc.rai.coego.martin.demiurgo.values.InventoryValue;
@@ -27,6 +28,10 @@ public class ClassVisitor extends ExecVisitor {
 	
 	protected DemiurgoClass getCurrentClass() {
 		return cl;
+	}
+	
+	public ClassParsingScopeManager getSM() {
+		return (ClassParsingScopeManager) sm;
 	}
 
 	/**
@@ -97,10 +102,27 @@ public class ClassVisitor extends ExecVisitor {
 	public ValueInterface visitMethod(MethodContext ctx) {
 		try {
 			// TODO: non-class methods?
-			DemiurgoClass curClass = ((ClassScope) getSM().getScope()).getCurrentClass();
+			MethodDefiningScope ms = new MethodDefiningScope(getSM().getClassScope());
+			getSM().pushScope(ms);
+			DemiurgoClass curClass = getSM().getClassScope().getCurrentClass();
 			String methodName = ctx.metname.getText().toLowerCase();
-			ClassMethod cm = new ClassMethod(ctx.code());
 
+			//input arguments
+			if (ctx.args() != null) {
+				visit(ctx.args());
+			}
+			
+			//ouput argument
+			if (ctx.ASSIGN() != null) {
+				String returnName = ctx.SYMBOL(0).getText().toLowerCase();
+				ValueInterface t = visit(ctx.data_type());
+
+				ms.setReturnArgument(returnName, t);
+
+			}
+			
+			ClassMethod cm = new ClassMethod(ms.getArgNames(), ms.getArgs(), ms.getRetVarName(), ctx.code());
+			
 			if (methodName.equals(curClass.getClassName())) { // CONSTRUCTOR
 				if (ctx.ASSIGN() != null) {
 					throw new BadConstructorException(ctx.ASSIGN().getSymbol().getLine(),
@@ -109,25 +131,28 @@ public class ClassVisitor extends ExecVisitor {
 				curClass.setConstructor(cm); // TODO: at this moment only one
 												// constructor is allowed
 			} else {
-				// Return value
-				if (ctx.ASSIGN() != null) {
-					String returnName = ctx.SYMBOL(0).getText().toLowerCase();
-					ValueInterface t = visit(ctx.data_type());
-
-					cm.setReturnArgument(returnName, t);
-
-				}
 				curClass.addMethod(methodName, cm);
 			}
-
-			if (ctx.args() != null) {
-				// little fix to add args
-				((ClassScope) getSM().getScope()).setDefiningMethod(cm);
-				visit(ctx.args());
-				((ClassScope) getSM().getScope()).setDefiningMethod(null);
-			}
+			
+			
 		} catch (BadConstructorException e) {
 			throw new RuntimeException(e);
+		}
+		return new NullValue();
+	}
+	
+	/**
+	 * Defines the arguments of the method or function.
+	 * <p>
+	 * args : data_type SYMBOL ( ',' data_type SYMBOL )* ;
+	 */
+	@Override
+	public ValueInterface visitArgs(ArgsContext ctx) {
+		for (int i = 0; i < ctx.SYMBOL().size(); i++) {
+			String argName = ctx.SYMBOL(i).getText().toLowerCase();
+			ValueInterface typeV = visit(ctx.data_type(i));
+
+			((MethodDefiningScope) getSM().getScope()).addArgument(argName, typeV);
 		}
 		return new NullValue();
 	}

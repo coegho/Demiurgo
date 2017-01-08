@@ -106,14 +106,6 @@ public class ObjectValue extends AbstractValue {
 	}
 	
 	@Override
-	public String[] getValueCodes() {
-		String[] r = super.getValueCodes();
-		r[1] = className;
-		r[2] = Long.toString(obj_id);
-		return r;
-	}
-	
-	@Override
 	public String getTypeName() {
 		return super.getTypeName() + "/" + itsClass.getClassName();
 	}

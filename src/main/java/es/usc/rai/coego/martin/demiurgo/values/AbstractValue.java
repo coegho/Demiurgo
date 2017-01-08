@@ -1,6 +1,10 @@
 package es.usc.rai.coego.martin.demiurgo.values;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import es.usc.rai.coego.martin.demiurgo.exceptions.IllegalOperationException;
+import es.usc.rai.coego.martin.demiurgo.exceptions.SizeMismatchException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ValueCastException;
 import es.usc.rai.coego.martin.demiurgo.universe.World;
 
@@ -148,13 +152,6 @@ public abstract class AbstractValue implements ValueInterface {
 	public ValueInterface rebuild(World world) {
 		return this;
 	}
-	
-	@Deprecated
-	public String[] getValueCodes() {
-		String[] r = new String[3];
-		r[0] = getType().name();
-		return r;
-	}
 
 	@Override
 	public String getTypeName() {
@@ -164,5 +161,58 @@ public abstract class AbstractValue implements ValueInterface {
 	@Override
 	public ReturnValueTypes getInnerType() {
 		return getType();
+	}
+	
+	public static ValueInterface doListOperation(ValueInterface left, ValueInterface right, int depth,
+			BinaryFunction operation) throws IllegalOperationException {
+		List<ValueInterface> output = new ArrayList<>();
+		if (left.getDepth() < right.getDepth()) {
+			List<ValueInterface> rightList = ((ListValue) right.cloneValue()).getValue();
+			for(ValueInterface v : rightList) {
+				output.add(doListOperation(left, v, depth, operation));
+			}
+		}
+		else if (left.getDepth() > right.getDepth()) {
+			List<ValueInterface> leftList = ((ListValue) left.cloneValue()).getValue();
+			for(ValueInterface v : leftList) {
+				output.add(doListOperation(v, right, depth, operation));
+			}
+		}
+		
+		// same depth
+		
+		else if(left.getDepth() > depth) {
+			// two lists
+			List<ValueInterface> leftList = ((ListValue) left.cloneValue()).getValue();
+			List<ValueInterface> rightList = ((ListValue) right.cloneValue()).getValue();
+			if(leftList.size() == rightList.size()) {
+				//same size
+				for(int i=0; i<leftList.size();i++) {
+					output.add(doListOperation(leftList.get(i), rightList.get(i), depth, operation));
+				}
+			}
+			else {
+				throw new SizeMismatchException(-1, -1, -1, left.getTypeName(), right.getTypeName());
+			}
+		} else {
+			//two objects
+			return operation.apply(left, right);
+		}
+
+		return new ListValue(output);
+	}
+	
+	public static ValueInterface doListOperation(ValueInterface value, int depth,
+			UnaryFunction operation) throws IllegalOperationException {
+		if(value.getDepth() > depth) {
+			List<ValueInterface> output = new ArrayList<>();
+			for (ValueInterface x : ((ListValue)value).getValue()) {
+				output.add(doListOperation(x, depth, operation));
+			}
+			return new ListValue(output);
+		}
+		else {
+			return operation.apply(value);
+		}
 	}
 }

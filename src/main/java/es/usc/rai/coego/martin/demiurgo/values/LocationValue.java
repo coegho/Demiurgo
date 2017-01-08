@@ -50,13 +50,6 @@ public abstract class LocationValue extends AbstractValue {
 	}
 	
 	@Override
-	public String[] getValueCodes() {
-		String[] r = super.getValueCodes();
-		r[2] = Long.toString(loc_id);
-		return r;
-	}
-	
-	@Override
 	public String getValueAsString() {
 		return Long.toString(getLocation().getId());
 	}

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import es.usc.rai.coego.martin.demiurgo.exceptions.IllegalOperationException;
-import es.usc.rai.coego.martin.demiurgo.exceptions.SizeMismatchException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ValueCastException;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass;
 import es.usc.rai.coego.martin.demiurgo.universe.World;
@@ -35,6 +34,9 @@ public class ListValue extends AbstractValue {
 		if(value.size() > 0) {
 			this.innerType = value.get(0).getInnerType();
 			this.listDepth = value.get(0).getDepth()+1;
+		}
+		else {
+			this.listDepth = 1;
 		}
 	}
 
@@ -260,18 +262,6 @@ public class ListValue extends AbstractValue {
 	}
 
 	@Override
-	public String[] getValueCodes() {
-		String[] r = super.getValueCodes();
-		r[1] = getInnerType().name();
-		r[2] = "{";
-		for (ValueInterface v : value) {
-			r[2] += v.getValueCodes();
-		}
-		r[2] += "}";
-		return r;
-	}
-
-	@Override
 	public String getTypeName() {
 		StringBuilder sb = new StringBuilder((getInnerType() != null) ? getInnerType().name() : getType().name());
 		for (int i = 0; i < getDepth(); i++) {
@@ -289,56 +279,5 @@ public class ListValue extends AbstractValue {
 		return "{" + String.join(", ", strs) + "}";
 	}
 
-	public static ValueInterface doListOperation(ValueInterface left, ValueInterface right, int depth,
-			BinaryFunction operation) throws IllegalOperationException {
-		List<ValueInterface> output = new ArrayList<>();
-		if (left.getDepth() < right.getDepth()) {
-			List<ValueInterface> rightList = ((ListValue) right.cloneValue()).getValue();
-			for(ValueInterface v : rightList) {
-				output.add(doListOperation(left, v, depth, operation));
-			}
-		}
-		else if (left.getDepth() > right.getDepth()) {
-			List<ValueInterface> leftList = ((ListValue) left.cloneValue()).getValue();
-			for(ValueInterface v : leftList) {
-				output.add(doListOperation(v, right, depth, operation));
-			}
-		}
-		
-		// same depth
-		
-		else if(left.getDepth() > depth) {
-			// two lists
-			List<ValueInterface> leftList = ((ListValue) left.cloneValue()).getValue();
-			List<ValueInterface> rightList = ((ListValue) right.cloneValue()).getValue();
-			if(leftList.size() == rightList.size()) {
-				//same size
-				for(int i=0; i<leftList.size();i++) {
-					output.add(doListOperation(leftList.get(i), rightList.get(i), depth, operation));
-				}
-			}
-			else {
-				throw new SizeMismatchException(-1, -1, -1, left.getTypeName(), right.getTypeName());
-			}
-		} else {
-			//two objects
-			return operation.apply(left, right);
-		}
-
-		return new ListValue(output);
-	}
 	
-	public static ValueInterface doListOperation(ValueInterface value, int depth,
-			UnaryFunction operation) throws IllegalOperationException {
-		if(value.getDepth() > depth) {
-			List<ValueInterface> output = new ArrayList<>();
-			for (ValueInterface x : ((ListValue)value).getValue()) {
-				output.add(doListOperation(x, depth, operation));
-			}
-			return new ListValue(output);
-		}
-		else {
-			return operation.apply(value);
-		}
-	}
 }

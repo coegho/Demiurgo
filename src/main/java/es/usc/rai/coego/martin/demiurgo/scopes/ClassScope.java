@@ -1,13 +1,12 @@
 package es.usc.rai.coego.martin.demiurgo.scopes;
 
-import es.usc.rai.coego.martin.demiurgo.universe.ClassMethod;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoMethod;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
 public class ClassScope extends Scope {
 
 	protected DemiurgoClass currentClass;
-	protected ClassMethod definingMethod;
 	
 	public ClassScope(DemiurgoClass currentClass) {
 		this.currentClass = currentClass;
@@ -26,12 +25,12 @@ public class ClassScope extends Scope {
 	public DemiurgoClass getCurrentClass() {
 		return currentClass;
 	}
-	
-	public ClassMethod getDefiningMethod() {
-		return definingMethod;
-	}
-	
-	public void setDefiningMethod(ClassMethod definingMethod) {
-		this.definingMethod = definingMethod;
+
+	@Override
+	public DemiurgoMethod getMethod(String methodName) {
+		if(currentClass.getWorld().getMethods().containsKey(methodName)) {
+			return currentClass.getWorld().getMethod(methodName);
+		}
+		return currentClass.getMethod(methodName);
 	}
 }

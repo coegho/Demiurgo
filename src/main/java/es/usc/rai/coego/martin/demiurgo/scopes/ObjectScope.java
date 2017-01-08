@@ -1,5 +1,6 @@
 package es.usc.rai.coego.martin.demiurgo.scopes;
 
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoMethod;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoObject;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
@@ -23,5 +24,13 @@ public class ObjectScope extends Scope {
 
 	public DemiurgoObject getObject() {
 		return obj;
+	}
+
+	@Override
+	public DemiurgoMethod getMethod(String methodName) {
+		if(obj.getLocation().getWorld().getMethods().containsKey(methodName)) {
+			return obj.getLocation().getWorld().getMethod(methodName);
+		}
+		return obj.getUserClass().getMethod(methodName);
 	}
 }

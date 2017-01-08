@@ -1,6 +1,7 @@
 package es.usc.rai.coego.martin.demiurgo.scopes;
 
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoMethod;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoObject;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoRoom;
 import es.usc.rai.coego.martin.demiurgo.universe.User;
@@ -58,5 +59,10 @@ public class WorldScope extends Scope {
 
 	public void setUserObject(User user, DemiurgoObject obj) {
 		world.setUserObject(user, obj);
+	}
+
+	@Override
+	public DemiurgoMethod getMethod(String methodName) {
+		return world.getMethod(methodName);
 	}
 }

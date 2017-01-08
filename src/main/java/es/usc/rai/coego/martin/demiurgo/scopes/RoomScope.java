@@ -1,5 +1,6 @@
 package es.usc.rai.coego.martin.demiurgo.scopes;
 
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoMethod;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoRoom;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
@@ -28,5 +29,10 @@ public class RoomScope extends Scope {
 
 	public DemiurgoRoom getRoom() {
 		return room;
+	}
+
+	@Override
+	public DemiurgoMethod getMethod(String methodName) {
+		return parent.getMethod(methodName);
 	}
 }

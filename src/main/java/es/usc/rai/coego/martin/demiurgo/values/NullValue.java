@@ -1,7 +1,5 @@
 package es.usc.rai.coego.martin.demiurgo.values;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 public class NullValue extends AbstractValue {
 
 	/**
@@ -32,13 +30,6 @@ public class NullValue extends AbstractValue {
 	@Override
 	public String toString() {
 		return "NULL";
-	}
-	
-	@Override
-	public String[] getValueCodes() {
-		String[] r = new String[3];
-		r[0] = "NULL";
-		return r;
 	}
 	
 	@Override

@@ -1,5 +1,6 @@
 package es.usc.rai.coego.martin.demiurgo.scopes;
 
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoMethod;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
 /**
@@ -18,4 +19,6 @@ public abstract class Scope {
 	 * @param value Variable's value.
 	 */
 	public abstract void setVariable(String name, ValueInterface value);
+
+	public abstract DemiurgoMethod getMethod(String methodName);
 }
