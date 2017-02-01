@@ -3,6 +3,7 @@ package es.usc.rai.coego.martin.demiurgo.universe;
 import java.util.stream.Collectors;
 
 import es.usc.rai.coego.martin.demiurgo.json.JsonInventory;
+import es.usc.rai.coego.martin.demiurgo.json.StatusInventory;
 
 public class Inventory extends DemiurgoLocation {
 	protected transient DemiurgoObject container;
@@ -10,7 +11,7 @@ public class Inventory extends DemiurgoLocation {
 	protected String varName;
 
 	public Inventory(DemiurgoObject obj, String varName, long id) {
-		super(obj.getUserClass().getWorld(), id);
+		super(obj.getDemiurgoClass().getWorld(), id);
 		container = obj;
 		this.varName = varName;
 	}
@@ -52,6 +53,13 @@ public class Inventory extends DemiurgoLocation {
 		JsonInventory json = new JsonInventory();
 		json.setName(name);
 		json.setObjects(getObjects().stream().map(o -> o.toJson()).collect(Collectors.toList()));
+		return json;
+	}
+	
+	public StatusInventory toStatusJson(String name) {
+		StatusInventory json = new StatusInventory();
+		json.setName(name);
+		json.setObjects(getObjects().stream().map(o -> o.toStatusJson()).collect(Collectors.toList()));
 		return json;
 	}
 

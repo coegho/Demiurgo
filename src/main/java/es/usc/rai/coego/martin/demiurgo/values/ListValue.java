@@ -35,7 +35,7 @@ public class ListValue extends AbstractValue {
 			setInnerType(value.get(0).getInnerType());
 			setDepth(value.get(0).getDepth() + 1);
 			if(value.get(0).getInnerType() == ReturnValueTypes.OBJECT) {
-				classType = ((ObjectValue)value.get(0)).getObj().getUserClass();
+				classType = ((ObjectValue)value.get(0)).getObj().getDemiurgoClass();
 				
 			}
 		} else {
@@ -231,11 +231,11 @@ public class ListValue extends AbstractValue {
 
 	@Override
 	public String castToString() throws ValueCastException {
-		String content = "";
-		for (ValueInterface x : getValue()) {
-			content += " " + x.castToString() + " ";
+		List<String> strs = new ArrayList<>();
+		for (ValueInterface l : getValue()) {
+			strs.add(l.getValueAsString());
 		}
-		return "[" + content + "]";
+		return "{" + String.join(", ", strs) + "}";
 	}
 
 	@Override
@@ -257,7 +257,7 @@ public class ListValue extends AbstractValue {
 	}
 
 	@Override
-	public boolean assign(ValueInterface newRValue) throws ValueCastException {
+	public void assign(ValueInterface newRValue) throws ValueCastException {
 		try {
 			if (canAssign(newRValue)) {
 				ListValue lv = new ListValue(newRValue.castToList());
@@ -265,12 +265,12 @@ public class ListValue extends AbstractValue {
 				this.setDepth(lv.getDepth());
 				this.setInnerType(lv.getInnerType());
 				this.setClassType(lv.getClassType());
-				return true;
 			}
+			else
+				throw new ValueCastException(-1, -1, -1, newRValue.getTypeName(), getTypeName());
 		} catch (ValueCastException e) {
 			throw e;
 		}
-		return false;
 	}
 
 	public void setClassType(DemiurgoClass cl) {

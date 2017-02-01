@@ -103,7 +103,7 @@ public class MariaDBDatabase implements DatabaseInterface {
 	@Override
 	public boolean login(String name, String password) {
 		try {
-			PreparedStatement stm = con.prepareStatement("SELECT username FROM users WHERE username=? AND passwd=?");
+			PreparedStatement stm = con.prepareStatement("SELECT username FROM users WHERE username LIKE ? AND passwd=?");
 			stm.setString(1, name);
 			stm.setString(2, password);
 			ResultSet rs = stm.executeQuery();
@@ -115,11 +115,12 @@ public class MariaDBDatabase implements DatabaseInterface {
 	}
 	
 	@Override
-	public User register(String name, String password) {
+	public User register(String name, String password, String mail) {
 		try {
-			PreparedStatement stm = con.prepareStatement("INSERT users (username, passwd) VALUES (?, ?)"/*, Statement.RETURN_GENERATED_KEYS*/);
+			PreparedStatement stm = con.prepareStatement("INSERT users (username, passwd, mail) VALUES (?, ?, ?)"/*, Statement.RETURN_GENERATED_KEYS*/);
 			stm.setString(1, name);
 			stm.setString(2, password);
+			stm.setString(3, mail);
 			stm.executeUpdate();
 			
 			//ResultSet rs = stm.getGeneratedKeys();

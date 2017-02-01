@@ -14,7 +14,6 @@ import es.usc.rai.coego.martin.demiurgo.scopes.MethodDefiningScope;
 import es.usc.rai.coego.martin.demiurgo.universe.ClassMethod;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass;
 import es.usc.rai.coego.martin.demiurgo.values.InventoryValue;
-import es.usc.rai.coego.martin.demiurgo.values.NullValue;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
 public class ClassVisitor extends ExecVisitor {
@@ -70,7 +69,7 @@ public class ClassVisitor extends ExecVisitor {
 
 			}
 
-			return new NullValue();
+			return null;
 		} catch (ClassFilenameMismatchException e) {
 			throw new RuntimeException(e);
 		}
@@ -89,7 +88,7 @@ public class ClassVisitor extends ExecVisitor {
 		
 		getCurrentClass().addField(varName, type, ctx.operation());
 
-		return new NullValue();
+		return null;
 	}
 	
 	/**
@@ -138,7 +137,7 @@ public class ClassVisitor extends ExecVisitor {
 		} catch (BadConstructorException e) {
 			throw new RuntimeException(e);
 		}
-		return new NullValue();
+		return null;
 	}
 	
 	/**
@@ -154,7 +153,7 @@ public class ClassVisitor extends ExecVisitor {
 
 			((MethodDefiningScope) getSM().getScope()).addArgument(argName, typeV);
 		}
-		return new NullValue();
+		return null;
 	}
 	
 	/**

@@ -60,15 +60,16 @@ public class AuthService {
 		db.createConnection(dbData.getUrl(), dbData.getUser(), dbData.getPasswd());
 
 		if (db.login(req.getName(), hashedPass)) {
+			db.stopConnection();
 			User user = w.getUser(req.getName().toLowerCase());
 			if (user != null) {
-
 				String token = issueToken(user.getUsername(), req.getWorld().toLowerCase(), Demiurgo.getKey());
 				System.out.println("Logged " + req.getName() + " in world " + req.getWorld() + " with role "
 						+ user.getRole().toString());
 
 				return Response.ok(token).build();
 			}
+			w.getLogger().severe("Found user '" + req.getName() +  "' in database but cannot find it on world");
 		}
 		db.stopConnection();
 		return Response.status(Response.Status.UNAUTHORIZED).build();
@@ -106,7 +107,7 @@ public class AuthService {
 		
 		String hashedPass = hashPassword(password);
 		
-		User u = db.register(username, hashedPass);
+		User u = db.register(username, hashedPass, req.getMail());
 		w.addUser(u);
 		
 		//TODO: authorization by mail and gm

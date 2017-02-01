@@ -54,7 +54,7 @@ public class StringValue extends AbstractValue {
 	@Override
 	public ValueInterface eq(ValueInterface another) throws IllegalOperationException {
 		if (another instanceof StringValue) {
-			return new IntegerValue(getValue() == ((StringValue) another).getValue());
+			return new IntegerValue(getValue().equals(((StringValue) another).getValue()));
 		}
 		if (another instanceof ListValue) {
 			return doListOperation(this, another, 0, (l,r) -> { return l.eq(r); });
@@ -116,12 +116,11 @@ public class StringValue extends AbstractValue {
 	}
 	
 	@Override
-	public boolean assign(ValueInterface newRValue) {
+	public void assign(ValueInterface newRValue) throws ValueCastException {
 		try {
 			value = newRValue.castToString();
-			return true;
 		} catch(ValueCastException ex) {
-			return false;
+			throw ex;
 		}
 	}
 

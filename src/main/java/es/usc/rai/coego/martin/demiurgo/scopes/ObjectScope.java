@@ -22,7 +22,8 @@ public class ObjectScope extends Scope {
 		
 	}
 
-	public DemiurgoObject getObject() {
+	@Override
+	public DemiurgoObject getThisObject() {
 		return obj;
 	}
 
@@ -31,6 +32,6 @@ public class ObjectScope extends Scope {
 		if(obj.getLocation().getWorld().getMethods().containsKey(methodName)) {
 			return obj.getLocation().getWorld().getMethod(methodName);
 		}
-		return obj.getUserClass().getMethod(methodName);
+		return obj.getDemiurgoClass().getMethod(methodName);
 	}
 }

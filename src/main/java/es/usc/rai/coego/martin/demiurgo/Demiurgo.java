@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -171,6 +173,18 @@ public class Demiurgo {
 				logger.info("Changes saved correctly");
 			}
 		});
+		
+		Timer timer = new Timer(true);
+		timer.schedule(new TimerTask() {
+
+			@Override
+			public void run() {
+				logger.info("Saving changes...");
+				saveAllInDatabase();
+				logger.info("Changes saved correctly");
+			}
+			
+		}, 30*60*1000, 30*60*1000);
 
 		server = startServer();
 	}
@@ -436,7 +450,7 @@ public class Demiurgo {
 		return worlds;
 	}
 
-	private static void saveAllInDatabase() {
+	private static synchronized void saveAllInDatabase() {
 		for(World w : worlds.values()) {
 			saveWorldInDatabase(w, wc.getWorlds().get(w.getName()));
 		}

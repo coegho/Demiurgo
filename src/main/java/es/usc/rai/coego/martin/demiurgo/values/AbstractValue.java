@@ -168,6 +168,11 @@ public abstract class AbstractValue implements ValueInterface {
 		return getType();
 	}
 	
+	@Override
+	public void assign(ValueInterface newRValue) throws ValueCastException {
+		throw new ValueCastException(-1, -1, -1, newRValue.getTypeName(), getTypeName());
+	}
+	
 	public static ValueInterface doListOperation(ValueInterface left, ValueInterface right, int depth,
 			BinaryFunction operation) throws IllegalOperationException {
 		List<ValueInterface> output = new ArrayList<>();

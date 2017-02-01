@@ -13,6 +13,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import es.usc.rai.coego.martin.demiurgo.json.JsonClass;
 import es.usc.rai.coego.martin.demiurgo.json.JsonMethod;
 import es.usc.rai.coego.martin.demiurgo.json.JsonVariable;
+import es.usc.rai.coego.martin.demiurgo.values.ObjectValue;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
 /**
@@ -172,6 +173,30 @@ public class DemiurgoClass implements Comparable<DemiurgoClass> {
 		methods = newClass.methods;
 		constructor = newClass.constructor;
 		code = newClass.code;
+		
+		//update references
+		for(Entry<String, DefaultField> e : fields.entrySet()) {
+			if(e.getValue().getField() instanceof ObjectValue) {
+				ObjectValue ov = (ObjectValue) e.getValue().getField();
+				if(ov.getItsClass().getClassName().equalsIgnoreCase(this.getClassName())) {
+					ov.setItsClass(this);
+				}
+			}
+		}
+		for(Entry<String, ClassMethod> e : methods.entrySet()) {
+			for(ValueInterface a : e.getValue().args.values()) {
+				if(a instanceof ObjectValue && ((ObjectValue)a).getItsClass().getClassName().equalsIgnoreCase(this.getClassName())) {
+					((ObjectValue)a).setItsClass(this);
+				}
+			}
+		}
+		
+		if(constructor != null)
+			for(ValueInterface a : constructor.getArgsValues()) {
+				if(a instanceof ObjectValue && ((ObjectValue)a).getItsClass().getClassName().equalsIgnoreCase(this.getClassName())) {
+					((ObjectValue)a).setItsClass(this);
+				}
+			}
 	}
 
 	public Map<String, ClassMethod> getMethods() {

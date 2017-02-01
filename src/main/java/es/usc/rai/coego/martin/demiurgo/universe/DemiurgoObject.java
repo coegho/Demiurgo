@@ -15,8 +15,11 @@ import es.usc.rai.coego.martin.demiurgo.json.JsonInventory;
 import es.usc.rai.coego.martin.demiurgo.json.JsonMethod;
 import es.usc.rai.coego.martin.demiurgo.json.JsonObject;
 import es.usc.rai.coego.martin.demiurgo.json.JsonVariable;
+import es.usc.rai.coego.martin.demiurgo.json.StatusInventory;
+import es.usc.rai.coego.martin.demiurgo.json.StatusObject;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass.DefaultField;
 import es.usc.rai.coego.martin.demiurgo.values.InventoryValue;
+import es.usc.rai.coego.martin.demiurgo.values.ListValue;
 import es.usc.rai.coego.martin.demiurgo.values.ObjectValue;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
@@ -68,7 +71,7 @@ public class DemiurgoObject {
 		this.id = id;
 	}
 
-	public DemiurgoClass getUserClass() {
+	public DemiurgoClass getDemiurgoClass() {
 		return ownClass;
 	}
 
@@ -89,6 +92,9 @@ public class DemiurgoObject {
 	}
 	
 	public ValueInterface getField(String fieldName) {
+		if(fieldName.equalsIgnoreCase("this")) {
+			return new ObjectValue(this);
+		}
 		return fields.get(fieldName);
 	}
 
@@ -187,8 +193,53 @@ public class DemiurgoObject {
 		
 		return new JsonObject(getId(), getClassName(), getLocId(), fields, methods, inventories);
 	}
+	
+	public StatusObject toStatusJson() {
+		String name = null;
+		String description = null;
+		String imgurl = null;
+		List<String> visibleFields = new ArrayList<>();
+		List<JsonVariable> fields = new ArrayList<>();
+		List<StatusInventory> inventories = new ArrayList<>();
+		
+		//Getting special fields
+		for(Entry<String, ValueInterface> e : this.fields.entrySet()) {
+			if(e.getKey().equalsIgnoreCase("v_name")) {
+				name = e.getValue().getValueAsString();
+			}
+			else if(e.getKey().equalsIgnoreCase("v_description")) {
+				description = e.getValue().getValueAsString();
+			}
+			else if(e.getKey().equalsIgnoreCase("v_imgurl")) {
+				imgurl = e.getValue().getValueAsString();
+			}
+			else if(e.getKey().equalsIgnoreCase("v_fields") && e.getValue() instanceof ListValue) {
+				for(ValueInterface v : ((ListValue)e.getValue()).getValue())
+					visibleFields.add(v.getValueAsString().toLowerCase());
+			}
+		}
+		
+		if(name == null) {
+			name = ownClass.getClassName();
+		}
+		
+		//Getting only visible fields
+		for(Entry<String, ValueInterface> e : this.fields.entrySet()) {
+			if(visibleFields.contains(e.getKey().toLowerCase())) {
+				
+				if(e.getValue() instanceof InventoryValue) {
+					Inventory inv = (Inventory)((InventoryValue)e.getValue()).getLocation();
+					inventories.add(inv.toStatusJson(e.getKey()));
+				}
+				else {
+					fields.add(new JsonVariable(e.getKey(), e.getValue().getValueAsString(), e.getValue().getTypeName()));
+				}
+			}
+		}
+		return new StatusObject(name, description, imgurl, fields, inventories);
+	}
 
-	public void updateClass() {
+	public void updateClass() {//TODO: assign default values
 		List<String> losing = new ArrayList<String>(fields.keySet());
 		for (Entry<String, DefaultField> e : ownClass.getFields().entrySet()) {
 			if (fields.containsKey(e.getKey())) { // Already has this variable
@@ -213,7 +264,7 @@ public class DemiurgoObject {
 				}
 			} else { // put directly
 				if(e.getValue().getField() instanceof InventoryValue) {
-					InventoryValue v = new InventoryValue(getUserClass().getWorld().createInventory(this, e.getKey()));
+					InventoryValue v = new InventoryValue(getDemiurgoClass().getWorld().createInventory(this, e.getKey()));
 					fields.put(e.getKey(), v);
 				}
 				else

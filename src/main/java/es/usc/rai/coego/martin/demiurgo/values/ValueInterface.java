@@ -228,7 +228,7 @@ public interface ValueInterface extends Serializable {
 	 * @return False if there is not cast operation.
 	 * @throws ValueCastException 
 	 */
-	public boolean assign(ValueInterface newRValue) throws ValueCastException;
+	public void assign(ValueInterface newRValue) throws ValueCastException;
 
 	/**
 	 * Returns the value specified by index from a list.

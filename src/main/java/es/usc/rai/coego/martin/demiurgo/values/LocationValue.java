@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import es.usc.rai.coego.martin.demiurgo.exceptions.ValueCastException;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoLocation;
 
 public abstract class LocationValue extends AbstractValue {
@@ -29,15 +30,15 @@ public abstract class LocationValue extends AbstractValue {
 	}
 
 	@Override
-	public boolean assign(ValueInterface newRValue) {
+	public void assign(ValueInterface newRValue) throws ValueCastException {
 		if (canAssign(newRValue)) {
 			if (((LocationValue) newRValue).getLocation() != null) {
 				location = ((LocationValue) newRValue).getLocation();
 				loc_id = location.getId();
 			}
-			return true;
 		}
-		return false;
+		else
+			throw new ValueCastException(-1, -1, -1, newRValue.getTypeName(), getTypeName());
 	}
 
 	@Override

@@ -30,9 +30,6 @@ public class ClassMethod extends DemiurgoMethod {
 		this.node = node;
 	}
 
-	public void executeMethod(ExecVisitor execVisitor) {
-		execVisitor.visit(getNode());
-	}
 	
 	public void execute(ExecVisitor vis) {
 		vis.visit(getNode());

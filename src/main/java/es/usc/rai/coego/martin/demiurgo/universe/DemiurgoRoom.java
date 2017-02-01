@@ -123,6 +123,8 @@ public class DemiurgoRoom extends DemiurgoLocation implements Comparable<Demiurg
 			users.add(u.toJson());
 		}
 		r.setUsers(users);
+		
+		r.setPrenarration(getPrenarration());
 		return r;
 	}
 

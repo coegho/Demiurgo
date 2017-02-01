@@ -15,7 +15,7 @@ public class DemiurgoSecurityContext implements SecurityContext {
 	
 	public DemiurgoSecurityContext(String username, String world, String authenticationScheme) {
 		super();
-		this.user = Demiurgo.getWorld(world).getUser(username);
+		this.user = Demiurgo.getWorld(world).getUser(username.toLowerCase());
 		this.authenticationScheme = authenticationScheme;
 		this.userPrincipal = new DemiurgoPrincipal(username, world);
 	}

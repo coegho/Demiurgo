@@ -208,14 +208,15 @@ public class FloatValue extends AbstractValue {
 	}
 	
 	@Override
-	public boolean assign(ValueInterface newRValue) {
-		if(!writable) return false;
-		try {
-			value = newRValue.castToFloat();
-			return true;
-		} catch(ValueCastException ex) {
-			return false;
-		}
+	public void assign(ValueInterface newRValue) throws ValueCastException {
+		if(canAssign(newRValue))
+			try {
+				value = newRValue.castToFloat();
+			} catch(ValueCastException ex) {
+				throw ex;
+			}
+		else
+			throw new ValueCastException(-1, -1, -1, newRValue.getTypeName(), getTypeName());
 	}
 
 

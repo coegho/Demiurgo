@@ -112,4 +112,8 @@ public class ScopeManager {
 	public DemiurgoMethod getMethod(String methodName) {
 		return currentScope.getMethod(methodName);
 	}
+
+	public DemiurgoObject getThisObject() {
+		return currentScope.getThisObject();
+	}
 }

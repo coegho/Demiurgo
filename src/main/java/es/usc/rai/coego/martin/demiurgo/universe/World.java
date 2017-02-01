@@ -15,6 +15,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import es.usc.rai.coego.martin.demiurgo.exceptions.ObjectInsideItselfException;
+import es.usc.rai.coego.martin.demiurgo.json.ClassTree;
 import es.usc.rai.coego.martin.demiurgo.parsing.functions.CountFunction;
 import es.usc.rai.coego.martin.demiurgo.parsing.functions.DestroyFunction;
 import es.usc.rai.coego.martin.demiurgo.parsing.functions.ReverseFunction;
@@ -74,9 +75,9 @@ public class World {
 		pendingRooms = new ArrayList<>();
 		classes.put("object", rootClass);
 		methods = new HashMap<>();
-		
+
 		initLogger();
-		
+
 		initBuiltinFunctions();
 	}
 
@@ -89,12 +90,12 @@ public class World {
 		methods.put("sum", new SumFunction());
 		methods.put("zeros", new ZerosFunction());
 	}
-	
+
 	private void initLogger() throws SecurityException, IOException {
 		worldLogger = Logger.getLogger(World.class.getName() + "." + name);
 		worldLogger.setLevel(Level.INFO);
 		worldLogger.setUseParentHandlers(false);
-		Handler wh = new FileHandler(new File(name +".log").getAbsolutePath(), true);
+		Handler wh = new FileHandler(new File(name + ".log").getAbsolutePath(), true);
 		// wh.setFormatter(new XMLFormatter()); TODO: custom formatter
 		worldLogger.addHandler(wh);
 	}
@@ -152,18 +153,19 @@ public class World {
 	 *            Future location.
 	 * @param obj
 	 *            Moved object.
-	 * @throws ObjectInsideItselfException 
+	 * @throws ObjectInsideItselfException
 	 */
-	public void moveTo(DemiurgoLocation origin, DemiurgoLocation destination, DemiurgoObject obj) throws ObjectInsideItselfException {
-		if(destination.isInsideOf(obj)) {
+	public void moveTo(DemiurgoLocation origin, DemiurgoLocation destination, DemiurgoObject obj)
+			throws ObjectInsideItselfException {
+		if (destination.isInsideOf(obj)) {
 			throw new ObjectInsideItselfException(obj);
 		}
 		origin.removeObject(obj);
 		obj.setLocation(destination);
 		destination.addObject(obj);
-		if(obj.getUser() != null && obj.getUser().getDecision() != null) {
+		if (obj.getUser() != null && obj.getUser().getDecision() != null) {
 			this.addPendingRoom(destination.getRealLocation());
-			if(origin.getRealLocation().getDecidingUsers().size() == 0) {
+			if (origin.getRealLocation().getDecidingUsers().size() == 0) {
 				this.getPendingRooms().remove(origin.getRealLocation());
 			}
 		}
@@ -203,19 +205,6 @@ public class World {
 		}
 
 		return rg;
-	}
-
-	/**
-	 * Creates a new room from a relative path.
-	 * 
-	 * @param roomRelativeName
-	 *            Relative path to the room.
-	 * @param currentRoom
-	 *            The absolute path of the current room (ending by '/').
-	 * @return
-	 */
-	public DemiurgoRoom newRoom(String roomRelativeName, String currentRoom) {
-		return newRoom(currentRoom + roomRelativeName);
 	}
 
 	/**
@@ -332,7 +321,7 @@ public class World {
 	 * @param user
 	 */
 	public void addUser(User user) {
-		users.put(user.getUsername(), user);
+		users.put(user.getUsername().toLowerCase(), user);
 	}
 
 	/**
@@ -342,7 +331,7 @@ public class World {
 	 * @return
 	 */
 	public User getUser(String user) {
-		return users.get(user);
+		return users.get((user != null) ? user.toLowerCase() : null);
 	}
 
 	public DemiurgoLocation getLocation(long loc_id) {
@@ -360,7 +349,6 @@ public class World {
 	public void setCurrentActionId(long currentActionId) {
 		this.currentActionId = currentActionId;
 	}
-	
 
 	public long getCurrentObjId() {
 		return currentObjId;
@@ -374,8 +362,15 @@ public class World {
 		return currentActionId;
 	}
 
-
 	public List<DemiurgoRoom> getPendingRooms() {
+		List<DemiurgoRoom> pendingRooms = new ArrayList<>();
+		for (User u : getAllUsers()) {
+			if (u.getObj() != null && u.getObj().getLocation() != null
+					&& u.getObj().getLocation() instanceof DemiurgoRoom
+					&& !pendingRooms.contains(u.getObj().getLocation())) {
+				pendingRooms.add((DemiurgoRoom) u.getObj().getLocation());
+			}
+		}
 		return pendingRooms;
 	}
 
@@ -448,7 +443,7 @@ public class World {
 	}
 
 	public void addPendingRoom(DemiurgoRoom location) {
-		if(!pendingRooms.contains(location)) {
+		if (!pendingRooms.contains(location)) {
 			pendingRooms.add(location);
 		}
 	}
@@ -467,13 +462,14 @@ public class World {
 		destroyedLocations.add(inv);
 		locations.remove(inv.getId());
 	}
-	
+
 	public void markRoomToDestroy(DemiurgoRoom room) {
 		destroyedRooms.add(room);
 		destroyedLocations.add(room);
 		locations.remove(room.getId());
-		searchRoomGroup(room.getLongPath(), false).setOwnRoom(null);;
-		
+		searchRoomGroup(room.getLongPath(), false).setOwnRoom(null);
+		;
+
 	}
 
 	public List<Inventory> getDestroyedInventories() {
@@ -483,11 +479,11 @@ public class World {
 	public List<DemiurgoLocation> getDestroyedLocations() {
 		return destroyedLocations;
 	}
-	
+
 	public List<DemiurgoClass> getDestroyedClasses() {
 		return destroyedClasses;
 	}
-	
+
 	public void markToDestroy(DemiurgoClass cl) {
 		destroyedClasses.add(cl);
 		classes.remove(cl.getClassName());
@@ -500,8 +496,43 @@ public class World {
 	public Map<String, DemiurgoMethod> getMethods() {
 		return methods;
 	}
-	
+
 	public DemiurgoMethod getMethod(String methodName) {
 		return methods.get(methodName);
+	}
+
+	public ClassTree getClassTree() {
+		return new ClassTreeBuilder(new ArrayList<DemiurgoClass>(classes.values())).getTree();
+	}
+}
+
+class ClassTreeBuilder {
+	private Map<DemiurgoClass, ClassTree> tree = new HashMap<>();
+	private ClassTree root;
+
+	ClassTreeBuilder(List<DemiurgoClass> classes) {
+		Collections.sort(classes);
+		for (DemiurgoClass c : classes) {
+			ClassTree thisTree;
+			if (!tree.containsKey(c.getParentClass())) {
+				tree.put(c.getParentClass(), new ClassTree(c.getParentClass().getClassName(), new ArrayList<>()));
+			}
+			if (tree.containsKey(c)) {
+				thisTree = tree.get(c);
+			}
+			else {
+				thisTree = new ClassTree(c.getClassName(), new ArrayList<>());
+				tree.put(c, thisTree);
+			}
+			if (!(c instanceof RootObjectClass)) {
+				tree.get(c.getParentClass()).getChildren().add(thisTree);
+			}
+			else
+				root = thisTree;
+		}
+	}
+
+	public ClassTree getTree() {
+		return root;
 	}
 }

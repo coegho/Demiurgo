@@ -91,9 +91,15 @@ public class User {
 	}
 	
 	public JsonUser toJson() {
+		return toJson(true);
+	}
+	
+	public JsonUser toJson(boolean includeObj) {
 		JsonUser ju = new JsonUser();
 		ju.setName(getUsername());
-		ju.setObj((getObj() != null)?(getObj().toJson()):null);
+		if(includeObj) {
+			ju.setObj((getObj() != null)?(getObj().toJson()):null);
+		}
 		ju.setRole(getRole().toString());
 		ju.setDecision(getDecision());
 		return ju;

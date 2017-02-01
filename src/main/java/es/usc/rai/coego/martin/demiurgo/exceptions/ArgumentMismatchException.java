@@ -18,6 +18,6 @@ public class ArgumentMismatchException extends DemiurgoException {
 	
 	@Override
 	public String getMessage() {
-		return "Arguments doesn't match: "+ pa + " != "+ ra;
+		return "line " + line + ":" + column + ": " +"Arguments doesn't match: "+ pa + " != "+ ra;
 	}
 }

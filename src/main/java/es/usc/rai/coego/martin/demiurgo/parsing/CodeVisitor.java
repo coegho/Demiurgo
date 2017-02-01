@@ -7,7 +7,6 @@ import es.usc.rai.coego.martin.demiurgo.coe.COEParser.Var_declContext;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ClassDefinitionOnCodeException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ValueCastException;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoRoom;
-import es.usc.rai.coego.martin.demiurgo.values.NullValue;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
 public class CodeVisitor extends ExecVisitor {
@@ -63,8 +62,11 @@ public class CodeVisitor extends ExecVisitor {
 			}
 			getSM().setVariable(varName, type);
 	
-			return new NullValue();
+			return null;
 		} catch (ValueCastException e) {
+			e.setLine(ctx.ASSIGN().getSymbol().getLine());
+			e.setColumn(ctx.ASSIGN().getSymbol().getCharPositionInLine());
+			e.setStartIndex(ctx.ASSIGN().getSymbol().getStartIndex());
 			throw new RuntimeException(e);
 		}
 	}

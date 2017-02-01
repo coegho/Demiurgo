@@ -26,7 +26,7 @@ public interface DatabaseInterface {
 	
 	public boolean login(String name, String password);
 	
-	public User register(String name, String password);
+	public User register(String name, String password, String mail);
 	
 	public boolean changePassword(String name, String oldPassword, String newPassword);
 	

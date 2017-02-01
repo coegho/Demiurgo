@@ -35,6 +35,7 @@ import es.usc.rai.coego.martin.demiurgo.json.AllClassesResponse;
 import es.usc.rai.coego.martin.demiurgo.json.AllRoomPathsResponse;
 import es.usc.rai.coego.martin.demiurgo.json.ChangePasswordRequest;
 import es.usc.rai.coego.martin.demiurgo.json.CheckRoomResponse;
+import es.usc.rai.coego.martin.demiurgo.json.ClassTree;
 import es.usc.rai.coego.martin.demiurgo.json.CreateClassRequest;
 import es.usc.rai.coego.martin.demiurgo.json.CreateClassResponse;
 import es.usc.rai.coego.martin.demiurgo.json.CreateRoomRequest;
@@ -50,7 +51,6 @@ import es.usc.rai.coego.martin.demiurgo.json.ExecuteCodeRequest;
 import es.usc.rai.coego.martin.demiurgo.json.ExecuteCodeResponse;
 import es.usc.rai.coego.martin.demiurgo.json.GetPendingRoomsResponse;
 import es.usc.rai.coego.martin.demiurgo.json.JsonAction;
-import es.usc.rai.coego.martin.demiurgo.json.JsonClass;
 import es.usc.rai.coego.martin.demiurgo.json.JsonPendingRoom;
 import es.usc.rai.coego.martin.demiurgo.json.MyUserResponse;
 import es.usc.rai.coego.martin.demiurgo.json.NarrateActionRequest;
@@ -96,11 +96,13 @@ public class WebService {
 
 		String world = ((DemiurgoPrincipal) securityContext.getUserPrincipal()).getWorld();
 		String username = securityContext.getUserPrincipal().getName();
-		User u = Demiurgo.getWorld(world).getUser(username);
+		User u = Demiurgo.getWorld(world).getUser(username.toLowerCase());
 
 		if (u != null) {
 			me.setStatus(new ResponseStatus());
-			me.setUser(u.toJson());
+			me.setUser(u.toJson(false));
+			if(u.getObj() != null)
+				me.setObj(u.getObj().toStatusJson());
 			me.setWorld(world);
 			return me;
 		} else
@@ -145,7 +147,7 @@ public class WebService {
 		String world = ((DemiurgoPrincipal) securityContext.getUserPrincipal()).getWorld();
 		World w = Demiurgo.getWorld(world);
 		String username = securityContext.getUserPrincipal().getName();
-		User u = Demiurgo.getWorld(world).getUser(username);
+		User u = Demiurgo.getWorld(world).getUser(username.toLowerCase());
 
 		u.setDecision(req.getDecision());
 		DemiurgoObject obj = u.getObj();
@@ -172,7 +174,7 @@ public class WebService {
 		// We get all actions with this user involved in them
 		List<Action> actions = new ArrayList<>(w.getActions().values());
 		Collections.sort(actions);
-		List<Action> allActions = actions.stream().filter(a -> a.hasWitness(u)).collect(Collectors.toList());
+		List<Action> allActions = actions.stream().filter(a -> a.hasWitness(u) && a.isPublished()).collect(Collectors.toList());
 
 		int f, l;
 		f = Integer.parseInt(first);
@@ -188,6 +190,7 @@ public class WebService {
 		for (Action a : someActions) {
 			narrations.add(Demiurgo.filterActionToUser(a.getNarration(), username));
 		}
+		res.setTotalActions(allActions.size());
 		res.setStatus(new ResponseStatus());
 		res.setActions(narrations);
 
@@ -377,13 +380,8 @@ public class WebService {
 		String world = ((DemiurgoPrincipal) securityContext.getUserPrincipal()).getWorld();
 		World w = Demiurgo.getWorld(world);
 
-		List<JsonClass> l = new ArrayList<>();
-		for (DemiurgoClass cl : w.getClasses()) {
-			if (!(cl instanceof RootObjectClass))
-				l.add(cl.toJson());
-		}
-
-		res.setClasses(l);
+		ClassTree ct = w.getClassTree();
+		res.setClasses(ct);
 		return Response.ok(res).build();
 	}
 
@@ -533,27 +531,23 @@ public class WebService {
 	@RolesAllowed("gm")
 	public GetPendingRoomsResponse getPendingRooms() {
 		GetPendingRoomsResponse res = new GetPendingRoomsResponse();
-		try {
-			String world = ((DemiurgoPrincipal) securityContext.getUserPrincipal()).getWorld();
-			World w = Demiurgo.getWorld(world);
-			if (w == null) {
-				res.setStatus(new ResponseStatus(false, "cannot find room"));
-				return res;
-			}
-			List<JsonPendingRoom> pendingRooms = new ArrayList<>();
-			for (DemiurgoRoom r : w.getPendingRooms()) {
-				pendingRooms.add(r.toJsonPendingRoom());
-			}
-			res.setPendingRooms(pendingRooms);
-			res.setNumUsers(w.getAllUsers().size());
-			res.setNoObjUsers(w.getAllUsers().stream().filter(u -> (u.getObj() == null && u.getRole() == UserRole.USER))
-					.map(u -> u.toJson()).collect(Collectors.toList()));
-			return res;
-		} catch (SignatureException | MissingClaimException | IncorrectClaimException e) {
-			System.err.println(e.getLocalizedMessage());
-			res.setStatus(new ResponseStatus(false, e.getLocalizedMessage()));
+		
+		String world = ((DemiurgoPrincipal) securityContext.getUserPrincipal()).getWorld();
+		World w = Demiurgo.getWorld(world);
+		if (w == null) {
+			res.setStatus(new ResponseStatus(false, "cannot find room"));
 			return res;
 		}
+		List<JsonPendingRoom> pendingRooms = new ArrayList<>();
+		for (DemiurgoRoom r : w.getPendingRooms()) {
+			pendingRooms.add(r.toJsonPendingRoom());
+		}
+		res.setPendingRooms(pendingRooms);
+		res.setNumUsers(w.getAllUsers().size());
+		res.setNoObjUsers(w.getAllUsers().stream().filter(u -> (u.getObj() == null && u.getRole() == UserRole.USER))
+				.map(u -> u.toJson()).collect(Collectors.toList()));
+		return res;
+		
 	}
 
 	// TODO: is this method useful?

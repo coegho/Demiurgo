@@ -22,8 +22,12 @@ import es.usc.rai.coego.martin.demiurgo.coe.COEParser.Exp_userContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.FloatContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.FloatTypeContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.Function_callContext;
+import es.usc.rai.coego.martin.demiurgo.coe.COEParser.GetIdContext;
+import es.usc.rai.coego.martin.demiurgo.coe.COEParser.GetLocContext;
+import es.usc.rai.coego.martin.demiurgo.coe.COEParser.GetUserContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.IndexAssignContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.IndexContext;
+import es.usc.rai.coego.martin.demiurgo.coe.COEParser.InstanceofOpContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.IntContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.IntTypeContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.IntermediateVariableContext;
@@ -31,22 +35,26 @@ import es.usc.rai.coego.martin.demiurgo.coe.COEParser.InventoryContentsContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.ListContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.ListTypeContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.LogicContext;
+import es.usc.rai.coego.martin.demiurgo.coe.COEParser.MethodOpContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.MoveContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.MulDivContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.MultDiceContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.NegativeContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.New_objContext;
+import es.usc.rai.coego.martin.demiurgo.coe.COEParser.NotOpContext;
+import es.usc.rai.coego.martin.demiurgo.coe.COEParser.NullObjContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.OperationContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.ParensContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.RoomContentsContext;
-import es.usc.rai.coego.martin.demiurgo.coe.COEParser.RoomContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.RoomTypeContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.RootObjectContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.RootVariableContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.Sharp_identifierContext;
+import es.usc.rai.coego.martin.demiurgo.coe.COEParser.SomeRoomContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.StringContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.StringTypeContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.SymbolTypeContext;
+import es.usc.rai.coego.martin.demiurgo.coe.COEParser.ThisRoomContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.VariableOpContext;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ArgumentMismatchException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.CannotLoopException;
@@ -82,7 +90,6 @@ import es.usc.rai.coego.martin.demiurgo.values.IntegerValue;
 import es.usc.rai.coego.martin.demiurgo.values.InventoryValue;
 import es.usc.rai.coego.martin.demiurgo.values.ListValue;
 import es.usc.rai.coego.martin.demiurgo.values.LocationValue;
-import es.usc.rai.coego.martin.demiurgo.values.NullValue;
 import es.usc.rai.coego.martin.demiurgo.values.ObjectValue;
 import es.usc.rai.coego.martin.demiurgo.values.ReturnValueTypes;
 import es.usc.rai.coego.martin.demiurgo.values.RoomValue;
@@ -474,6 +481,22 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 	}
 
 	/**
+	 * Performs a "NOT" logic operation.
+	 */
+	@Override
+	public ValueInterface visitNotOp(NotOpContext ctx) {
+		try {
+			ValueInterface v = visit(ctx.operation());
+			return v.not();
+		} catch (IllegalOperationException e) {
+			e.setStartIndex(ctx.start.getStartIndex());
+			e.setLine(ctx.start.getLine());
+			e.setColumn(ctx.start.getCharPositionInLine());
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
 	 * <p>
 	 * Performs a negative operation.
 	 * </p>
@@ -656,7 +679,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			e.setStartIndex(ctx.MOVE().getSymbol().getStartIndex());
 			throw new RuntimeException(e);
 		}
-		return new NullValue();
+		return null;
 	}
 
 	/**
@@ -725,9 +748,9 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 	}
 
 	/**
-	 * Executes a function or method and returns the return value.
+	 * Executes a function and returns the return value.
 	 * <p>
-	 * function_call : (variable '.')? SYMBOL '(' (operation (',' operation)*)?
+	 * function_call : SYMBOL '(' (operation (',' operation)*)?
 	 * ')' ;
 	 */
 	@Override
@@ -737,32 +760,17 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 		DemiurgoMethod method;
 		Scope parentScope;
 		try {
-			if (ctx.variable() != null) {
-				ValueInterface v = visit(ctx.variable());
-				if (v instanceof ObjectValue) {
-					ObjectValue obj = (ObjectValue) v;
-					if (!obj.getObj().getUserClass().getClassName().equalsIgnoreCase(methodName)) {
-						method = obj.getObj().getUserClass().getMethod(methodName);
-						parentScope = new ObjectScope(obj.getObj());
-					} else {
-						// Cannot call a constructor method like an ordinary
-						// method
-						throw new ConstructorCalledLikeAMethodException(ctx.SYMBOL().getSymbol().getLine(),
-								ctx.SYMBOL().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex(),
-								methodName);
-					}
-				} else {
-					throw new NotAnObjectException(ctx.SYMBOL().getSymbol().getLine(),
-							ctx.SYMBOL().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex(),
-							v.getTypeName());
-				}
-			}
+			
 			// function without object reference
 			// could be a local function or a world function (non-class)
-			else {
-				method = getSM().getMethod(methodName);
+			
+			method = getSM().getMethod(methodName);
+			if (method instanceof ClassMethod) {
+				parentScope = new ObjectScope(getSM().getThisObject());
+			} else {
 				parentScope = getSM().getGlobalScope();
 			}
+			
 			if (method == null) {
 				throw new UndefinedMethodException(ctx.SYMBOL().getSymbol().getLine(),
 						ctx.SYMBOL().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex(), methodName);
@@ -799,7 +807,79 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			if (method.hasReturnArgument())
 				return fs.getReturnVariable();
 			else
-				return new NullValue();
+				return null;
+
+		} catch (UndefinedMethodException | ArgumentMismatchException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	
+	/**
+	 * Executes a method and returns the return value.
+	 * <p>
+	 * operation '.' SYMBOL '(' (operation (',' operation)*)?
+	 * ')' ;
+	 */
+	@Override
+	public ValueInterface visitMethodOp(MethodOpContext ctx) {
+		// Getting method
+		String methodName = ctx.SYMBOL().getText().toLowerCase();
+		ValueInterface left = visit(ctx.operation(0));
+		DemiurgoMethod method;
+		Scope parentScope;
+		try {
+			if (left instanceof ObjectValue && ((ObjectValue)left).getObj()!=null) {
+				ObjectValue obj = (ObjectValue) left;
+				if (!obj.getObj().getDemiurgoClass().getClassName().equalsIgnoreCase(methodName)) {
+					method = obj.getObj().getDemiurgoClass().getMethod(methodName);
+					parentScope = new ObjectScope(obj.getObj());
+				} else {
+					// Cannot call a constructor method like an ordinary
+					// method
+					throw new ConstructorCalledLikeAMethodException(ctx.SYMBOL().getSymbol().getLine(),
+							ctx.SYMBOL().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex(),
+							methodName);
+				}
+			} else {
+				throw new NotAnObjectException(ctx.SYMBOL().getSymbol().getLine(),
+						ctx.SYMBOL().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex(),
+						left.getTypeName());
+			}
+			
+			if(method == null) {
+				throw new UndefinedMethodException(ctx.SYMBOL().getSymbol().getLine(),
+						ctx.SYMBOL().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex(),
+						methodName);
+			}
+			// the method is selected
+
+			// arguments
+			List<ValueInterface> args = new ArrayList<>();
+			for (OperationContext x : ctx.operation().subList(1, ctx.operation().size())) {
+				ValueInterface a = visit(x);
+
+				args.add(a);
+			}
+
+			if (!method.checkArgs(args)) {
+				throw new ArgumentMismatchException(ctx.SYMBOL().getSymbol().getLine(),
+						ctx.SYMBOL().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex(), args,
+						method.getArgsValues());
+			}
+
+			// SETTING SCOPE
+			FunctionScope fs = new FunctionScope(method, args, parentScope);
+			getSM().pushScope(fs);
+
+			((ClassMethod) method).execute(this);
+			
+
+			getSM().popScope();
+			if (method.hasReturnArgument())
+				return fs.getReturnVariable();
+			else
+				return null;
 
 		} catch (ConstructorCalledLikeAMethodException | UndefinedMethodException | ArgumentMismatchException
 				| NotAnObjectException e) {
@@ -853,9 +933,6 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 					fields.put(e.getKey(), f);
 				}
 			}
-			ObjectValue v = new ObjectValue(obj);
-			v.setWritable(false);
-			fields.put("this", v);
 
 			obj.setFields(fields);
 
@@ -906,7 +983,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 		}
 
 		getSM().popScope();
-		return new NullValue();
+		return null;
 	}
 
 	/**
@@ -930,7 +1007,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 		else if (ctx.line() != null)
 			visit(ctx.line());
 		getSM().popScope();
-		return new NullValue();
+		return null;
 	}
 
 	/**
@@ -970,7 +1047,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			throw new RuntimeException(new CannotLoopException(ctx.FOR().getSymbol().getLine(),
 					ctx.FOR().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex(), e.getType()));
 		}
-		return new NullValue();
+		return null;
 	}
 
 	/**
@@ -987,10 +1064,10 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 	/**
 	 * Returns a room by its path.
 	 * <p>
-	 * room : '@' room_path ;
+	 * ROOM room_path
 	 */
 	@Override
-	public ValueInterface visitRoom(RoomContext ctx) {
+	public ValueInterface visitSomeRoom(SomeRoomContext ctx) {
 		try {
 			String path = ctx.room_path().getText();
 			DemiurgoRoom room;
@@ -998,8 +1075,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 				room = getSM().getRoom(path);
 			} else { // relative path
 				String curRoom = getSM().getCurrentRoom().getLongPath();
-				String curPath = curRoom.substring(0, curRoom.lastIndexOf('/') + 1);
-				room = getSM().getRoom(path, curPath);
+				room = getSM().getRoom(curRoom + '/' + path);
 			}
 			if (room != null) {
 				return new RoomValue(room);
@@ -1010,6 +1086,8 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			throw new RuntimeException(e);
 		}
 	}
+	
+	
 
 	/**
 	 * Assigns an object to an user.
@@ -1032,7 +1110,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 				}
 				getSM().setUserObject(user, obj);
 			}
-			return new NullValue();
+			return null;
 		} catch (UnexistentUserException e) {
 			throw new RuntimeException(e);
 		}
@@ -1070,4 +1148,92 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 		}
 	}
 
+	/**
+	 * Creates a NULL object.
+	 */
+	@Override
+	public ValueInterface visitNullObj(NullObjContext ctx) {
+		return ObjectValue.defaultValue(getSM().getRootClass());
+	}
+
+	/**
+	 * Checks if the object inherits from given class.
+	 * <p>
+	 * operation INSTANCEOFSYMBOL SYMBOL
+	 */
+	@Override
+	public ValueInterface visitInstanceofOp(InstanceofOpContext ctx) {
+		ValueInterface left = visit(ctx.operation());
+		String classname = ctx.SYMBOL().getText().toLowerCase();
+
+		if (left instanceof ObjectValue) {
+			ObjectValue ov = (ObjectValue) left;
+			if (ov.getObj() == null) {
+				return new IntegerValue(0); // null obj
+			}
+			return new IntegerValue(
+					ov.getObj().getDemiurgoClass().inheritFrom(getSM().getCurrentWorld().getClassFromName(classname)));
+		} else { // it's not an object; returns false
+			return new IntegerValue(0);
+		}
+	}
+
+	/**
+	 * operation '.' ROOM
+	 */
+	@Override
+	public ValueInterface visitGetLoc(GetLocContext ctx) {
+		ValueInterface left = visit(ctx.operation());
+
+		if (left instanceof ObjectValue) {
+			ObjectValue ov = (ObjectValue) left;
+			if(ov.getObj() != null)
+				return new RoomValue(ov.getObj().getRealLocation());
+		}
+		throw new RuntimeException(new NotAnObjectException(ctx.getStart().getLine(),
+					ctx.getStart().getCharPositionInLine(), 0, left.getTypeName()));
+	}
+
+	/**
+	 * operation '.' '$'
+	 */
+	@Override
+	public ValueInterface visitGetUser(GetUserContext ctx) {
+		ValueInterface left = visit(ctx.operation());
+
+		if (left instanceof ObjectValue) {
+			ObjectValue ov = (ObjectValue) left;
+			if(ov.getObj() != null && ov.getObj().getUser() != null)
+				return new StringValue(ov.getObj().getUser().getUsername());
+			else
+				return new StringValue("");
+		} else
+			throw new RuntimeException(new NotAnObjectException(ctx.getStart().getLine(),
+					ctx.getStart().getCharPositionInLine(), 0, left.getTypeName()));
+	}
+
+	/**
+	 * operation '.' '#'
+	 */
+	@Override
+	public ValueInterface visitGetId(GetIdContext ctx) {
+		ValueInterface left = visit(ctx.operation());
+
+		if (left instanceof ObjectValue) {
+			ObjectValue ov = (ObjectValue) left;
+			if(ov.getObj() != null)
+				return new IntegerValue((int)ov.getObj().getId());
+			else
+				return new IntegerValue(0);
+		} else
+			throw new RuntimeException(new NotAnObjectException(ctx.getStart().getLine(),
+					ctx.getStart().getCharPositionInLine(), 0, left.getTypeName()));
+	}
+
+	@Override
+	public ValueInterface visitThisRoom(ThisRoomContext ctx) {
+		return new RoomValue(getSM().getCurrentRoom());
+	}
+
+	
 }

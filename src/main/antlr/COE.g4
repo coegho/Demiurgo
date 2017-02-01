@@ -24,9 +24,9 @@ code : line (nl line)* ;
 line : exp_if
 	| exp_for
 	| exp_user
+	| echo
 	| operation
 	| var_decl
-	| echo
 	;
 
 variable : SYMBOL					#rootVariable
@@ -34,14 +34,22 @@ variable : SYMBOL					#rootVariable
 	| variable '.' SYMBOL			#intermediateVariable
 	;
 
-function_call : (variable '.')? SYMBOL '(' (operation (',' operation)*)? ')' ;
+function_call : SYMBOL '(' (operation (',' operation)*)? ')' ;
 
 contents : variable '.' INVENTORY							#inventoryContents
 	| room '.' INVENTORY									#roomContents
 	;
 
+
 operation : contents										#contentsOp
 	| function_call											#functionOp
+	| operation '.' SYMBOL '(' (operation (',' operation)*)? ')' #methodOp
+	| operation '.' ROOM									#location
+	| operation '.' '$'										#getUser
+	| operation '.' '#'										#getId
+	| operation '.' ROOM									#getLoc
+	| operation INSTANCEOFSYMBOL SYMBOL						#instanceofOp
+	| NOT operation											#notOp
 	| '-' operation											#negative
 	| D operation											#dice
 	| operation D operation									#multDice
@@ -54,6 +62,7 @@ operation : contents										#contentsOp
 	| variable '[' operation ']' ASSIGN operation			#indexAssign
 	| operation MOVE operation								#move
 	| variable												#variableOp
+	| NULLOBJ												#nullObj
 	| operation '[' operation ']'							#index
 	| new_obj												#newObj
 	| INT_NUMBER											#int
@@ -72,11 +81,18 @@ new_obj : 'new' SYMBOL '(' (operation (',' operation)*)? ')' ;
 
 sharp_identifier : '#' INT_NUMBER ;
 
-room : ROOM room_path ;
+room : ROOM room_path										#someRoom
+	| ROOM													#thisRoom
+	;
 
-room_path : SYMBOL											#relativeRoom
-	|														#rootRoom
-	| room_path '/' SYMBOL									#leafRoom
+region : SYMBOL
+	| '.'
+	| '..'
+	;
+
+room_path : region											#relativeRoom
+	| '/' region											#rootRoom
+	| room_path '/' region									#leafRoom
 	;
 
 exp_if : IF '(' operation ')' nl? '{' nl? code? nl? '}' exp_else?
@@ -119,6 +135,9 @@ FLOAT_TYPE: [Ff][Ll][Oo][Aa][Tt] ;
 STRING_TYPE: [Ss][Tt][Rr] ;
 TRUE: [Tt][Rr][Uu][Ee] ;
 FALSE: [Ff][Aa][Ll][Ss][Ee] ;
+NOT: [Nn][Oo][Tt] ;
+INSTANCEOFSYMBOL : [Ii][Nn][Ss][Tt][Aa][Nn][Cc][Ee][Oo][Ff] ;
+NULLOBJ : [Nn][Uu][Ll][Ll] ;
 
 
 SYMBOL : ([dD][a-zA-Z_]|[a-cA-Ce-zE-Z_])[a-zA-Z0-9_]* ;

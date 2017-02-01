@@ -1,6 +1,7 @@
 package es.usc.rai.coego.martin.demiurgo.values;
 
 import es.usc.rai.coego.martin.demiurgo.exceptions.IllegalOperationException;
+import es.usc.rai.coego.martin.demiurgo.exceptions.ValueCastException;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoObject;
 import es.usc.rai.coego.martin.demiurgo.universe.World;
@@ -17,7 +18,7 @@ public class ObjectValue extends AbstractValue {
 	
 	public ObjectValue(DemiurgoObject obj) {
 		setObj(obj);
-		this.itsClass = obj.getUserClass();
+		this.itsClass = obj.getDemiurgoClass();
 		obj_id = obj.getId();
 		className = itsClass.getClassName();
 	}
@@ -31,10 +32,21 @@ public class ObjectValue extends AbstractValue {
 		className = itsClass.getClassName();
 	}
 	
+	public ObjectValue(DemiurgoObject obj, DemiurgoClass itsClass) {
+		this.obj = obj;
+		this.itsClass = itsClass;
+	}
+
 	@Override
 	public ValueInterface eq(ValueInterface another) throws IllegalOperationException {
 		if(another instanceof ObjectValue) {
-			return new IntegerValue(getObj().getId() == ((ObjectValue)another).getObj().getId());
+			ObjectValue o = ((ObjectValue)another);
+			if(getObj() == null) {
+				return new IntegerValue(o.getObj() == null); //two nulls: true
+			}
+			else if(o.getObj() == null)
+				return new IntegerValue(0); //only one null: false
+			return new IntegerValue(getObj().equals(o.getObj()));
 		}
 		else {
 			throw new IllegalOperationException(-1, -1, -1, getTypeName(), another.getTypeName(), "!=");
@@ -64,33 +76,41 @@ public class ObjectValue extends AbstractValue {
 		obj_id = (obj!=null)?(obj.getId()):-1;
 	}
 	
+	public DemiurgoClass getItsClass() {
+		return itsClass;
+	}
+	
+	public void setItsClass(DemiurgoClass itsClass) {
+		this.itsClass = itsClass;
+	}
+	
 	@Override
 	public boolean canAssign(ValueInterface newRValue) {
 		if (newRValue instanceof ObjectValue) {
 			ObjectValue o = (ObjectValue)newRValue;
+			if(o.getObj() == null) {
+				return true; //always can assign null
+			}
 			//check polymorphism
-			return (o.getObj().getUserClass().inheritFrom(itsClass));
+			return (o.getObj().getDemiurgoClass().inheritFrom(itsClass));
 		}
 		return false;
 	}
 
 	@Override
-	public boolean assign(ValueInterface newRValue) {
-		if(newRValue instanceof ObjectValue) {
+	public void assign(ValueInterface newRValue) throws ValueCastException {
+		if(canAssign(newRValue)) {
 			ObjectValue o = (ObjectValue)newRValue;
-			//check polymorphism
-			if(o.getObj().getUserClass().inheritFrom(itsClass)) {
-				obj = o.getObj();
-				obj_id = obj.getId();
-				return true;
-			}
+			obj = o.getObj();
+			obj_id = (o.getObj()!=null)?obj.getId():-1;
 		}
-		return false;
+		else
+			throw new ValueCastException(-1, -1, -1, newRValue.getTypeName(), getTypeName());
 	}
 
 	@Override
 	public ValueInterface cloneValue() {
-		return new ObjectValue(obj);
+		return new ObjectValue(obj, itsClass);
 	}
 
 	@Override

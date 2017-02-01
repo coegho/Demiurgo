@@ -121,13 +121,6 @@ public interface COEVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitRoomContents(COEParser.RoomContentsContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code parensOp}
-	 * labeled alternative in {@link COEParser#operation}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitParensOp(COEParser.ParensOpContext ctx);
-	/**
 	 * Visit a parse tree produced by the {@code compare}
 	 * labeled alternative in {@link COEParser#operation}.
 	 * @param ctx the parse tree
@@ -135,12 +128,12 @@ public interface COEVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitCompare(COEParser.CompareContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code move}
+	 * Visit a parse tree produced by the {@code getLoc}
 	 * labeled alternative in {@link COEParser#operation}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitMove(COEParser.MoveContext ctx);
+	T visitGetLoc(COEParser.GetLocContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code string}
 	 * labeled alternative in {@link COEParser#operation}.
@@ -163,19 +156,12 @@ public interface COEVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitMulDiv(COEParser.MulDivContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code AddSub}
+	 * Visit a parse tree produced by the {@code getUser}
 	 * labeled alternative in {@link COEParser#operation}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitAddSub(COEParser.AddSubContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code variableOp}
-	 * labeled alternative in {@link COEParser#operation}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitVariableOp(COEParser.VariableOpContext ctx);
+	T visitGetUser(COEParser.GetUserContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code dice}
 	 * labeled alternative in {@link COEParser#operation}.
@@ -184,19 +170,19 @@ public interface COEVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitDice(COEParser.DiceContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code index}
+	 * Visit a parse tree produced by the {@code nullObj}
 	 * labeled alternative in {@link COEParser#operation}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitIndex(COEParser.IndexContext ctx);
+	T visitNullObj(COEParser.NullObjContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code concat}
+	 * Visit a parse tree produced by the {@code getId}
 	 * labeled alternative in {@link COEParser#operation}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitConcat(COEParser.ConcatContext ctx);
+	T visitGetId(COEParser.GetIdContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code newObj}
 	 * labeled alternative in {@link COEParser#operation}.
@@ -211,6 +197,83 @@ public interface COEVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitFloat(COEParser.FloatContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code multDice}
+	 * labeled alternative in {@link COEParser#operation}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitMultDice(COEParser.MultDiceContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code negative}
+	 * labeled alternative in {@link COEParser#operation}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitNegative(COEParser.NegativeContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code notOp}
+	 * labeled alternative in {@link COEParser#operation}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitNotOp(COEParser.NotOpContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code functionOp}
+	 * labeled alternative in {@link COEParser#operation}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFunctionOp(COEParser.FunctionOpContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code contentsOp}
+	 * labeled alternative in {@link COEParser#operation}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitContentsOp(COEParser.ContentsOpContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code parensOp}
+	 * labeled alternative in {@link COEParser#operation}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitParensOp(COEParser.ParensOpContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code move}
+	 * labeled alternative in {@link COEParser#operation}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitMove(COEParser.MoveContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code AddSub}
+	 * labeled alternative in {@link COEParser#operation}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAddSub(COEParser.AddSubContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code variableOp}
+	 * labeled alternative in {@link COEParser#operation}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitVariableOp(COEParser.VariableOpContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code index}
+	 * labeled alternative in {@link COEParser#operation}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitIndex(COEParser.IndexContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code concat}
+	 * labeled alternative in {@link COEParser#operation}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitConcat(COEParser.ConcatContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code list}
 	 * labeled alternative in {@link COEParser#operation}.
@@ -240,20 +303,6 @@ public interface COEVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitSharp(COEParser.SharpContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code multDice}
-	 * labeled alternative in {@link COEParser#operation}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitMultDice(COEParser.MultDiceContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code negative}
-	 * labeled alternative in {@link COEParser#operation}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitNegative(COEParser.NegativeContext ctx);
-	/**
 	 * Visit a parse tree produced by the {@code boolean}
 	 * labeled alternative in {@link COEParser#operation}.
 	 * @param ctx the parse tree
@@ -261,12 +310,26 @@ public interface COEVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitBoolean(COEParser.BooleanContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code functionOp}
+	 * Visit a parse tree produced by the {@code methodOp}
 	 * labeled alternative in {@link COEParser#operation}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitFunctionOp(COEParser.FunctionOpContext ctx);
+	T visitMethodOp(COEParser.MethodOpContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code instanceofOp}
+	 * labeled alternative in {@link COEParser#operation}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitInstanceofOp(COEParser.InstanceofOpContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code location}
+	 * labeled alternative in {@link COEParser#operation}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitLocation(COEParser.LocationContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code logic}
 	 * labeled alternative in {@link COEParser#operation}.
@@ -274,13 +337,6 @@ public interface COEVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitLogic(COEParser.LogicContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code contentsOp}
-	 * labeled alternative in {@link COEParser#operation}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitContentsOp(COEParser.ContentsOpContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code assign}
 	 * labeled alternative in {@link COEParser#operation}.
@@ -307,11 +363,25 @@ public interface COEVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitSharp_identifier(COEParser.Sharp_identifierContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link COEParser#room}.
+	 * Visit a parse tree produced by the {@code someRoom}
+	 * labeled alternative in {@link COEParser#room}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitRoom(COEParser.RoomContext ctx);
+	T visitSomeRoom(COEParser.SomeRoomContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code thisRoom}
+	 * labeled alternative in {@link COEParser#room}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitThisRoom(COEParser.ThisRoomContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link COEParser#region}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitRegion(COEParser.RegionContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code rootRoom}
 	 * labeled alternative in {@link COEParser#room_path}.
