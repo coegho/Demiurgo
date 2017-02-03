@@ -29,21 +29,15 @@ line : exp_if
 	| var_decl
 	;
 
-variable : SYMBOL					#rootVariable
-	| sharp_identifier				#rootObject
-	| variable '.' SYMBOL			#intermediateVariable
-	;
-
 function_call : SYMBOL '(' (operation (',' operation)*)? ')' ;
 
-contents : variable '.' INVENTORY							#inventoryContents
+
+
+operation : operation '.' INVENTORY							#someContents
 	| room '.' INVENTORY									#roomContents
-	;
-
-
-operation : contents										#contentsOp
 	| function_call											#functionOp
 	| operation '.' SYMBOL '(' (operation (',' operation)*)? ')' #methodOp
+	| operation '.' SYMBOL									#intermediateVariable
 	| operation '.' ROOM									#location
 	| operation '.' '$'										#getUser
 	| operation '.' '#'										#getId
@@ -58,10 +52,9 @@ operation : contents										#contentsOp
 	| operation op=(NEQ|EQ|GREQ|LESEQ|LESS|GREAT) operation	#compare
 	| operation op=(OR|AND) operation						#logic
 	| operation CONCAT operation							#concat
-	| variable ASSIGN operation								#assign
-	| variable '[' operation ']' ASSIGN operation			#indexAssign
+	| operation ASSIGN operation							#assign
 	| operation MOVE operation								#move
-	| variable												#variableOp
+	| SYMBOL												#variable
 	| NULLOBJ												#nullObj
 	| operation '[' operation ']'							#index
 	| new_obj												#newObj

@@ -25,15 +25,14 @@ import es.usc.rai.coego.martin.demiurgo.coe.COEParser.Function_callContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.GetIdContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.GetLocContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.GetUserContext;
-import es.usc.rai.coego.martin.demiurgo.coe.COEParser.IndexAssignContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.IndexContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.InstanceofOpContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.IntContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.IntTypeContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.IntermediateVariableContext;
-import es.usc.rai.coego.martin.demiurgo.coe.COEParser.InventoryContentsContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.ListContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.ListTypeContext;
+import es.usc.rai.coego.martin.demiurgo.coe.COEParser.LocationContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.LogicContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.MethodOpContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.MoveContext;
@@ -47,21 +46,19 @@ import es.usc.rai.coego.martin.demiurgo.coe.COEParser.OperationContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.ParensContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.RoomContentsContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.RoomTypeContext;
-import es.usc.rai.coego.martin.demiurgo.coe.COEParser.RootObjectContext;
-import es.usc.rai.coego.martin.demiurgo.coe.COEParser.RootVariableContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.Sharp_identifierContext;
+import es.usc.rai.coego.martin.demiurgo.coe.COEParser.SomeContentsContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.SomeRoomContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.StringContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.StringTypeContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.SymbolTypeContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.ThisRoomContext;
-import es.usc.rai.coego.martin.demiurgo.coe.COEParser.VariableOpContext;
+import es.usc.rai.coego.martin.demiurgo.coe.COEParser.VariableContext;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ArgumentMismatchException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.CannotLoopException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ConstructorCalledLikeAMethodException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.IllegalOperationException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.IrregularListException;
-import es.usc.rai.coego.martin.demiurgo.exceptions.NotAListException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.NotAnObjectException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ObjectInsideItselfException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.RoomNotFoundException;
@@ -551,56 +548,18 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 	/**
 	 * Assigns the value on the right to the variable on the left.
 	 * <p>
-	 * operation: variable ASSIGN operation
+	 * operation ASSIGN operation
 	 */
 	@Override
 	public ValueInterface visitAssign(AssignContext ctx) {
 		try {
-			ValueInterface left = visit(ctx.variable());
-			ValueInterface right = visit(ctx.operation());
+			ValueInterface left = visit(ctx.operation(0));
+			ValueInterface right = visit(ctx.operation(1));
 
 			left.assign(right);
 			return left.cloneValue();
 		} catch (ValueCastException ex) {
 			throw new RuntimeException(ex);
-		}
-	}
-
-	/**
-	 * Assigns the value on the right into the given position of the variable on
-	 * the left.
-	 * <p>
-	 * operation: variable '[' operation ']' ASSIGN operation
-	 */
-	@Override
-	public ValueInterface visitIndexAssign(IndexAssignContext ctx) {
-		ValueInterface r = visit(ctx.variable());
-		ValueInterface i = visit(ctx.operation(0));
-		ValueInterface value = visit(ctx.operation(1));
-
-		int index;
-		ValueInterface element;
-		try {
-			index = i.castToInteger();
-
-			if (!(r instanceof ListValue))
-				throw new NotAListException(ctx.start.getLine(), ctx.start.getCharPositionInLine(),
-						ctx.start.getStartIndex(), r.getTypeName());
-			element = r.getFromIndex(index);
-			if (element.canAssign(value)) {
-				element.assign(value);
-				return value;
-			} else {
-				throw new ValueCastException(ctx.ASSIGN().getSymbol().getLine(),
-						ctx.ASSIGN().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex(),
-						value.getTypeName(), element.getTypeName());
-			}
-		} catch (ValueCastException e) {
-			throw new RuntimeException(e);
-		} catch (NotAListException e) {
-			throw new RuntimeException(e);
-		} catch (IllegalOperationException e) {
-			throw new RuntimeException(e);
 		}
 	}
 
@@ -683,12 +642,12 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 	}
 
 	/**
-	 * <p>
 	 * Returns a variable found on the input.
-	 * </p>
+	 * <p>
+	 * SYMBOL
 	 */
 	@Override
-	public ValueInterface visitRootVariable(RootVariableContext ctx) {
+	public ValueInterface visitVariable(VariableContext ctx) {
 		try {
 			String varname = ctx.SYMBOL().getText().toLowerCase();
 			ValueInterface v = getSM().getVariable(varname);
@@ -701,22 +660,15 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 		}
 	}
 
-	/**
-	 * Returns a ReferenceObject with an object identified by its ID.
-	 */
-	@Override
-	public ValueInterface visitRootObject(RootObjectContext ctx) {
-		return visit(ctx.sharp_identifier());
-	}
 
 	/**
 	 * Returns a variable within another variable (a field within an object).
 	 * <p>
-	 * variable '.' SYMBOL
+	 * operation '.' SYMBOL
 	 */
 	@Override
 	public ValueInterface visitIntermediateVariable(IntermediateVariableContext ctx) {
-		ValueInterface value = visit(ctx.variable());
+		ValueInterface value = visit(ctx.operation());
 
 		try {
 			String fieldName = ctx.SYMBOL().getText().toLowerCase();
@@ -736,16 +688,6 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 		}
 	}
 
-	/**
-	 * Returns the value of a variable.
-	 * 
-	 * @return The value contained into the variable.
-	 */
-	@Override
-	public ValueInterface visitVariableOp(VariableOpContext ctx) {
-		ValueInterface v = visit(ctx.variable());
-		return v.cloneValue();
-	}
 
 	/**
 	 * Executes a function and returns the return value.
@@ -783,7 +725,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			for (OperationContext x : ctx.operation()) {
 				ValueInterface a = visit(x);
 
-				args.add(a);
+				args.add(a.cloneValue());
 			}
 
 			if (!method.checkArgs(args)) {
@@ -805,7 +747,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			getSM().popScope();
 
 			if (method.hasReturnArgument())
-				return fs.getReturnVariable();
+				return fs.getReturnVariable().cloneValue();
 			else
 				return null;
 
@@ -859,7 +801,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			for (OperationContext x : ctx.operation().subList(1, ctx.operation().size())) {
 				ValueInterface a = visit(x);
 
-				args.add(a);
+				args.add(a.cloneValue());
 			}
 
 			if (!method.checkArgs(args)) {
@@ -877,7 +819,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 
 			getSM().popScope();
 			if (method.hasReturnArgument())
-				return fs.getReturnVariable();
+				return fs.getReturnVariable().cloneValue();
 			else
 				return null;
 
@@ -1117,14 +1059,15 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 	}
 
 	/**
+	 * Returns the contents of a inventory.
 	 * <p>
-	 * variable '.' INVENTORY
+	 * operation '.' INVENTORY
 	 */
 	@Override
-	public ValueInterface visitInventoryContents(InventoryContentsContext ctx) {
-		ValueInterface v = visit(ctx.variable());
-		if (v instanceof InventoryValue) {
-			return new ListValue(((InventoryValue) v).getContents());
+	public ValueInterface visitSomeContents(SomeContentsContext ctx) {
+		ValueInterface v = visit(ctx.operation());
+		if (v instanceof LocationValue) {
+			return new ListValue(((LocationValue) v).getContents());
 		} else {
 			throw new RuntimeException(new IllegalOperationException(ctx.INVENTORY().getSymbol().getLine(),
 					ctx.INVENTORY().getSymbol().getCharPositionInLine(), ctx.INVENTORY().getSymbol().getStartIndex(),
@@ -1233,6 +1176,22 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 	@Override
 	public ValueInterface visitThisRoom(ThisRoomContext ctx) {
 		return new RoomValue(getSM().getCurrentRoom());
+	}
+
+	/**
+	 * Returns the object's location.
+	 * <p>
+	 * operation '.' ROOM
+	 */
+	@Override
+	public ValueInterface visitLocation(LocationContext ctx) {
+		ValueInterface left = visit(ctx.operation());
+		if(left instanceof ObjectValue && ((ObjectValue)left).getObj() != null) {
+			return new RoomValue(((ObjectValue)left).getObj().getRealLocation());
+		}
+		else {
+			throw new RuntimeException(new NotAnObjectException(ctx.start.getLine(), ctx.start.getCharPositionInLine(), 0, left.getTypeName()));
+		}
 	}
 
 	

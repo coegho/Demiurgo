@@ -37,6 +37,8 @@ public class CodeVisitor extends ExecVisitor {
 		try {
 			appendPrenarration(v.castToString());
 		} catch (ValueCastException e) {
+			e.setLine(ctx.operation().start.getLine());
+			e.setColumn(ctx.operation().start.getCharPositionInLine());
 			throw new RuntimeException(e);
 		}
 		return null;

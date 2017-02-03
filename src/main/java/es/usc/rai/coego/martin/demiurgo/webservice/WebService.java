@@ -73,12 +73,6 @@ import es.usc.rai.coego.martin.demiurgo.universe.Witness;
 import es.usc.rai.coego.martin.demiurgo.universe.World;
 import es.usc.rai.coego.martin.demiurgo.webservice.auth.DemiurgoPrincipal;
 import es.usc.rai.coego.martin.demiurgo.webservice.auth.Secured;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.IncorrectClaimException;
-import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MissingClaimException;
-import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.lang.Strings;
 
 @Path("/")
@@ -548,26 +542,6 @@ public class WebService {
 				.map(u -> u.toJson()).collect(Collectors.toList()));
 		return res;
 		
-	}
-
-	// TODO: is this method useful?
-	@GET
-	@Path("/noroomdecisions")
-	@Produces(MediaType.APPLICATION_JSON)
-	public String getNoRoomDecisions(@QueryParam("token") String token) {
-		try {
-			Jws<Claims> cl = Jwts.parser().require("role", "admin").setSigningKey(Demiurgo.getKey())
-					.parseClaimsJws(token);
-			String world = (String) cl.getBody().get("world");
-			World w = Demiurgo.getWorld(world);
-			if (w == null)
-				return "ERROR";
-			// return w.getDecisions().toString();
-			return "OK";
-		} catch (SignatureException | MissingClaimException | IncorrectClaimException e) {
-			System.err.println(e.getLocalizedMessage());
-			return "ERROR";
-		}
 	}
 
 	@GET

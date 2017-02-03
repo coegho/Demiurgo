@@ -1,0 +1,5 @@
+worlds:
+  mundo1:
+    url: jdbc:mariadb://localhost/mundo1
+    user: mysql
+    passwd: mysql
