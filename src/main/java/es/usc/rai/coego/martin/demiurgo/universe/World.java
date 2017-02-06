@@ -237,7 +237,7 @@ public class World {
 			rg.setOwnRoom(room);
 			locations.put(room.getId(), room);
 		} else {
-			System.err.println("Room already exists"); // TODO
+			worldLogger.warning("Room already exists"); // TODO
 		}
 		return rg.getOwnRoom();
 	}

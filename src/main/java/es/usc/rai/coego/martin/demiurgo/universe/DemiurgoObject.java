@@ -35,11 +35,20 @@ public class DemiurgoObject {
 	protected long loc_id;
 	protected String username;
 
+	public DemiurgoObject(DemiurgoClass ownClass, DemiurgoLocation location, Map<String, ValueInterface> fields) {
+		this.id = -1;
+		this.ownClass = ownClass;
+		this.location = location;
+		this.fields = fields;
+		location.addObject(this);
+		location.getWorld().addObject(this);
+	}
+	
 	public DemiurgoObject(DemiurgoClass ownClass, DemiurgoLocation location) {
 		this.id = -1;
 		this.ownClass = ownClass;
 		this.location = location;
-		this.fields = null;
+		this.fields =  new HashMap<String, ValueInterface>();
 		location.addObject(this);
 		location.getWorld().addObject(this);
 	}
@@ -95,11 +104,11 @@ public class DemiurgoObject {
 		if(fieldName.equalsIgnoreCase("this")) {
 			return new ObjectValue(this);
 		}
-		return fields.get(fieldName);
+		return fields.get(fieldName.toLowerCase());
 	}
 
 	public void setField(String fieldName, ValueInterface value) {
-		fields.put(fieldName, value);
+		fields.put(fieldName.toLowerCase(), value);
 	}
 	
 	public void setFields(Map<String, ValueInterface> fields) {

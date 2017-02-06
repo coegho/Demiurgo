@@ -858,7 +858,7 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 						objClass.getConstructor().getArgsValues());
 			}
 
-			DemiurgoObject obj = new DemiurgoObject(objClass, getSM().getCurrentRoom());
+			DemiurgoObject obj = new DemiurgoObject(objClass, getSM().getCurrentRoom(), null);
 
 			Map<String, ValueInterface> fields = new HashMap<>();
 			for (Entry<String, DefaultField> e : objClass.getFields().entrySet()) {
