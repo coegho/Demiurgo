@@ -25,11 +25,7 @@
 				<artifactId>jackson-annotations</artifactId>
 				<version>${jackson.version}</version>
 			</dependency>
-			<dependency>
-			    <groupId>org.yaml</groupId>
-			    <artifactId>snakeyaml</artifactId>
-			    <version>1.17</version>
-			</dependency>
+			
 		</dependencies>
 	</dependencyManagement>
 
@@ -68,16 +64,18 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.11</version>
+			<scope>test</scope>
 	    </dependency>
 	    
 	    <dependency>
 		    <groupId>org.mockito</groupId>
 		    <artifactId>mockito-core</artifactId>
 		    <version>2.7.1</version>
+		    <scope>test</scope>
 		</dependency>
 	</dependencies>
 	<build>
-		<sourceDirectory>src</sourceDirectory>
+		<!-- <sourceDirectory>src</sourceDirectory> -->
 		<resources>
 			<resource>
 				<directory>src</directory>

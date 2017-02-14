@@ -10,9 +10,11 @@ import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.tree.ParseTree;
 
+import es.usc.rai.coego.martin.demiurgo.exceptions.CannotDestroyClassException;
 import es.usc.rai.coego.martin.demiurgo.json.JsonClass;
 import es.usc.rai.coego.martin.demiurgo.json.JsonMethod;
 import es.usc.rai.coego.martin.demiurgo.json.JsonVariable;
+import es.usc.rai.coego.martin.demiurgo.values.ClassTyped;
 import es.usc.rai.coego.martin.demiurgo.values.ObjectValue;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
@@ -71,7 +73,7 @@ public class DemiurgoClass implements Comparable<DemiurgoClass> {
 	public void setClassName(String className) {
 		this.className = className;
 	}
-	
+
 	public void addField(String fieldName, ValueInterface defaultValue, ParseTree initialAssign) {
 		fields.put(fieldName, new DefaultField(defaultValue, initialAssign));
 	}
@@ -143,11 +145,13 @@ public class DemiurgoClass implements Comparable<DemiurgoClass> {
 		jc.setParent(getParentClass().toJson());
 		List<JsonVariable> f = new ArrayList<>();
 		for (Entry<String, DefaultField> e : getParentClass().getFields().entrySet()) {
-			f.add(new JsonVariable(e.getKey(), e.getValue().getField().getValueAsString(), e.getValue().getField().getTypeName()));
+			f.add(new JsonVariable(e.getKey(), e.getValue().getField().getValueAsString(),
+					e.getValue().getField().getTypeName()));
 		}
 		for (Entry<String, DefaultField> e : fields.entrySet()) {
 			f.removeIf(v -> v.getName().equalsIgnoreCase(e.getKey()));
-			f.add(new JsonVariable(e.getKey(), e.getValue().getField().getValueAsString(), e.getValue().getField().getTypeName()));
+			f.add(new JsonVariable(e.getKey(), e.getValue().getField().getValueAsString(),
+					e.getValue().getField().getTypeName()));
 		}
 		f.sort(Comparator.comparing(JsonVariable::getName));
 		jc.setFields(f);
@@ -173,28 +177,30 @@ public class DemiurgoClass implements Comparable<DemiurgoClass> {
 		methods = newClass.methods;
 		constructor = newClass.constructor;
 		code = newClass.code;
-		
-		//update references
-		for(Entry<String, DefaultField> e : fields.entrySet()) {
-			if(e.getValue().getField() instanceof ObjectValue) {
+
+		// update references
+		for (Entry<String, DefaultField> e : fields.entrySet()) {
+			if (e.getValue().getField() instanceof ObjectValue) {
 				ObjectValue ov = (ObjectValue) e.getValue().getField();
-				if(ov.getItsClass().getClassName().equalsIgnoreCase(this.getClassName())) {
-					ov.setItsClass(this);
+				if (ov.getClassType().getClassName().equalsIgnoreCase(this.getClassName())) {
+					ov.setClassType(this);
 				}
 			}
 		}
-		for(Entry<String, ClassMethod> e : methods.entrySet()) {
-			for(ValueInterface a : e.getValue().args.values()) {
-				if(a instanceof ObjectValue && ((ObjectValue)a).getItsClass().getClassName().equalsIgnoreCase(this.getClassName())) {
-					((ObjectValue)a).setItsClass(this);
+		for (Entry<String, ClassMethod> e : methods.entrySet()) {
+			for (ValueInterface a : e.getValue().args.values()) {
+				if (a instanceof ObjectValue
+						&& ((ObjectValue) a).getClassType().getClassName().equalsIgnoreCase(this.getClassName())) {
+					((ObjectValue) a).setClassType(this);
 				}
 			}
 		}
-		
-		if(constructor != null)
-			for(ValueInterface a : constructor.getArgsValues()) {
-				if(a instanceof ObjectValue && ((ObjectValue)a).getItsClass().getClassName().equalsIgnoreCase(this.getClassName())) {
-					((ObjectValue)a).setItsClass(this);
+
+		if (constructor != null)
+			for (ValueInterface a : constructor.getArgsValues()) {
+				if (a instanceof ObjectValue
+						&& ((ObjectValue) a).getClassType().getClassName().equalsIgnoreCase(this.getClassName())) {
+					((ObjectValue) a).setClassType(this);
 				}
 			}
 	}
@@ -213,24 +219,58 @@ public class DemiurgoClass implements Comparable<DemiurgoClass> {
 		return getClassName().compareTo(another.getClassName());
 	}
 
-	public void destroyClass() {
+	@Override
+	public boolean equals(Object another) {
+		return (another instanceof DemiurgoClass
+				&& ((DemiurgoClass) another).getClassName().equalsIgnoreCase(getClassName()));
+	}
+
+	public void destroyClass() throws CannotDestroyClassException {
+		//checking for references
+		for (DemiurgoClass cl : getWorld().getClasses()) {
+			if (cl.hasReferencesToClass(this)) {
+				throw new CannotDestroyClassException(getClassName());
+			}
+		}
+		
+		for(DemiurgoRoom r : getWorld().getAllRooms()) {
+			r.clearClassReferences(this);
+		}
+
 		List<DemiurgoObject> l = getWorld().getAllObjects().stream()
 				.filter(o -> o.getClassName().equalsIgnoreCase(getClassName())).collect(Collectors.toList());
-		for(DemiurgoObject o : l) {
+		for (DemiurgoObject o : l) {
 			o.destroyObject(false);
 		}
 		getWorld().markToDestroy(this);
 	}
-	
+
+	public boolean hasReferencesToClass(DemiurgoClass cl) {
+		if (getParentClass().equals(cl)) {
+			return true;
+		}
+
+		// checking fields
+		for (Entry<String, DefaultField> e : getFields().entrySet()) {
+			if (e.getValue().getField() instanceof ClassTyped
+					&& ((ClassTyped) e.getValue().getField()).getClassType() != null
+					&& ((ClassTyped) e.getValue().getField()).getClassType().equals(cl)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	public class DefaultField {
 		private ParseTree node;
 		private ValueInterface value;
-		
+
 		public DefaultField(ValueInterface field, ParseTree initialAssign) {
 			this.value = field;
 			this.node = initialAssign;
 		}
-		
+
 		public DefaultField(ValueInterface field) {
 			this.value = field;
 		}
@@ -238,15 +278,15 @@ public class DemiurgoClass implements Comparable<DemiurgoClass> {
 		public ParseTree getInitialAssign() {
 			return node;
 		}
-		
+
 		public void setInitialAssign(ParseTree initialAssign) {
 			this.node = initialAssign;
 		}
-		
+
 		public ValueInterface getField() {
 			return value;
 		}
-		
+
 		public void setField(ValueInterface field) {
 			this.value = field;
 		}

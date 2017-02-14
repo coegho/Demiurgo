@@ -253,13 +253,14 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 	public ValueInterface visitListType(ListTypeContext ctx) {
 		ValueInterface innerType = visit(ctx.data_type());
 
-		if (innerType instanceof ListValue) {
-			// It has more depth than 1, ex. "int[][]"
-			ListValue lv = (ListValue) innerType;
-			return ListValue.defaultValue(lv.getInnerType(), lv.getDepth() + 1);
-		} else {
-			// Common list of depth=1
-			return ListValue.defaultValue(innerType.getType(), 1);
+		if(innerType instanceof ListValue && ((ListValue)innerType).getClassType() != null) {
+			return ListValue.defaultValue(((ListValue)innerType).getClassType(), innerType.getDepth() + 1);
+		}
+		else if(innerType instanceof ObjectValue) {
+			return ListValue.defaultValue(((ObjectValue)innerType).getClassType(), innerType.getDepth() + 1);
+		}
+		else {
+			return ListValue.defaultValue(innerType.getInnerType(), innerType.getDepth() + 1);
 		}
 	}
 
@@ -572,8 +573,8 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 	public ValueInterface visitConcat(ConcatContext ctx) {
 		ValueInterface left = visit(ctx.operation(0));
 		ValueInterface right = visit(ctx.operation(1));
-
-		if (Math.abs(left.getDepth() - right.getDepth()) > 1 || left.getInnerType() != right.getInnerType()) {
+		
+		if (Math.abs(left.getDepth() - right.getDepth()) > 1 || (left.getInnerType() != right.getInnerType())) {
 			// too different
 			throw new RuntimeException(new IllegalOperationException(ctx.CONCAT().getSymbol().getLine(),
 					ctx.CONCAT().getSymbol().getCharPositionInLine(), ctx.CONCAT().getSymbol().getStartIndex(),

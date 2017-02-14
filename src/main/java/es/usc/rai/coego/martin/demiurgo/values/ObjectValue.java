@@ -6,7 +6,7 @@ import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoObject;
 import es.usc.rai.coego.martin.demiurgo.universe.World;
 
-public class ObjectValue extends AbstractValue {
+public class ObjectValue extends AbstractValue implements ClassTyped {
 	/**
 	 * 
 	 */
@@ -76,11 +76,13 @@ public class ObjectValue extends AbstractValue {
 		obj_id = (obj!=null)?(obj.getId()):-1;
 	}
 	
-	public DemiurgoClass getItsClass() {
+	@Override
+	public DemiurgoClass getClassType() {
 		return itsClass;
 	}
 	
-	public void setItsClass(DemiurgoClass itsClass) {
+	@Override
+	public void setClassType(DemiurgoClass itsClass) {
 		this.itsClass = itsClass;
 	}
 	
@@ -133,5 +135,12 @@ public class ObjectValue extends AbstractValue {
 	@Override
 	public String getValueAsString() {
 		return ((getObj()!=null)?("#"+Long.toString(getObj().getId())):"null");
+	}
+	
+	@Override
+	public void clearObjectReferences(DemiurgoObject obj) {
+		if(getObj() != null && getObj().equals(obj)) {
+			setObj(null);
+		}
 	}
 }

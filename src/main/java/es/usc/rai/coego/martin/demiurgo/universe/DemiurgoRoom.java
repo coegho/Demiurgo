@@ -14,7 +14,7 @@ import es.usc.rai.coego.martin.demiurgo.json.JsonPendingRoom;
 import es.usc.rai.coego.martin.demiurgo.json.JsonRoom;
 import es.usc.rai.coego.martin.demiurgo.json.JsonUser;
 import es.usc.rai.coego.martin.demiurgo.json.JsonVariable;
-import es.usc.rai.coego.martin.demiurgo.values.ObjectValue;
+import es.usc.rai.coego.martin.demiurgo.values.ClassTyped;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
 public class DemiurgoRoom extends DemiurgoLocation implements Comparable<DemiurgoRoom> {
@@ -119,11 +119,12 @@ public class DemiurgoRoom extends DemiurgoLocation implements Comparable<Demiurg
 		r.setObjects(objects);
 
 		List<JsonUser> users = new ArrayList<>();
+		users.sort(Comparator.comparing(JsonUser::getName));
 		for (User u : getUsers()) {
 			users.add(u.toJson());
 		}
 		r.setUsers(users);
-		
+
 		r.setPrenarration(getPrenarration());
 		return r;
 	}
@@ -188,20 +189,27 @@ public class DemiurgoRoom extends DemiurgoLocation implements Comparable<Demiurg
 	}
 
 	public void clearObjectReferences(DemiurgoObject obj) {
-		for(Entry<String, ValueInterface> e : variables.entrySet()) {
-			if(e.getValue() instanceof ObjectValue && ((ObjectValue)e.getValue()).getObj() == obj) {
-				((ObjectValue)e.getValue()).setObj(null);
-			}
+		for (Entry<String, ValueInterface> e : variables.entrySet()) {
+			e.getValue().clearObjectReferences(obj);
 		}
 	}
-	
+
 	@Override
 	public void destroyLocation() {
 		List<DemiurgoObject> list = new ArrayList<>(getObjects());
-		for(DemiurgoObject o : list) {
+		for (DemiurgoObject o : list) {
 			o.destroyObject(true);
 		}
 
 		getWorld().markRoomToDestroy(this);
+	}
+
+	public void clearClassReferences(DemiurgoClass cl) {
+		for (ValueInterface v : getVariables().values()) {
+			if (v instanceof ClassTyped && ((ClassTyped) v).getClassType() != null
+					&& ((ClassTyped) v).getClassType().equals(cl)) {
+				((ClassTyped)v).setClassType(getWorld().getRootClass());
+			}
+		}
 	}
 }

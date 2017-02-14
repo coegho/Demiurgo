@@ -1,8 +1,10 @@
 package es.usc.rai.coego.martin.demiurgo.universe;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import es.usc.rai.coego.martin.demiurgo.values.InventoryValue;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
@@ -66,7 +68,7 @@ public abstract class DemiurgoLocation {
 	 * @return List of users occupying this room.
 	 */
 	public List<User> getUsers() {
-		List<User> users = new ArrayList<>();
+		Set<User> users = new HashSet<>();
 		for (DemiurgoObject o : getObjects()) {
 			if (o.getUser() != null) {
 				users.add(o.getUser());
@@ -78,7 +80,7 @@ public abstract class DemiurgoLocation {
 				}
 			}
 		}
-		return users;
+		return new ArrayList<>(users);
 	}
 	
 	public abstract void destroyLocation();

@@ -65,7 +65,7 @@ public class StringValue extends AbstractValue {
 	@Override
 	public ValueInterface neq(ValueInterface another) throws IllegalOperationException {
 		if (another instanceof StringValue) {
-			return new IntegerValue(getValue() != ((StringValue) another).getValue());
+			return new IntegerValue(!getValue().equals(((StringValue) another).getValue()));
 		}
 		if (another instanceof ListValue) {
 			return doListOperation(this, another, 0, (l,r) -> { return l.neq(r); });
@@ -141,7 +141,7 @@ public class StringValue extends AbstractValue {
 
 	@Override
 	public String getValueAsString() {
-		return getValue();
+		return '"'+getValue()+'"';
 	}
 	
 	

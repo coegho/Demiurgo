@@ -6,9 +6,10 @@ import java.util.List;
 import es.usc.rai.coego.martin.demiurgo.exceptions.IllegalOperationException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ValueCastException;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoObject;
 import es.usc.rai.coego.martin.demiurgo.universe.World;
 
-public class ListValue extends AbstractValue {
+public class ListValue extends AbstractValue implements ClassTyped {
 	/**
 	 * 
 	 */
@@ -273,10 +274,14 @@ public class ListValue extends AbstractValue {
 		}
 	}
 
+	@Override
 	public void setClassType(DemiurgoClass cl) {
 		this.classType = cl;
+		if(classType != null)
+		this.className = cl.getClassName();
 	}
 
+	@Override
 	public DemiurgoClass getClassType() {
 		return classType;
 	}
@@ -301,7 +306,10 @@ public class ListValue extends AbstractValue {
 		for (ValueInterface x : getValue()) {
 			list.add(x.cloneValue());
 		}
-		return new ListValue(list);
+		ListValue lv = new ListValue(list);
+		lv.setClassType(getClassType());
+		lv.setInnerType(getInnerType());
+		return lv;
 	}
 
 	@Override
@@ -339,5 +347,11 @@ public class ListValue extends AbstractValue {
 		}
 		return "{" + String.join(", ", strs) + "}";
 	}
-
+	
+	@Override
+	public void clearObjectReferences(DemiurgoObject obj) {
+		for(ValueInterface i : value) {
+			i.clearObjectReferences(obj);
+		}
+	}
 }

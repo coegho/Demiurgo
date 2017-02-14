@@ -28,7 +28,6 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
-import org.antlr.v4.runtime.BailErrorStrategy;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.glassfish.grizzly.http.server.HttpServer;
@@ -50,13 +49,13 @@ import es.usc.rai.coego.martin.demiurgo.parsing.ErrorHandler;
 import es.usc.rai.coego.martin.demiurgo.parsing.ErrorListener;
 import es.usc.rai.coego.martin.demiurgo.universe.Action;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoLocation;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoObject;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoRoom;
+import es.usc.rai.coego.martin.demiurgo.universe.Inventory;
 import es.usc.rai.coego.martin.demiurgo.universe.RootObjectClass;
 import es.usc.rai.coego.martin.demiurgo.universe.User;
 import es.usc.rai.coego.martin.demiurgo.universe.World;
-import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoLocation;
-import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoRoom;
-import es.usc.rai.coego.martin.demiurgo.universe.Inventory;
 import io.jsonwebtoken.impl.crypto.MacProvider;
 import io.jsonwebtoken.lang.Strings;
 
@@ -435,7 +434,7 @@ public class Demiurgo {
 		lexer.addErrorListener(new ErrorListener(errors));
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
 		COEParser parser = new COEParser(tokens);
-		parser.setErrorHandler(new BailErrorStrategy());
+		//parser.setErrorHandler(new BailErrorStrategy());
 		parser.removeErrorListeners();
 		parser.addErrorListener(new ErrorListener(errors));
 		ParseTree tree = parser.s(); // parse; start at s

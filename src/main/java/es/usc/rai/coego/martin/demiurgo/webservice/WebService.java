@@ -1,6 +1,7 @@
 package es.usc.rai.coego.martin.demiurgo.webservice;
 
 import java.io.ByteArrayInputStream;
+import java.util.Comparator;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -30,6 +31,7 @@ import es.usc.rai.coego.martin.demiurgo.Demiurgo;
 import es.usc.rai.coego.martin.demiurgo.database.DatabaseInterface;
 import es.usc.rai.coego.martin.demiurgo.database.MariaDBDatabase;
 import es.usc.rai.coego.martin.demiurgo.database.WorldDBData;
+import es.usc.rai.coego.martin.demiurgo.exceptions.CannotDestroyClassException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.DemiurgoException;
 import es.usc.rai.coego.martin.demiurgo.json.AllClassesResponse;
 import es.usc.rai.coego.martin.demiurgo.json.AllRoomPathsResponse;
@@ -52,6 +54,7 @@ import es.usc.rai.coego.martin.demiurgo.json.ExecuteCodeResponse;
 import es.usc.rai.coego.martin.demiurgo.json.GetPendingRoomsResponse;
 import es.usc.rai.coego.martin.demiurgo.json.JsonAction;
 import es.usc.rai.coego.martin.demiurgo.json.JsonPendingRoom;
+import es.usc.rai.coego.martin.demiurgo.json.JsonUser;
 import es.usc.rai.coego.martin.demiurgo.json.MyUserResponse;
 import es.usc.rai.coego.martin.demiurgo.json.NarrateActionRequest;
 import es.usc.rai.coego.martin.demiurgo.json.NarrateActionResponse;
@@ -95,7 +98,7 @@ public class WebService {
 		if (u != null) {
 			me.setStatus(new ResponseStatus());
 			me.setUser(u.toJson(false));
-			if(u.getObj() != null)
+			if (u.getObj() != null)
 				me.setObj(u.getObj().toStatusJson());
 			me.setWorld(world);
 			return me;
@@ -121,12 +124,11 @@ public class WebService {
 
 		boolean result = db.changePassword(username, AuthService.hashPassword(req.getOldPassword()),
 				AuthService.hashPassword(req.getNewPassword()));
-		
+
 		db.stopConnection();
-		if(result) {
+		if (result) {
 			return Response.ok(new ResponseStatus()).build();
-		}
-		else {
+		} else {
 			return Response.ok(new ResponseStatus(false, "The operation failed")).build();
 		}
 	}
@@ -168,7 +170,8 @@ public class WebService {
 		// We get all actions with this user involved in them
 		List<Action> actions = new ArrayList<>(w.getActions().values());
 		Collections.sort(actions);
-		List<Action> allActions = actions.stream().filter(a -> a.hasWitness(u) && a.isPublished()).collect(Collectors.toList());
+		List<Action> allActions = actions.stream().filter(a -> a.hasWitness(u) && a.isPublished())
+				.collect(Collectors.toList());
 
 		int f, l;
 		f = Integer.parseInt(first);
@@ -252,7 +255,14 @@ public class WebService {
 		try {
 
 			tree = Demiurgo.parseStream(is, errors);
+			
+			if (errors.hasErrors()) {
+				res.setStatus(new ResponseStatus(false, String.join("\n", errors.getErrors().stream().map(e -> e.getMessage()).collect(Collectors.toList()))));
+				return Response.ok(res).build();
+			}
+			
 			eval.visit(tree);
+			
 
 			// if there are no errors catched, everything is ok at this point
 			w.getLogger().info(req.getCode() + "\n###Execution complete###");
@@ -274,8 +284,8 @@ public class WebService {
 			if (e.getCause() instanceof DemiurgoException) {
 				// Semantic error
 				// DemiurgoException ex = (DemiurgoException) e.getCause();
-				w.getLogger().info(req.getCode() + "\n###" + e.getMessage() + "###");
-				res.setStatus(new ResponseStatus(false, e.getMessage()));
+				w.getLogger().info(req.getCode() + "\n###" + e.getCause().getMessage() + "###");
+				res.setStatus(new ResponseStatus(false, e.getCause().getMessage()));
 				// store prenarration
 				room.appendPrenarration(eval.getPrenarration());
 			} else {
@@ -421,7 +431,7 @@ public class WebService {
 		}
 
 		if (errors.hasErrors()) {
-			res.setStatus(new ResponseStatus(false, Strings.collectionToDelimitedString(errors.getErrors(), "\n")));
+			res.setStatus(new ResponseStatus(false, String.join("\n", errors.getErrors().stream().map(e -> e.getMessage()).collect(Collectors.toList()))));
 			return Response.ok(res).build();
 		}
 
@@ -468,22 +478,27 @@ public class WebService {
 		ErrorHandler errors = new ErrorHandler();
 		try {
 			tree = Demiurgo.parseStream(is, errors);
-		} catch (RuntimeException e) {
+		} catch (ParseCancellationException e) {
 			if (e.getCause() instanceof DemiurgoException) {
 				DemiurgoException ex = (DemiurgoException) e.getCause();
 				res.setStatus(new ResponseStatus(false, ex.getMessage()));
 				return Response.ok(res).build();
 			}
+			else {
+				res.setStatus(new ResponseStatus(false, e.getCause().getMessage()));
+				return Response.ok(res).build();
+			}
 		} catch (IOException e) {
 			Demiurgo.getLogger().severe(e.getMessage());
+			e.printStackTrace();
 			return Response.serverError().build();
 		}
 
 		if (errors.hasErrors()) {
-			res.setStatus(new ResponseStatus(false, Strings.collectionToDelimitedString(errors.getErrors(), "\n")));
+			res.setStatus(new ResponseStatus(false, String.join("\n", errors.getErrors().stream().map(e -> e.getMessage()).collect(Collectors.toList()))));
 			return Response.ok(res).build();
 		}
-
+		
 		DemiurgoClass newClass = new DemiurgoClass(req.getName().toLowerCase(), req.getCode(), w);
 		try {
 			ClassVisitor eval = new ClassVisitor(newClass);
@@ -525,7 +540,7 @@ public class WebService {
 	@RolesAllowed("gm")
 	public GetPendingRoomsResponse getPendingRooms() {
 		GetPendingRoomsResponse res = new GetPendingRoomsResponse();
-		
+
 		String world = ((DemiurgoPrincipal) securityContext.getUserPrincipal()).getWorld();
 		World w = Demiurgo.getWorld(world);
 		if (w == null) {
@@ -540,8 +555,9 @@ public class WebService {
 		res.setNumUsers(w.getAllUsers().size());
 		res.setNoObjUsers(w.getAllUsers().stream().filter(u -> (u.getObj() == null && u.getRole() == UserRole.USER))
 				.map(u -> u.toJson()).collect(Collectors.toList()));
+		res.getNoObjUsers().sort(Comparator.comparing(JsonUser::getName));
 		return res;
-		
+
 	}
 
 	@GET
@@ -610,7 +626,11 @@ public class WebService {
 		DestroyClassResponse res = new DestroyClassResponse();
 		String world = ((DemiurgoPrincipal) securityContext.getUserPrincipal()).getWorld();
 		World w = Demiurgo.getWorld(world);
-		w.getClassFromName(req.getClassname()).destroyClass();
+		try {
+			w.getClassFromName(req.getClassname()).destroyClass();
+		} catch (CannotDestroyClassException e) {
+			res.setStatus(new ResponseStatus(false, e.getMessage()));
+		}
 		return Response.ok(res).build();
 	}
 

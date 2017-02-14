@@ -2,9 +2,9 @@ grammar COE;
 
 //Parser rules
 
-s : nl? class_def nl?	#classDef
-	| nl? code nl?		#sCode
-	|					#empty
+s : nl? class_def nl? EOF	#classDef
+	| nl? code nl? EOF		#sCode
+	| nl? EOF				#empty
 	;
 
 class_def : SYMBOL ( INHERIT SYMBOL )? nl? '{' nl? fields? methods? '}' ;

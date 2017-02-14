@@ -5,6 +5,7 @@ import java.util.List;
 
 import es.usc.rai.coego.martin.demiurgo.exceptions.IllegalOperationException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ValueCastException;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoObject;
 import es.usc.rai.coego.martin.demiurgo.universe.World;
 
 /**
@@ -297,4 +298,9 @@ public interface ValueInterface extends Serializable {
 	 * @return The type as a string
 	 */
 	public String getTypeName();
+	
+	/**
+	 * Clears all references to this object. 
+	 */
+	public void clearObjectReferences(DemiurgoObject obj);
 }

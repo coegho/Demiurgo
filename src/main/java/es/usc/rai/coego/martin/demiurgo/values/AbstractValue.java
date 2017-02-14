@@ -6,6 +6,7 @@ import java.util.List;
 import es.usc.rai.coego.martin.demiurgo.exceptions.IllegalOperationException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.SizeMismatchException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ValueCastException;
+import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoObject;
 import es.usc.rai.coego.martin.demiurgo.universe.World;
 
 public abstract class AbstractValue implements ValueInterface {
@@ -224,5 +225,10 @@ public abstract class AbstractValue implements ValueInterface {
 		else {
 			return operation.apply(value);
 		}
+	}
+	
+	@Override
+	public void clearObjectReferences(DemiurgoObject obj) {
+		// nothing to do
 	}
 }

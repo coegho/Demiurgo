@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import es.usc.rai.coego.martin.demiurgo.exceptions.CannotDestroyClassException;
+import es.usc.rai.coego.martin.demiurgo.exceptions.CannotDestroyRootClassException;
 import es.usc.rai.coego.martin.demiurgo.json.JsonClass;
 import es.usc.rai.coego.martin.demiurgo.json.JsonMethod;
 import es.usc.rai.coego.martin.demiurgo.json.JsonVariable;
@@ -61,5 +63,16 @@ public class RootObjectClass extends DemiurgoClass {
 		m.sort(Comparator.comparing(JsonMethod::getName));
 		jc.setMethods(m);
 		return jc;
+	}
+	
+	@Override
+	public void destroyClass() throws CannotDestroyClassException {
+		//this class shouldn't be destroyed
+		throw new CannotDestroyRootClassException();
+	}
+	
+	@Override
+	public boolean hasReferencesToClass(DemiurgoClass cl) {
+		return false;
 	}
 }
