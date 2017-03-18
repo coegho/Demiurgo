@@ -3,18 +3,22 @@ package es.usc.rai.coego.martin.demiurgo.universe;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.tree.ParseTree;
 
 import es.usc.rai.coego.martin.demiurgo.exceptions.CannotDestroyClassException;
+import es.usc.rai.coego.martin.demiurgo.exceptions.TagAlreadySetException;
 import es.usc.rai.coego.martin.demiurgo.json.JsonClass;
 import es.usc.rai.coego.martin.demiurgo.json.JsonMethod;
 import es.usc.rai.coego.martin.demiurgo.json.JsonVariable;
 import es.usc.rai.coego.martin.demiurgo.values.ClassTyped;
+import es.usc.rai.coego.martin.demiurgo.values.InventoryValue;
 import es.usc.rai.coego.martin.demiurgo.values.ObjectValue;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
@@ -31,24 +35,43 @@ public class DemiurgoClass implements Comparable<DemiurgoClass> {
 	protected String className;
 	protected DemiurgoClass parentClass;
 	protected Map<String, DefaultField> fields;
+	protected Map<String, ValueInterface> staticFields;
 	protected Map<String, ClassMethod> methods;
 	protected ClassMethod constructor;
 	protected World world;
 	protected String code;
+	
+	//special fields for views
+	protected String v_image, v_name, v_description;
+	protected Set<String> publicFields;
+	protected Set<String> statusFields;
+	protected Set<String> visibleFields;
+	
+	protected Set<String> visibleMethods;
 
 	public DemiurgoClass(String className, String code, World world) {
 		this.className = className;
 		this.fields = new HashMap<>();
+		this.staticFields = new HashMap<>();
 		this.methods = new HashMap<>();
 		this.world = world;
 		this.code = code;
+		this.publicFields = new HashSet<>();
+		this.statusFields = new HashSet<>();
+		this.visibleFields = new HashSet<>();
+		this.visibleMethods = new HashSet<>();
 	}
 
 	public DemiurgoClass(String classname, String code) {
 		this.className = classname;
 		this.fields = new HashMap<>();
+		this.staticFields = new HashMap<>();
 		this.methods = new HashMap<>();
 		this.code = code;
+		this.publicFields = new HashSet<>();
+		this.statusFields = new HashSet<>();
+		this.visibleFields = new HashSet<>();
+		this.visibleMethods = new HashSet<>();
 	}
 
 	public String getClassName() {
@@ -76,6 +99,33 @@ public class DemiurgoClass implements Comparable<DemiurgoClass> {
 
 	public void addField(String fieldName, ValueInterface defaultValue, ParseTree initialAssign) {
 		fields.put(fieldName, new DefaultField(defaultValue, initialAssign));
+	}
+	
+	public void addStaticField(String varName, ValueInterface value) throws StaticInventoryException {
+		if(value instanceof InventoryValue) {
+			throw new StaticInventoryException(0, 0, 0, varName);
+		}
+		else {
+
+			this.staticFields.put(varName, value);
+		}
+	}
+	
+	public Map<String, ValueInterface> getStaticFields() {
+		Map<String, ValueInterface> statics = getParentClass().getStaticFields();
+		statics.putAll(staticFields);
+		return statics;
+	}
+	
+	public ValueInterface getStaticField(String name) {
+		return getStaticFields().get(name);
+	}
+	
+	public DefaultField getDefaultField(String fieldName) {
+		if (fields.containsKey(fieldName))
+			return fields.get(fieldName);
+		else
+			return parentClass.getDefaultField(fieldName);
 	}
 
 	public ValueInterface getField(String fieldName) {
@@ -174,9 +224,19 @@ public class DemiurgoClass implements Comparable<DemiurgoClass> {
 	public void modifyTo(DemiurgoClass newClass) {
 		parentClass = newClass.parentClass;
 		fields = newClass.fields;
+		staticFields = newClass.staticFields;
 		methods = newClass.methods;
 		constructor = newClass.constructor;
 		code = newClass.code;
+		
+		v_name = newClass.v_name;
+		v_description = newClass.v_description;
+		v_image = newClass.v_image;
+		publicFields = newClass.publicFields;
+		statusFields = newClass.statusFields;
+		visibleFields = newClass.visibleFields;
+
+		visibleMethods = newClass.visibleMethods;
 
 		// update references
 		for (Entry<String, DefaultField> e : fields.entrySet()) {
@@ -226,14 +286,14 @@ public class DemiurgoClass implements Comparable<DemiurgoClass> {
 	}
 
 	public void destroyClass() throws CannotDestroyClassException {
-		//checking for references
+		// checking for references
 		for (DemiurgoClass cl : getWorld().getClasses()) {
 			if (cl.hasReferencesToClass(this)) {
 				throw new CannotDestroyClassException(getClassName());
 			}
 		}
-		
-		for(DemiurgoRoom r : getWorld().getAllRooms()) {
+
+		for (DemiurgoRoom r : getWorld().getAllRooms()) {
 			r.clearClassReferences(this);
 		}
 
@@ -262,33 +322,107 @@ public class DemiurgoClass implements Comparable<DemiurgoClass> {
 		return false;
 	}
 
-	public class DefaultField {
-		private ParseTree node;
-		private ValueInterface value;
+	
+	
+	public String getNameField() {
+		if(v_name != null)
+			return v_name;
+		else
+			return getParentClass().getNameField();
+	}
+	
+	public String getDescriptionField() {
+		if(v_description != null)
+			return v_description;
+		else
+			return getParentClass().getDescriptionField();
+	}
+	
+	public String getImageField() {
+		if(v_image != null)
+			return v_image;
+		else
+			return getParentClass().getImageField();
+	}
 
-		public DefaultField(ValueInterface field, ParseTree initialAssign) {
-			this.value = field;
-			this.node = initialAssign;
+	public static ClassTags getValidTag(String tag) {
+		return ClassTags.valueOf(tag.toUpperCase());
+	}
+	
+	public Set<String> getPublicFields() {
+		Set<String> p = new HashSet<>(); 
+		p.addAll(getParentClass().getPublicFields());
+		p.addAll(publicFields);
+		return p;
+	}
+	
+	public Set<String> getStatusFields() {
+		Set<String> p = new HashSet<>(); 
+		p.addAll(getParentClass().getStatusFields());
+		p.addAll(statusFields);
+		return p;
+	}
+	
+	public Set<String> getVisibleFields() {
+		Set<String> p = new HashSet<>(); 
+		p.addAll(getParentClass().getVisibleFields());
+		p.addAll(visibleFields);
+		return p;
+	}
+	
+	public Set<String> getVisibleMethods() {
+		Set<String> p = new HashSet<>(); 
+		p.addAll(getParentClass().getVisibleMethods());
+		p.addAll(visibleMethods);
+		return p;
+	}
+
+	public void tagField(ClassTags tag, String varName) throws TagAlreadySetException {
+		switch(tag) {
+		case DESCRIPTION:
+			if(v_description != null)
+				throw new TagAlreadySetException(0, 0, 0, tag.toString());
+			v_description = varName;
+			break;
+		case IMAGE:
+			if(v_image != null)
+				throw new TagAlreadySetException(0, 0, 0, tag.toString());
+			v_image = varName;
+			break;
+		case NAME:
+			if(v_name != null)
+				throw new TagAlreadySetException(0, 0, 0, tag.toString());
+			v_name = varName;
+			break;
+		case PUBLIC:
+			publicFields.add(varName);
+			break;
+		case STATUS:
+			statusFields.add(varName);
+			break;
+		case VISIBLE:
+			visibleFields.add(varName);
+			break;
 		}
-
-		public DefaultField(ValueInterface field) {
-			this.value = field;
-		}
-
-		public ParseTree getInitialAssign() {
-			return node;
-		}
-
-		public void setInitialAssign(ParseTree initialAssign) {
-			this.node = initialAssign;
-		}
-
-		public ValueInterface getField() {
-			return value;
-		}
-
-		public void setField(ValueInterface field) {
-			this.value = field;
+	}
+	
+	public void tagMethod(ClassTags tag, String mName) throws TagAlreadySetException {
+		//TODO: image, name and description from method
+		//TODO: good exception
+		switch(tag) {
+		case DESCRIPTION:
+			throw new TagAlreadySetException(0, 0, 0, tag.toString());
+		case IMAGE:
+			throw new TagAlreadySetException(0, 0, 0, tag.toString());
+		case NAME:
+			throw new TagAlreadySetException(0, 0, 0, tag.toString());
+		case PUBLIC:
+			throw new TagAlreadySetException(0, 0, 0, tag.toString());
+		case STATUS:
+			throw new TagAlreadySetException(0, 0, 0, tag.toString());
+		case VISIBLE:
+			visibleMethods.add(mName);
+			break;
 		}
 	}
 }

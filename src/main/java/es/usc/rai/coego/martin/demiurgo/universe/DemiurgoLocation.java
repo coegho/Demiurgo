@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import es.usc.rai.coego.martin.demiurgo.exceptions.MissingInventoryException;
 import es.usc.rai.coego.martin.demiurgo.values.InventoryValue;
 import es.usc.rai.coego.martin.demiurgo.values.ValueInterface;
 
@@ -76,7 +77,11 @@ public abstract class DemiurgoLocation {
 			//Looking for users in inventories
 			for(Entry<String, ValueInterface> e : o.getFields().entrySet()) {
 				if(e.getValue() instanceof InventoryValue) {
-					users.addAll(((InventoryValue)e.getValue()).getLocation().getUsers());
+					try {
+						users.addAll(((InventoryValue)e.getValue()).getLocation().getUsers());
+					} catch (MissingInventoryException e1) {
+						//lacks of inventory, cannot do nothing
+					}
 				}
 			}
 		}

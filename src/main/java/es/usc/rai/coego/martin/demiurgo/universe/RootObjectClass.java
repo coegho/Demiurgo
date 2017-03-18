@@ -2,8 +2,10 @@ package es.usc.rai.coego.martin.demiurgo.universe;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 
 import es.usc.rai.coego.martin.demiurgo.exceptions.CannotDestroyClassException;
@@ -38,10 +40,19 @@ public class RootObjectClass extends DemiurgoClass {
 	public ValueInterface getField(String fieldName) {
 		return fields.get(fieldName).getField(); //Doesn't look in parent class
 	}
+	
+	@Override
+	public DefaultField getDefaultField(String fieldName) {
+		return fields.get(fieldName); //Doesn't look in parent class
+	}
 
 	@Override
 	public ClassMethod getMethod(String methodName) {
 		return methods.get(methodName); //Doesn't look in parent class
+	}
+	
+	public Map<String, ValueInterface> getStaticFields() {
+		return new HashMap<>(staticFields);
 	}
 	
 	@Override
@@ -63,6 +74,41 @@ public class RootObjectClass extends DemiurgoClass {
 		m.sort(Comparator.comparing(JsonMethod::getName));
 		jc.setMethods(m);
 		return jc;
+	}
+	
+	@Override
+	public String getNameField() {
+		return "v_name";
+	}
+	
+	@Override
+	public String getDescriptionField() {
+		return "v_description";
+	}
+	
+	@Override
+	public String getImageField() {
+		return "v_imgurl";
+	}
+	
+	@Override
+	public Set<String> getStatusFields() {
+		return statusFields;
+	}
+	
+	@Override
+	public Set<String> getPublicFields() {
+		return publicFields;
+	}
+	
+	@Override
+	public Set<String> getVisibleFields() {
+		return visibleFields;
+	}
+	
+	@Override
+	public Set<String> getVisibleMethods() {
+		return visibleMethods;
 	}
 	
 	@Override

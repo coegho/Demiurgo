@@ -44,6 +44,12 @@ public interface COEVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitFields(COEParser.FieldsContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link COEParser#field_decl}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitField_decl(COEParser.Field_declContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link COEParser#var_decl}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -85,6 +91,12 @@ public interface COEVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitFunction_call(COEParser.Function_callContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link COEParser#tags}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitTags(COEParser.TagsContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code compare}
 	 * labeled alternative in {@link COEParser#operation}.
@@ -399,6 +411,12 @@ public interface COEVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitExp_user(COEParser.Exp_userContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link COEParser#exp_throw}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExp_throw(COEParser.Exp_throwContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link COEParser#echo}.
 	 * @param ctx the parse tree

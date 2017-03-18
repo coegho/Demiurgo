@@ -99,7 +99,7 @@ public class WebService {
 			me.setStatus(new ResponseStatus());
 			me.setUser(u.toJson(false));
 			if (u.getObj() != null)
-				me.setObj(u.getObj().toStatusJson());
+				me.setObj(u.getObj().toStatusJson(true));
 			me.setWorld(world);
 			return me;
 		} else
@@ -290,10 +290,14 @@ public class WebService {
 				room.appendPrenarration(eval.getPrenarration());
 			} else {
 				// Unexpected internal error
-				e.printStackTrace();
+				//e.printStackTrace();
 				// Demiurgo.getLogger().severe(e.getMessage());
-				;
-				return Response.serverError().build();
+				
+				//return Response.serverError().build();
+				w.getLogger().severe(req.getCode() + "\n###" + e.getMessage() + "###");
+				res.setStatus(new ResponseStatus(false, e.getMessage()));
+				// store prenarration
+				room.appendPrenarration(eval.getPrenarration());
 			}
 		} catch (IOException e) {
 			// Unexpected IO error

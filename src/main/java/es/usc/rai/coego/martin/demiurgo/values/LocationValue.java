@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import es.usc.rai.coego.martin.demiurgo.exceptions.MissingInventoryException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ValueCastException;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoLocation;
 
@@ -25,12 +26,13 @@ public abstract class LocationValue extends AbstractValue {
 			loc_id = -1;
 	}
 
-	public DemiurgoLocation getLocation() {
+	public DemiurgoLocation getLocation() throws MissingInventoryException {
 		return location;
 	}
 
 	@Override
 	public void assign(ValueInterface newRValue) throws ValueCastException {
+		try {
 		if (canAssign(newRValue)) {
 			if (((LocationValue) newRValue).getLocation() != null) {
 				location = ((LocationValue) newRValue).getLocation();
@@ -39,6 +41,9 @@ public abstract class LocationValue extends AbstractValue {
 		}
 		else
 			throw new ValueCastException(-1, -1, -1, newRValue.getTypeName(), getTypeName());
+		} catch(MissingInventoryException e) {
+			throw new ValueCastException(-1, -1, -1, "null", getTypeName());
+		}
 	}
 
 	@Override
@@ -54,11 +59,19 @@ public abstract class LocationValue extends AbstractValue {
 
 	@Override
 	public String getValueAsString() {
-		return Long.toString(getLocation().getId());
+		try {
+			return Long.toString(getLocation().getId());
+		} catch (MissingInventoryException e) {
+			return "null";
+		}
 	}
 
 	public List<ValueInterface> getContents() {
-		return new ArrayList<>(
-				getLocation().getObjects().stream().map(o -> new ObjectValue(o)).collect(Collectors.toList()));
+		try {
+			return new ArrayList<>(
+					getLocation().getObjects().stream().map(o -> new ObjectValue(o)).collect(Collectors.toList()));
+		} catch (MissingInventoryException e) {
+			return new ArrayList<>();
+		}
 	}
 }

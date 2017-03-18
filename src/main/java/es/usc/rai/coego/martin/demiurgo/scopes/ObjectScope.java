@@ -13,7 +13,11 @@ public class ObjectScope extends Scope {
 
 	@Override
 	public ValueInterface getVariable(String name) {
-		return obj.getField(name);
+		ValueInterface field = obj.getField(name);
+		if(field == null) {
+			field = obj.getDemiurgoClass().getStaticField(name);
+		}
+		return field;
 	}
 
 	@Override

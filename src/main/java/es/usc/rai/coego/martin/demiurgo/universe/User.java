@@ -41,7 +41,7 @@ public class User {
 		return obj;
 	}
 
-	public void setObj(DemiurgoObject obj) {
+	public void setObj(DemiurgoObject obj) {		
 		this.obj = obj;
 		if(obj != null) {
 			this.obj_id = obj.getId();
@@ -107,6 +107,6 @@ public class User {
 	
 	@Override
 	public boolean equals(Object obj) {
-		return (obj instanceof User) && ((User)obj).getUsername() == getUsername();
+		return (obj instanceof User) && ((User)obj).getUsername().equalsIgnoreCase(getUsername());
 	}
 }

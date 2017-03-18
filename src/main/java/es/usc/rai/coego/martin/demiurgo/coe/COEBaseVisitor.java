@@ -52,6 +52,13 @@ public class COEBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements CO
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
+	@Override public T visitField_decl(COEParser.Field_declContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
 	@Override public T visitVar_decl(COEParser.Var_declContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
@@ -95,6 +102,13 @@ public class COEBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements CO
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitFunction_call(COEParser.Function_callContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitTags(COEParser.TagsContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -417,6 +431,13 @@ public class COEBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements CO
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitExp_user(COEParser.Exp_userContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitExp_throw(COEParser.Exp_throwContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *

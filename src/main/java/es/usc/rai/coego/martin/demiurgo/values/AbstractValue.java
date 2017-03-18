@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import es.usc.rai.coego.martin.demiurgo.exceptions.IllegalOperationException;
+import es.usc.rai.coego.martin.demiurgo.exceptions.MissingInventoryException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.SizeMismatchException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ValueCastException;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoObject;
@@ -135,7 +136,7 @@ public abstract class AbstractValue implements ValueInterface {
 	}
 
 	@Override
-	public ValueInterface getFromIndex(int index) throws IllegalOperationException {
+	public ValueInterface getFromIndex(int index) throws IllegalOperationException, MissingInventoryException {
 		throw new IllegalOperationException(-1, -1, -1, getTypeName(), "INT", "[]");
 	}
 

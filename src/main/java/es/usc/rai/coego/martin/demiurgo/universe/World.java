@@ -303,10 +303,13 @@ public class World {
 	/**
 	 * Links an object with an user.
 	 * 
-	 * @param user
-	 * @param obj
+	 * @param user Cannot be null.
+	 * @param obj Can be null.
 	 */
 	public void setUserObject(User user, DemiurgoObject obj) {
+		if(user.getObj() != null) {
+			user.getObj().setUser(null);
+		}
 		if (user != null) {
 			user.setObj(obj);
 		}

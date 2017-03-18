@@ -1,9 +1,11 @@
 package es.usc.rai.coego.martin.demiurgo.universe;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import es.usc.rai.coego.martin.demiurgo.json.JsonInventory;
-import es.usc.rai.coego.martin.demiurgo.json.StatusInventory;
+import es.usc.rai.coego.martin.demiurgo.json.StatusInventory;;
 
 public class Inventory extends DemiurgoLocation {
 	protected transient DemiurgoObject container;
@@ -15,9 +17,10 @@ public class Inventory extends DemiurgoLocation {
 		container = obj;
 		this.varName = varName;
 	}
-	
+
 	/**
 	 * This constructor requires a posterior call to the method 'rebuild'.
+	 * 
 	 * @param id
 	 * @param obj_id
 	 */
@@ -34,15 +37,15 @@ public class Inventory extends DemiurgoLocation {
 	public void setContainer(DemiurgoObject container) {
 		this.container = container;
 	}
-	
+
 	public String getVarName() {
 		return varName;
 	}
-	
+
 	public void setVarName(String varName) {
 		this.varName = varName;
 	}
-	
+
 	@Override
 	public void rebuild(World world) {
 		super.rebuild(world);
@@ -55,11 +58,11 @@ public class Inventory extends DemiurgoLocation {
 		json.setObjects(getObjects().stream().map(o -> o.toJson()).collect(Collectors.toList()));
 		return json;
 	}
-	
+
 	public StatusInventory toStatusJson(String name) {
 		StatusInventory json = new StatusInventory();
 		json.setName(name);
-		json.setObjects(getObjects().stream().map(o -> o.toStatusJson()).collect(Collectors.toList()));
+		json.setObjects(getObjects().stream().map(o -> o.toStatusJson(false)).collect(Collectors.toList()));
 		return json;
 	}
 
@@ -75,7 +78,8 @@ public class Inventory extends DemiurgoLocation {
 
 	@Override
 	public void destroyLocation() {
-		for(DemiurgoObject o : getObjects()) {
+		List<DemiurgoObject> list = new ArrayList<>(getObjects());
+		for (DemiurgoObject o : list) {
 			o.destroyObject(true);
 		}
 

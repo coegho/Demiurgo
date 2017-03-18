@@ -9,13 +9,15 @@ s : nl? class_def nl? EOF	#classDef
 
 class_def : SYMBOL ( INHERIT SYMBOL )? nl? '{' nl? fields? methods? '}' ;
 
-fields : (var_decl nl)+ ;
+fields : (field_decl nl)+ ;
+
+field_decl : (tags nl?)? STATICKEY? data_type SYMBOL (ASSIGN operation)? ;
 
 var_decl : data_type SYMBOL (ASSIGN operation)? ;
 
 methods : (method nl?)+ ;
 
-method : ( data_type SYMBOL ASSIGN )? metname=SYMBOL '(' args? ')' nl? '{' nl? code? nl? '}' ;
+method : (tags nl?)? ( data_type SYMBOL ASSIGN )? metname=SYMBOL '(' args? ')' nl? '{' nl? code? nl? '}' ;
 
 args : data_type SYMBOL ( ',' data_type SYMBOL )* ;
 
@@ -24,6 +26,7 @@ code : line (nl line)* ;
 line : exp_if
 	| exp_for
 	| exp_user
+	| exp_throw
 	| echo
 	| operation
 	| var_decl
@@ -31,7 +34,7 @@ line : exp_if
 
 function_call : SYMBOL '(' (operation (',' operation)*)? ')' ;
 
-
+tags : '<' SYMBOL '>';
 
 operation : operation '.' INVENTORY							#someContents
 	| room '.' INVENTORY									#roomContents
@@ -99,6 +102,8 @@ exp_for : FOR '(' SYMBOL ':' operation ')' nl? '{'  nl? code? nl? '}'
 
 exp_user : USERNAME USEROBJ operation ;
 
+exp_throw : THROWKEY operation ;
+
 echo : ECHO operation ;
 
 data_type : INT_TYPE										#intType
@@ -131,6 +136,8 @@ FALSE: [Ff][Aa][Ll][Ss][Ee] ;
 NOT: [Nn][Oo][Tt] ;
 INSTANCEOFSYMBOL : [Ii][Nn][Ss][Tt][Aa][Nn][Cc][Ee][Oo][Ff] ;
 NULLOBJ : [Nn][Uu][Ll][Ll] ;
+THROWKEY : [Tt][Hh][Rr][Oo][Ww];
+STATICKEY : [Ss][Tt][Aa][Tt][Ii][Cc];
 
 
 SYMBOL : ([dD][a-zA-Z_]|[a-cA-Ce-zE-Z_])[a-zA-Z0-9_]* ;

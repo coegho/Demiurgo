@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import es.usc.rai.coego.martin.demiurgo.exceptions.IllegalOperationException;
+import es.usc.rai.coego.martin.demiurgo.exceptions.MissingInventoryException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ValueCastException;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoObject;
 import es.usc.rai.coego.martin.demiurgo.universe.World;
@@ -237,9 +238,10 @@ public interface ValueInterface extends Serializable {
 	 * @param index
 	 * @return
 	 * @throws IllegalOperationException
+	 * @throws MissingInventoryException 
 	 * 
 	 */
-	public ValueInterface getFromIndex(int index) throws IllegalOperationException;
+	public ValueInterface getFromIndex(int index) throws IllegalOperationException, MissingInventoryException;
 
 	/**
 	 * Returns an object with the same exact value as this one.

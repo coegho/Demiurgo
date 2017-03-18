@@ -18,6 +18,7 @@ import es.usc.rai.coego.martin.demiurgo.coe.COEParser.EchoContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.Exp_elseContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.Exp_forContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.Exp_ifContext;
+import es.usc.rai.coego.martin.demiurgo.coe.COEParser.Exp_throwContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.Exp_userContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.FloatContext;
 import es.usc.rai.coego.martin.demiurgo.coe.COEParser.FloatTypeContext;
@@ -57,8 +58,10 @@ import es.usc.rai.coego.martin.demiurgo.coe.COEParser.VariableContext;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ArgumentMismatchException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.CannotLoopException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ConstructorCalledLikeAMethodException;
+import es.usc.rai.coego.martin.demiurgo.exceptions.DemiurgoException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.IllegalOperationException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.IrregularListException;
+import es.usc.rai.coego.martin.demiurgo.exceptions.MissingInventoryException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.NotAnObjectException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.ObjectInsideItselfException;
 import es.usc.rai.coego.martin.demiurgo.exceptions.RoomNotFoundException;
@@ -76,7 +79,7 @@ import es.usc.rai.coego.martin.demiurgo.scopes.ObjectScope;
 import es.usc.rai.coego.martin.demiurgo.scopes.Scope;
 import es.usc.rai.coego.martin.demiurgo.universe.ClassMethod;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass;
-import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoClass.DefaultField;
+import es.usc.rai.coego.martin.demiurgo.universe.DefaultField;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoMethod;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoObject;
 import es.usc.rai.coego.martin.demiurgo.universe.DemiurgoRoom;
@@ -459,9 +462,9 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 	 */
 	@Override
 	public ValueInterface visitIndex(IndexContext ctx) {
+		ValueInterface left = visit(ctx.operation(0));
+		ValueInterface right = visit(ctx.operation(1));
 		try {
-			ValueInterface left = visit(ctx.operation(0));
-			ValueInterface right = visit(ctx.operation(1));
 			int index = right.castToInteger();
 
 			return left.getFromIndex(index);
@@ -475,6 +478,10 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			e.setLine(ctx.operation(1).start.getLine());
 			e.setColumn(ctx.operation(1).start.getCharPositionInLine());
 			throw new RuntimeException(e);
+		} catch (MissingInventoryException e) {
+			throw new RuntimeException(new IllegalOperationException(
+					ctx.start.getLine(), ctx.start.getCharPositionInLine(), 0,
+					"null", right.getTypeName(), "[]"));
 		}
 	}
 
@@ -617,14 +624,25 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 		ValueInterface room = visit(ctx.operation(1));
 
 		try {
-
-			if (mobile instanceof ObjectValue && room instanceof LocationValue) {
-				((ObjectValue) mobile).getObj().moveTo(((LocationValue) room).getLocation());
-			} else if (mobile instanceof ListValue && (((ListValue) mobile).getInnerType() == ReturnValueTypes.OBJECT)
-					&& (((ListValue) mobile).getDepth() == 1) && room instanceof LocationValue) {
-				for (ValueInterface o : ((ListValue) mobile).getValue()) {
-					DemiurgoObject obj = ((ObjectValue) o).getObj();
-					obj.moveTo(((LocationValue) room).getLocation());
+			if(mobile == null || room == null) {
+				throw new WrongMovementException(ctx.MOVE().getSymbol().getLine(),
+						ctx.MOVE().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex(), (mobile!=null)?mobile.getTypeName():"null",
+						(room!=null)?room.getTypeName():"null");
+			}
+			else if (room instanceof LocationValue) {
+				if(mobile instanceof ObjectValue) {
+					((ObjectValue) mobile).getObj().moveTo(((LocationValue) room).getLocation());
+				} else if (mobile instanceof ListValue && (((ListValue) mobile).getInnerType() == ReturnValueTypes.OBJECT)
+					&& (((ListValue) mobile).getDepth() == 1)) {
+					for (ValueInterface o : ((ListValue) mobile).getValue()) {
+						DemiurgoObject obj = ((ObjectValue) o).getObj();
+						obj.moveTo(((LocationValue) room).getLocation());
+					}
+				}
+				else {
+					throw new WrongMovementException(ctx.MOVE().getSymbol().getLine(),
+							ctx.MOVE().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex(), mobile.getTypeName(),
+							room.getTypeName());
 				}
 			} else {
 				throw new WrongMovementException(ctx.MOVE().getSymbol().getLine(),
@@ -638,6 +656,10 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			e.setColumn(ctx.MOVE().getSymbol().getCharPositionInLine());
 			e.setStartIndex(ctx.MOVE().getSymbol().getStartIndex());
 			throw new RuntimeException(e);
+		} catch (MissingInventoryException e) {
+			throw new RuntimeException(new WrongMovementException(ctx.MOVE().getSymbol().getLine(),
+					ctx.MOVE().getSymbol().getCharPositionInLine(), ctx.start.getStartIndex(), mobile.getTypeName(),
+					"null"));
 		}
 		return null;
 	}
@@ -675,11 +697,16 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			String fieldName = ctx.SYMBOL().getText().toLowerCase();
 			if (value instanceof ObjectValue) {
 				DemiurgoObject obj = ((ObjectValue) value).getObj();
-				if (obj.getField(fieldName) == null) {
+				
+				ValueInterface var = obj.getField(fieldName);
+				if(var == null) {
+					var = obj.getDemiurgoClass().getStaticField(fieldName);
+				}
+				if (var == null) {
 					throw new UndeclaredVariableException(ctx.start.getLine(), ctx.start.getCharPositionInLine(),
 							ctx.start.getStartIndex(), fieldName);
 				}
-				return obj.getField(fieldName);
+				return var;
 			} else {
 				throw new NotAnObjectException(ctx.start.getLine(), ctx.start.getCharPositionInLine(),
 						ctx.start.getStartIndex(), value.getTypeName());
@@ -859,9 +886,10 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 						objClass.getConstructor().getArgsValues());
 			}
 
-			DemiurgoObject obj = new DemiurgoObject(objClass, getSM().getCurrentRoom(), null);
-
 			Map<String, ValueInterface> fields = new HashMap<>();
+			
+			DemiurgoObject obj = new DemiurgoObject(objClass, getSM().getCurrentRoom(), fields);
+			
 			for (Entry<String, DefaultField> e : objClass.getFields().entrySet()) {
 				if (e.getValue().getField() instanceof InventoryValue) {
 					Inventory inv = getSM().getCurrentWorld().createInventory(obj, e.getKey());
@@ -877,7 +905,6 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 				}
 			}
 
-			obj.setFields(fields);
 
 			if (objClass.getConstructor() != null) {
 				ClassMethod constructor = objClass.getConstructor();
@@ -1194,6 +1221,19 @@ public abstract class ExecVisitor extends COEBaseVisitor<ValueInterface> {
 			throw new RuntimeException(new NotAnObjectException(ctx.start.getLine(), ctx.start.getCharPositionInLine(), 0, left.getTypeName()));
 		}
 	}
-
 	
+	/**
+	 * Throws a custom exception.
+	 * <p>
+	 * exp_throw : THROWKEY operation ;
+	 */
+	@Override
+	public ValueInterface visitExp_throw(Exp_throwContext ctx) {
+		try {
+			String msg = visit(ctx.operation()).castToString();
+			throw new UserTriggeredException(ctx.operation().start.getLine(), ctx.operation().start.getCharPositionInLine(), 0, msg);
+		} catch (DemiurgoException e) {
+			throw new RuntimeException(e);
+		}
+	}
 }
